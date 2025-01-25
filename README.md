@@ -5,3 +5,12 @@ The Cargo saga continues! Navigate treacherous space lanes and pilot customizabl
 - [ ] New ships and items
 - [ ] Evolving story lines
 - [ ] Original music and sounds
+
+```console
+>>> 
+        ╔═══════ C Δ R G Ω ][ ══════╗
+        ║     Space Trading Saga    ║
+        ╚═══════════════════════════╝
+               Version 0.1.0-a
+
+```
