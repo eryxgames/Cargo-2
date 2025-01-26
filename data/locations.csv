@@ -1,0 +1,19 @@
+name,location_type,tech_level,agri_level,research_points,economy,affiliation,relation_to_player
+Alpha,Planet,5,3,10,Stable,Independent,Neutral
+Beta,Planet,2,7,15,Booming,Independent,Neutral
+Gamma,Planet,8,2,20,Declining,Coalition,Friendly
+Delta,Planet,4,6,25,Formative,Cooperators,Neutral
+Epsilon,Planet,7,4,30,Stable,Independent,Calm
+Omega XIV,AsteroidBase,6,2,15,Stable,Pirate,Hostile
+Sigma VII,AsteroidBase,7,1,20,Declining,Pirate,Enemy
+Theta III,AsteroidBase,5,3,25,Booming,Independent,Neutral
+DSO-Alpha,DeepSpaceOutpost,8,3,25,Formative,Consortium,Neutral
+DSO-Beta,DeepSpaceOutpost,9,2,30,Booming,Consortium,Calm
+DSO-Gamma,DeepSpaceOutpost,7,4,35,Stable,Cooperators,Friendly
+Nova Labs,ResearchColony,10,4,40,Stable,Cooperators,Ally
+Quantum Center,ResearchColony,9,5,35,Booming,Collective,Neutral
+Stellar Institute,ResearchColony,8,6,45,Formative,Consortium,Calm
+Ancient Ruins Alpha,Ancient Ruins,12,1,50,Mysterious,Independent,Neutral
+Ancient Ruins Beta,Ancient Ruins,15,1,60,Mysterious,Independent,Neutral
+Alien Outpost X,Alien Outpost,20,5,100,Unknown,Unknown,Hostile
+Alien Outpost Y,Alien Outpost,25,5,120,Unknown,Unknown,Enemy

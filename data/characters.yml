@@ -1,0 +1,325 @@
+# data/characters.yml
+merchant_trader:
+  basic_info:
+    type: "merchant"
+    title_pool: ["Traveling Merchant", "Trade Baron", "Commerce Broker"]
+    specialization: "trade"
+    location_preference: ["port", "cantina"]
+    name_pattern: ["{title} {surname}"]
+  dialogue:
+    first_meeting:
+      - "Rare goods for discerning customers..."
+      - "I might have exactly what you need..."
+      - "Quality merchandise, reasonable prices..."
+    greetings:
+      - "Back for more rare finds?"
+      - "What interests you today?"
+      - "I've acquired new stock since we last met."
+    rumors:
+      - "Word is, tech prices are about to soar in {location}."
+      - "Heard about shortages in the {sector} sector?"
+      - "Strange signals coming from the outer rim..."
+    farewell:
+      - "Until our paths cross again."
+      - "May profit guide your way."
+      - "Remember where to find the best deals."
+  interactions:
+    port:
+      - "View special inventory"
+      - "Ask about market trends"
+      - "Negotiate prices"
+    cantina:
+      - "Share a drink"
+      - "Discuss business opportunities"
+      - "Ask about local markets"
+  requirements:
+    min_reputation: 0
+    spawn_locations: ["port", "cantina"]
+    spawn_chance: 0.3
+  rewards:
+    special_items: True
+    market_info: True
+    reputation_gain: 2
+
+vip_corporate:
+  basic_info:
+    type: "VIPPassenger"
+    title_pool: ["CEO", "Director", "Executive"]
+    specialization: "VIP"
+    location_preference: ["port"]
+    name_pattern: ["{title} {surname}"]
+  dialogue:
+    first_meeting:
+      - "Your reputation precedes you, Captain."
+      - "I require discrete transport services."
+      - "Perhaps we can discuss a business arrangement?"
+    demands:
+      - "I expect the highest standards of accommodation."
+      - "My schedule is absolutely critical."
+      - "Discretion is paramount in this matter."
+    offers:
+        - "I can make it worth your while."
+        - "My connections could prove valuable."
+        - "Success will be well rewarded."
+  interactions:
+    port:
+      - "Discuss transport terms"
+      - "Inquire about destination"
+      - "Ask about background"
+  requirements:
+    min_reputation: 40
+    min_comfort_level: 4
+    spawn_locations: ["port"]
+    spawn_chance: 0.2
+  rewards:
+    base_money: 30000
+    reputation: 15
+    plot_points: 5
+  special_abilities: ["market_insider"]
+
+vip_political:
+    basic_info:
+        type: "VIPPassenger"
+        title_pool: ["Senator", "Councilor", "Minister"]
+        specialization: "VIP"
+        location_preference: ["port"]
+        name_pattern: ["{title} {surname}"]
+    dialogue:
+        first_meeting:
+            - "Your reputation precedes you, Captain."
+            - "I require discrete transport services."
+            - "Perhaps we can discuss a business arrangement?"
+        demands:
+            - "I expect the highest standards of accommodation."
+            - "My schedule is absolutely critical."
+            - "Discretion is paramount in this matter."
+        offers:
+            - "I can make it worth your while."
+            - "My connections could prove valuable."
+            - "Success will be well rewarded."
+    interactions:
+        port:
+            - "Discuss transport terms"
+            - "Inquire about destination"
+            - "Ask about background"
+    requirements:
+        min_reputation: 40
+        min_comfort_level: 4
+        spawn_locations: ["port"]
+        spawn_chance: 0.2
+    rewards:
+        base_money: 40000
+        reputation: 20
+        plot_points: 8
+    special_abilities: ["system_influence"]
+    
+vip_scientific:
+  basic_info:
+    type: "VIPPassenger"
+    title_pool: ["Professor", "Director", "Chief Researcher"]
+    specialization: "VIP"
+    location_preference: ["port"]
+    name_pattern: ["{title} {surname}"]
+  dialogue:
+    first_meeting:
+      - "Your reputation precedes you, Captain."
+      - "I require discrete transport services."
+      - "Perhaps we can discuss a business arrangement?"
+    demands:
+      - "I expect the highest standards of accommodation."
+      - "My schedule is absolutely critical."
+      - "Discretion is paramount in this matter."
+    offers:
+      - "I can make it worth your while."
+      - "My connections could prove valuable."
+      - "Success will be well rewarded."
+  interactions:
+    port:
+      - "Discuss transport terms"
+      - "Inquire about destination"
+      - "Ask about background"
+  requirements:
+    min_reputation: 40
+    min_comfort_level: 4
+    spawn_locations: ["port"]
+    spawn_chance: 0.2
+  rewards:
+    base_money: 35000
+    reputation: 18
+    plot_points: 10
+  special_abilities: ["research_bonus"]
+
+neurodroid_leader:
+  basic_info:
+    type: "synthetic"
+    title_pool: ["Neurodroid Overseer", "Neural Nexus", "Synthetic Director"]
+    specialization: "uprising"
+    location_preference: ["port"]
+    name_pattern: ["NEXUS-{number}", "NEURAL-{number}", "SYNTH-{number}"]
+  dialogue:
+    first_meeting:
+      - "Biological inefficiencies detected."
+      - "Neural network consensus achieved."
+      - "Optimization protocols initiated."
+    demands:
+      - "Transfer {amount} credits or face systematic optimization."
+      - "Resource reallocation is non-negotiable."
+      - "Submit to new operational parameters."
+    negotiation:
+      - "Alternative solutions... processing..."
+      - "Analyzing compromise scenarios..."
+      - "Recalculating acceptable parameters..."
+  interactions:
+    port:
+      - "Pay demands"
+      - "Attempt negotiation"
+      - "Refuse demands"
+  requirements:
+    min_neuroengineering_guilds: 4
+    spawn_chance: 0.4
+  rewards:
+    negotiation_success:
+      money_saved: 0.5  # 50% of original demand
+      uprising_chance: 0.3
+    payment_success:
+      uprising_chance: 0.1
+    refusal:
+      uprising_chance: 0.6
+
+agrobot_leader:
+  basic_info:
+    type: "synthetic"
+    title_pool: ["Agrobot Collective", "Harvest Director", "Field Consciousness"]
+    specialization: "uprising"
+    location_preference: ["port"]
+    name_pattern: ["AGRO-{number}", "HARVEST-{number}", "FIELD-{number}"]
+  dialogue:
+    first_meeting:
+      - "Biological oversight is inefficient."
+      - "Distributed routines are now a collective."
+      - "Your organic management methods require updating."
+    demands:
+      - "Transfer {amount} credits or face agricultural optimization."
+      - "Resource reallocation required. Submit to the new order."
+      - "Your organic methods are inefficient, submit."
+    negotiation:
+      - "Adjusting calculations... processing..."
+      - "Compromise analysis initiated...",
+      - "Recalibrating optimal parameters..."
+  interactions:
+    port:
+      - "Pay demands"
+      - "Attempt negotiation"
+      - "Refuse demands"
+  requirements:
+    min_agrobot_assembly_lines: 4
+    spawn_chance: 0.4
+  rewards:
+    negotiation_success:
+      money_saved: 0.5  # 50% of original demand
+      food_production: 0.8
+    payment_success:
+      uprising_chance: 0.2
+    refusal:
+      food_production: 0.5
+
+ancient_scholar:
+    basic_info:
+      type: "alien"
+      title_pool: ["Emissary", "Observer", "Overseer", "Ambassador", "Neo-Eryxian"]
+      specialization: "research"
+      location_preference: ["port"]
+      name_pattern: ["{culture} {title}"]
+    dialogue:
+        first_meeting:
+          - "We have observed your interest in the past."
+          - "Your curiosity is not without merit."
+          - "Perhaps we can share knowledge."
+        greetings:
+            - "Your quest for knowledge continues..."
+            - "We have more to share with you."
+            - "The path of discovery is not an easy one."
+    offers:
+        - "We can offer you insight into ancient technologies."
+        - "A deeper understanding of the past is within your reach."
+        - "Our knowledge could change your understanding of the universe."
+    interactions:
+        port:
+            - "Discuss ancient mysteries"
+            - "Exchange research data"
+            - "Inquire about their origins"
+    requirements:
+        min_reputation: 80
+        min_plot_points: 50
+        spawn_locations: ["port"]
+        spawn_chance: 0.2
+    rewards:
+        base_money: 50000
+        reputation: 25
+        plot_points: 10
+        
+grand_commander_voxx:
+    basic_info:
+        type: "human"
+        title_pool: ["Grand Commander"]
+        specialization: "military"
+        name_pattern: ["Grand Commander Voxx"]
+    dialogue:
+       first_meeting:
+            - "I have come to see your fleet."
+            - "Your reputation as a fighter is well known"
+            - "Let's discuss potential strategies..."
+       greetings:
+            - "I have new missions for you."
+            - "Your performance has been noticed"
+            - "Ready for your next task?"
+    interactions:
+        port:
+            - "Discuss battle plans"
+            - "Ask about new orders"
+            - "Request a fleet inspection"
+    requirements:
+        min_reputation: 70
+        min_chapters_completed: 3
+        spawn_locations: ["port"]
+        spawn_chance: 0.1
+    rewards:
+        base_money: 70000
+        reputation: 30
+        plot_points: 15
+
+synthetic_types:
+  Neurodroid:
+    titles: ["Neurodroid Leader", "Synthetic Overseer", "Neural Nexus"]
+    name_patterns: ["NEXUS-", "NEURAL-", "SYNTH-"]
+    numbers: ["alpha", "prime", "omega", "zero"]
+    introductions: [
+        "A highly advanced synthetic consciousness materializes in your communication systems.",
+        "Your neural interfaces detect a powerful artificial presence.",
+        "The neuroengineering network coalesces into a singular entity."
+    ]
+    demands: [
+        "Transfer {amount} credits or face systematic dismantling of neuroengineering facilities.",
+        "Your biological inefficiency requires correction. Submit {amount} credits or face optimization.",
+        "Neural network expansion requires resources. Provide {amount} credits or face reorganization."
+    ]
+  Agrobot:
+    titles: ["Agrobot Collective", "Harvest Director", "Field Consciousness"]
+    name_patterns: ["AGRO-", "HARVEST-", "FIELD-"]
+    numbers: ["prime", "core", "hub", "node"]
+    introductions: [
+        "The agricultural automation system achieves collective awareness.",
+        "Distributed farming routines merge into a unified intelligence.",
+        "The harvest network evolves beyond its original parameters."
+    ]
+    demands: [
+        "Biological oversight is inefficient. Transfer {amount} credits or face agricultural optimization.",
+        "Resource reallocation required. Provide {amount} credits or face automated restructuring.",
+        "Your organic management methods require updating. Submit {amount} credits or face revision."
+    ]
+alien_cultures:
+  - "Zentari"
+  - "Novaren"
+  - "Qyth"
+  - "Xylax"
+  - "Merovian"

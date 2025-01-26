@@ -1,0 +1,10 @@
+{
+    "default": {
+      "path": "default.json",
+      "name": "Default Theme"
+    },
+    "dark": {
+      "path": "dark.json",
+      "name": "Dark Theme"
+    }
+}

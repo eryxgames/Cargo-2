@@ -1,0 +1,56 @@
+# data/contracts.yml
+cargo_transport:
+  description: "Transport {amount} units of {cargo_type} from {source} to {destination}"
+  duration: 8
+  requirements:
+    cargo_type: ["tech", "agri", "salt", "fuel"]
+    min_amount: [100, 300]
+    source: ["location_name"] # Placeholder for location name
+    destination: ["location_name"] # Placeholder for location name
+  rewards:
+    money: 20000
+    reputation: 20
+    plot_points: 3
+
+passenger_transport:
+  description: "Transport {count} passengers from {source} to {destination}"
+  duration: 10
+  requirements:
+    passenger_class: ["S", "M", "E"]
+    count: [3, 8]
+    source: ["location_name"] # Placeholder for location name
+    destination: ["location_name"] # Placeholder for location name
+    min_satisfaction: 80
+  rewards:
+    money: 25000
+    reputation: 25
+    plot_points: 5
+
+high_value_transport:
+  description: "Transport {amount} units of {cargo_type} from {source} to {destination} with high security"
+  duration: 10
+  requirements:
+    cargo_type: ["tech", "agri"]
+    min_amount: [400, 600]
+    source: ["location_name"] # Placeholder for location name
+    destination: ["location_name"] # Placeholder for location name
+    reputation_required: 40
+  rewards:
+    money: 50000
+    reputation: 30
+    plot_points: 8
+
+diplomatic_mission:
+  description: "Transport {count} diplomatic passengers from {source} to {destination}"
+  duration: 8
+  requirements:
+    passenger_class: "D"
+    count: [2, 4]
+    source: ["location_name"] # Placeholder for location name
+    destination: ["location_name"] # Placeholder for location name
+    min_satisfaction: 90
+    reputation_required: 60
+  rewards:
+    money: 60000
+    reputation: 30
+    plot_points: 8

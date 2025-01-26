@@ -1,0 +1,34 @@
+{
+    "tracks": [
+        {
+            "track_id": "main_theme",
+            "path": "assets/music/main_theme.mp3",
+            "title": "Main Theme",
+            "description": "The primary theme for the game."
+        },
+        {
+            "track_id": "space_exploration",
+            "path": "assets/music/space_exploration.mp3",
+            "title": "Space Exploration",
+            "description": "A theme for travel and exploration."
+        },
+        {
+            "track_id": "combat_theme",
+            "path": "assets/music/combat_theme.mp3",
+            "title": "Combat Theme",
+            "description": "Music during battle sequences."
+        },
+        {
+            "track_id": "cantina_theme",
+            "path": "assets/music/cantina_theme.mp3",
+            "title": "Cantina Theme",
+            "description": "Relaxing music for the cantina."
+        },
+        {
+            "track_id": "menu_theme",
+            "path": "assets/music/menu_theme.mp3",
+            "title": "Menu Theme",
+            "description": "A theme for the menu"
+        }
+    ]
+}

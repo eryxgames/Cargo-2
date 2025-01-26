@@ -1,0 +1,92 @@
+# data/enemies.yml
+pirate_scout:
+  name: "Pirate Scout"
+  type: "pirate"
+  attack: 2
+  defense: 1
+  speed: 3
+  rewards:
+    money: [100, 300]
+    loot_chance: 0.2
+    loot_items: ["scanner", "probe"]
+
+pirate_raider:
+  name: "Pirate Raider"
+  type: "pirate"
+  attack: 3
+  defense: 2
+  speed: 2
+  rewards:
+    money: [200, 400]
+    loot_chance: 0.3
+    loot_items: ["shield", "turrets"]
+
+pirate_marauder:
+  name: "Pirate Marauder"
+  type: "pirate"
+  attack: 4
+  defense: 3
+  speed: 1
+  rewards:
+    money: [300, 500]
+    loot_chance: 0.4
+    loot_items: ["quantum_core", "advanced_shield", "neural_hack"]
+    cargo_loot_chance: 0.2
+    cargo_loot: ["tech", "agri"]
+
+rogue_corsair:
+  name: "Rogue Corsair"
+  type: "pirate"
+  attack: 3
+  defense: 2
+  speed: 4
+  rewards:
+    money: [400, 800]
+    loot_chance: 0.5
+    loot_items: ["quantum_core", "advanced_shield"]
+
+militia_patrol:
+  name: "Militia Patrol"
+  type: "militia"
+  attack: 4
+  defense: 3
+  speed: 2
+  rewards:
+    money: [500, 1000]
+    loot_chance: 0.1
+
+pirate_mothership:
+  name: "Pirate Mothership"
+  type: "pirate"
+  attack: 5
+  defense: 4
+  speed: 1
+  rewards:
+    money: [1000, 2000]
+    loot_chance: 0.7
+    loot_items: ["quantum_drive", "neutron_shield", "warp_core"]
+    cargo_loot_chance: 0.4
+    cargo_loot: ["tech", "agri", "fuel", "salt"]
+    
+rogue_warship:
+  name: "Rogue Warship"
+  type: "raider"
+  attack: 6
+  defense: 5
+  speed: 4
+  rewards:
+    money: [1500, 2500]
+    loot_chance: 0.6
+    loot_items: ["quantum_drive", "neutron_shield", "warp_core"]
+    cargo_loot_chance: 0.3
+    cargo_loot: ["tech", "agri", "fuel"]
+
+guerrilla_militia:
+  name: "Guerrilla Militia"
+  type: "militia"
+  attack: 7
+  defense: 6
+  speed: 5
+  rewards:
+    money: [2000, 4000]
+    loot_chance: 0.2

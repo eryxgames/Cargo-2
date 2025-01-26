@@ -1,0 +1,29 @@
+{
+    "effects": [
+        {
+            "effect_id": "click",
+            "path": "assets/sound/click.wav",
+            "description": "A click sound for menu selection."
+        },
+        {
+            "effect_id": "explosion",
+            "path": "assets/sound/explosion.wav",
+            "description": "Sound effect for explosions."
+        },
+         {
+            "effect_id": "trade_sound",
+            "path": "assets/sound/trade_sound.wav",
+            "description": "Sound effect for trade."
+         },
+          {
+            "effect_id": "confirm_sound",
+            "path": "assets/sound/confirm_sound.wav",
+            "description": "Sound effect for confirmation."
+         },
+         {
+            "effect_id": "error_sound",
+            "path": "assets/sound/error_sound.wav",
+            "description": "Sound effect for error."
+         }
+    ]
+}

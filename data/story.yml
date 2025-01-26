@@ -1,0 +1,278 @@
+# data/story.yml
+ch1:
+  title: "First Steps"
+  description: "Learn the basics of space trading"
+  requirements: {}
+  milestones:
+    first_trade:
+      title: "First Trade"
+      description: "Complete your first trade"
+      requirements:
+        trades_completed: 1
+      rewards:
+        money: 500
+        plot_points: 5
+      story_text: >
+          You've taken your first step into the world of space trading.
+          A small transaction, but the first of many on this journey.
+      alternate_text: >
+          The market is unforgiving. Your first transaction was clumsy, but
+          you survived it.
+    first_combat:
+      title: "Combat Initiation"
+      description: "Win your first space battle"
+      requirements:
+        combat_victories: 1
+      rewards:
+        money: 1000
+        plot_points: 5
+      story_text: >
+          You've won your first space battle. The galaxy is not a safe place,
+          but you've proven you can defend yourself.
+      alternate_text: >
+          You were lucky to survive, but you did. It was not your skill, but
+          a lucky shot.
+    basic_license:
+      title: "Extended Trading License"
+      description: "Prove your trading capabilities"
+      requirements:
+        trades_completed: 5
+        money: 20000
+      rewards:
+        money: 10000
+        plot_points: 10
+        items: ["navcomp"]
+      story_text: >
+        After completing several successful trades, you've proven yourself 
+        capable to the local authorities. You've been granted an extended 
+        trading license, allowing access to more lucrative markets. This 
+        also comes with a free navigation computer, making your journeys
+        much easier.
+      alternate_text: >
+        A basic license was all you could get. You are not special. You are
+        just another cog in the machine.
+  next_chapters: ["ch2a", "ch2b"]
+
+ch2a:
+  title: "Trade Empire Rising"
+  description: "Build your commercial empire"
+  requirements:
+    chapters_completed: ["ch1"]
+    plot_points: 15
+    trades_completed: 10
+  milestones:
+    establish_route:
+      title: "Trade Route Network"
+      description: "Establish profitable trade routes"
+      requirements:
+        trades_completed: 20
+        buildings_built: {"stockmarket": 2}
+      rewards:
+        money: 50000
+        plot_points: 15
+      story_text: >
+        You've established a network of trade routes, with several stockmarkets
+        to your disposal. Your operations are starting to look like a real business.
+      alternate_text: >
+        You are making some decent trades, still nothing that would change
+        the galaxy.
+    passenger_business:
+      title: "Passenger Services"
+      description: "Start passenger transport business"
+      requirements:
+        passengers_transported: 10
+        passenger_reputation: 20
+      rewards:
+        money: 30000
+        plot_points: 10
+      story_text: >
+        You've started to transport passengers, making your business more
+        diversed. You are starting to build a real reputation.
+      alternate_text: >
+        Some people are willing to pay you to move them from one place to another.
+  next_chapters: ["ch3a", "ch3c"]
+  
+ch2b:
+  title: "Combat Legend"
+  description: "Become a legendary combat pilot"
+  requirements:
+    chapters_completed: ["ch1"]
+    plot_points: 15
+    combat_victories: 5
+  milestones:
+      defeat_pirates:
+        title: "Pirate Hunter"
+        description: "Clear the sector of pirates"
+        requirements:
+          combat_victories: {"pirate": 10}
+        rewards:
+          money: 40000
+          plot_points: 20
+        story_text: >
+          You've become a known pirate hunter, making space lanes safer.
+        alternate_text: >
+          You've eliminated a few small groups of pirates. Nothing to be proud about.
+      defend_stations:
+        title: "Station Defender"
+        description: "Successfully defend space stations"
+        requirements:
+          combat_victories: 15
+          buildings_built: {"Neuroengineering Guild": 1}
+        rewards:
+          money: 30000
+          plot_points: 15
+        story_text: >
+          You've defended several stations from attacks. You're starting to
+          be known as a capable protector.
+        alternate_text: >
+          You've survived a few attacks. It was not skill, but pure luck.
+  next_chapters: ["ch3b", "ch3c"]
+  
+ch3a:
+  title: "Economic Dominance"
+  description: "Achieve economic control of the sector"
+  requirements:
+    chapters_completed: ["ch2a"]
+    plot_points: 40
+    trade_profit: 200000
+  milestones:
+    market_control:
+      title: "Market Controller"
+      description: "Control multiple market centers"
+      requirements:
+        buildings_built: {"stockmarket": 4}
+        research_unlocked: ["xenoeconomy"]
+      rewards:
+        money: 100000
+        plot_points: 25
+      story_text: >
+        Your network of stockmarkets and improved trade skills have brought
+        you significant economic influence, making you a true market controller.
+      alternate_text: >
+        You've accumulated some wealth. But your influence is not as strong as
+        you might think.
+  next_chapters: ["ending_trade"]
+  
+ch3b:
+  title: "Military Might"
+  description: "Become the dominant military force"
+  requirements:
+    chapters_completed: ["ch2b"]
+    plot_points: 40
+    combat_victories: 25
+  milestones:
+      fleet_commander:
+        title: "Fleet Commander"
+        description: "Lead successful fleet operations"
+        requirements:
+          combat_victories: 35
+          combat_rating: 15
+        rewards:
+          money: 100000
+          plot_points: 25
+        story_text: >
+          You've become a fleet commander, leading your forces to victory. Your
+          name is now feared in the space lanes.
+        alternate_text: >
+          You are leading some forces, still nothing that would be a real
+          threat to anyone.
+  next_chapters: ["ending_combat"]
+
+ch3c:
+  title: "Ancient Mysteries"
+  description: "Uncover the sector's ancient secrets"
+  requirements:
+    chapters_completed: ["ch2a", "ch2b"]
+    plot_points: 50
+    research_points: 300
+  milestones:
+    alien_artifacts:
+      title: "Ancient Technology"
+      description: "Discover alien artifacts"
+      requirements:
+          locations_discovered: {"ResearchColony": 2}
+          research_unlocked: ["xenoeconomy", "telemetry"]
+      rewards:
+          money: 150000
+          plot_points: 30
+      story_text: >
+        You've uncovered secrets of ancient civilizations. You are now more than
+        a simple trader, you are a seeker of knowledge.
+      alternate_text: >
+        You've found some shiny objects. They don't seem to be worth much.
+  next_chapters: ["ending_discovery"]
+
+ending_trade:
+  title: "Galactic Trade Mogul"
+  description: "You've become a legendary trade mogul"
+  requirements:
+      chapters_completed: ["ch3a"]
+      plot_points: 100
+      trade_profit: 1000000
+  milestones:
+    trade_ending:
+      title: "Economic Victory"
+      description: "Complete economic domination achieved"
+      requirements:
+          buildings_built: {"stockmarket": 5}
+          passenger_reputation: 80
+          trade_profit: 1000000
+      rewards:
+        money: 1000000
+        plot_points: 100
+      story_text: >
+        You've become the greatest trade mogul of the sector. Your economic
+        empire spans the whole galaxy.
+      alternate_text: >
+        You've accumulated wealth, but it seems like there is nothing more to do.
+  next_chapters: []
+
+ending_combat:
+  title: "Legendary Fleet Admiral"
+  description: "You've become a legendary military leader"
+  requirements:
+      chapters_completed: ["ch3b"]
+      plot_points: 100
+      combat_victories: 50
+  milestones:
+      combat_ending:
+        title: "Military Victory"
+        description: "Complete military dominance achieved"
+        requirements:
+            combat_victories: 75
+            combat_rating: 25
+        rewards:
+            money: 1000000
+            plot_points: 100
+        story_text: >
+          You are now a legend in the space lanes. Your military prowess is
+          unmatched, and your name is feared by everyone.
+        alternate_text: >
+          You've defeated some pirates, but you are not the only one.
+          Nothing significant, really.
+  next_chapters: []
+
+ending_discovery:
+  title: "Ancient Mystery Solver"
+  description: "You've uncovered the sector's greatest mysteries"
+  requirements:
+      chapters_completed: ["ch3c"]
+      plot_points: 100
+      research_points: 1500
+  milestones:
+      discovery_ending:
+        title: "Discovery Victory"
+        description: "Ancient mysteries solved"
+        requirements:
+            research_unlocked: ["xenoeconomy", "telemetry", "geophysics", "chronopolitics"]
+            locations_discovered: {"ResearchColony": 3, "AsteroidBase": 2}
+        rewards:
+            money: 1000000
+            plot_points: 100
+        story_text: >
+          You've solved the ancient mysteries of this sector, and your name
+          will be remembered as the greatest researcher who has ever lived.
+        alternate_text: >
+          You've visited some old places and found some old stuff. Nothing
+          interesting, really.
+  next_chapters: []

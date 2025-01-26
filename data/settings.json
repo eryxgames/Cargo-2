@@ -1,0 +1,29 @@
+{
+    "game_title": "Cargo 2",
+    "active_theme": "default",
+    "difficulty_levels": {
+        "easy": {
+            "enemy_difficulty": 0.8,
+            "resource_abundance": 1.2,
+            "starting_credits": 2000
+        },
+        "normal": {
+            "enemy_difficulty": 1.0,
+            "resource_abundance": 1.0,
+            "starting_credits": 1000
+        },
+        "expert": {
+            "enemy_difficulty": 1.2,
+            "resource_abundance": 0.8,
+            "starting_credits": 500
+        }
+    },
+    "default_difficulty": "normal",
+     "sound_enabled": true,
+    "music_enabled": true,
+    "volume_level": 0.75,
+    "ui": {
+        "font_size": 12,
+        "line_spacing": 1.2
+    }
+}

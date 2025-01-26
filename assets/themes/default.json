@@ -1,0 +1,9 @@
+{
+    "background_color": null,
+    "text_color": "37",
+    "header_color": "33",
+    "success_color": "32",
+    "error_color": "31",
+    "warning_color": "33",
+    "box_style": "single"
+}
