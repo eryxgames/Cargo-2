@@ -6,13 +6,15 @@ import shutil
 import time
 from core.location import Location #Now only base class
 from core.ship import Ship
+from core.port import Port 
+from core.port import PassengerReputationManager
 from core.research import Research
 from core.action import Action
 from core.contract import ContractManager
 from core.story import StoryManager
 from core.location_manager import LocationManager
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
-from core.uprising import SyntheticEventManager, InfestationManager, ResourceTransportQuest #Fixed imports
+from core.uprising import SyntheticEventManager, InfestationManager #Fixed imports
 from core.utils import display_logo, print_centered_text, format_money, word_wrap
 from ui.text_ui import TextUI
 from ui.theme_manager import ThemeManager
@@ -22,7 +24,7 @@ from core.gameplay import play_turn
 from core.template import CharacterTemplate
 from core.audio import AudioManager
 from core.game_events import GameEvents
-from core.quest import QuestSystem
+from core.quest import QuestSystem, ResourceTransportQuest
 from math import floor
 from core.shop import Shop
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology

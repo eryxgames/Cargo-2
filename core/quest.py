@@ -594,3 +594,124 @@ class QuestSystem:
         # Add quest to active quests
         self.active_quests.append(quest)
         return True
+    
+class ResourceTransportQuest:
+    def __init__(self, game):
+        self.game = game
+        self.active_missions = []
+        
+    def generate_transport_mission(self):
+        """Generate a resource transport mission"""
+        # Find mining planets
+        mining_planets = [loc for loc in self.game.locations 
+                         if loc.mining_platforms and 
+                         any(p.current_amount > 0 for p in loc.mining_platforms)]
+        
+        # Find planets with refineries
+        refinery_planets = [loc for loc in self.game.locations 
+                          if any(b == "Refinery" for b in loc.buildings)]
+        
+        if not mining_planets or not refinery_planets:
+            return None
+            
+        # Select source and destination
+        source = random.choice(mining_planets)
+        destination = random.choice(refinery_planets)
+        
+        # Select resource type and amount
+        platform = random.choice([p for p in source.mining_platforms if p.current_amount > 0])
+        resource_type = platform.resource_type
+        
+        # Calculate mission amount (25-50% of available resources)
+        available = platform.current_amount
+        amount = random.randint(int(available * 0.25), int(available * 0.5))
+        
+        # Calculate reward (better than normal trading profit)
+        base_cost = amount * source.market[resource_type]  # Cost at source
+        sell_value = amount * destination.market[resource_type]  # Value at destination
+        normal_profit = sell_value - base_cost
+        reward = int(normal_profit * 1.5)  # 50% bonus over normal trading
+        
+        # Create mission
+        mission = {
+            "type": "transport",
+            "resource": resource_type,
+            "amount": amount,
+            "source": source.name,
+            "destination": destination.name,
+            "reward": reward,
+            "time_limit": 10,  # 10 turns to complete
+            "bonus_conditions": {
+                "quick_delivery": {"turns": 5, "bonus": int(reward * 0.3)},
+                "no_damage": {"bonus": int(reward * 0.2)}
+            }
+        }
+        
+        self.active_missions.append(mission)
+        return mission
+        
+    def check_mission_completion(self, ship, current_location):
+        """Check if any transport missions are completed"""
+        for mission in self.active_missions[:]:  # Copy list to allow removal
+            if (current_location.name == mission["destination"] and
+                ship.cargo[mission["resource"]] >= mission["amount"]):
+                
+                # Calculate bonus rewards
+                total_reward = mission["reward"]
+                bonus_text = []
+                
+                if mission["time_limit"] > 5:  # Quick delivery bonus
+                    total_reward += mission["bonus_conditions"]["quick_delivery"]["bonus"]
+                    bonus_text.append(f"Quick Delivery: +{mission['bonus_conditions']['quick_delivery']['bonus']}")
+                    
+                if ship.damage == 0:  # No damage bonus
+                    total_reward += mission["bonus_conditions"]["no_damage"]["bonus"]
+                    bonus_text.append(f"Safe Delivery: +{mission['bonus_conditions']['no_damage']['bonus']}")
+                
+                # Remove resources and give reward
+                ship.cargo[mission["resource"]] -= mission["amount"]
+                ship.money += total_reward
+                
+                # Remove completed mission
+                self.active_missions.remove(mission)
+                
+                # Format completion message
+                completion_text = [
+                    f"Transport Mission Complete!",
+                    f"Delivered {mission['amount']} {mission['resource']}",
+                    f"Base Reward: {mission['reward']}"]
+                if bonus_text:
+                    completion_text.extend(bonus_text)
+                completion_text.append(f"Total Reward: {total_reward}")
+                
+                return True, completion_text
+                
+        return False, None
+        
+    def update_missions(self):
+        """Update mission timers and remove expired missions"""
+        for mission in self.active_missions[:]:  # Copy list to allow removal
+            mission["time_limit"] -= 1
+            if mission["time_limit"] <= 0:
+                self.active_missions.remove(mission)
+                self.game.display_simple_message(
+                    f"Transport mission expired: {mission['amount']} {mission['resource']} " +
+                    f"from {mission['source']} to {mission['destination']}"
+                )
+    
+    def display_available_missions(self):
+        """Display all available transport missions"""
+        if not self.active_missions:
+            return [["No active transport missions"]]
+            
+        mission_content = [["Resource", "Amount", "From", "To", "Reward", "Time"]]
+        for mission in self.active_missions:
+            mission_content.append([
+                mission["resource"].capitalize(),
+                str(mission["amount"]),
+                mission["source"],
+                mission["destination"],
+                str(mission["reward"]),
+                f"{mission['time_limit']} turns"
+            ])
+        return mission_content        

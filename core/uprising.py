@@ -521,3 +521,139 @@ class SyntheticEventManager:
                 else:
                     self.game.display_simple_message("Insufficient funds for resolution attempt!")
             return False
+        
+class InfestationManager:
+    def __init__(self, game):
+        self.game = game
+        self.infestation_types = {
+            "Bugrats": {
+                "trigger_buildings": ["Permaculture Paradise"],
+                "trigger_threshold": 5,
+                "debugratization_cost": 50000,
+                "content": {
+                    "title": "BUGRAT INFESTATION ALERT!",
+                    "introduction": "Highly adaptive insectoidal rodents are spreading through agricultural systems!",
+                    "options": [
+                        {"label": "Pay for Debugratization", "cost": True},
+                        {"label": "Risk Infestation", "cost": False}
+                    ]
+                },
+                "effects": [
+                    {
+                        "type": "cargo_consumption",
+                        "cargo_type": "agri",
+                        "consumption_rate": 0.25,
+                        "message": "Bugrats consume {loss} units of agricultural cargo!"
+                    },
+                    {
+                        "type": "ship_damage",
+                        "damage_rate": 5,
+                        "probability": 0.2,
+                        "message": "Bugrats damage ship systems!"
+                    }
+                ],
+                "max_duration": 5
+            }
+            # Add more infestation types here
+        }
+        
+    def check_global_infestations(self):
+        """Check for global infestation events"""
+        for infestation_name, infestation_config in self.infestation_types.items():
+            # Count buildings that trigger this infestation
+            building_count = sum(
+                sum(loc.buildings.count(building) for building in infestation_config["trigger_buildings"])
+                for loc in self.game.locations
+            )
+            
+            # Check if threshold is met
+            if building_count >= infestation_config["trigger_threshold"]:
+                self.handle_infestation(infestation_name, infestation_config)
+    
+    def handle_infestation(self, infestation_name, infestation_config):
+        """Handle specific infestation event with flexible options"""
+        # Prepare infestation content
+        content = infestation_config['content']
+        infestation_content = {
+            'title': content['title'],
+            'introduction': content['introduction'],
+            'options': " | ".join(f"{i+1}. {opt['label']}" for i, opt in enumerate(content['options']))
+        }
+        print(self.game.create_character_box(infestation_content))
+
+        # Generate valid choices
+        valid_choices = [str(i+1) for i in range(len(content['options']))]
+        choice = self.game.validate_input("Choose action: ", valid_choices)
+        
+        if not choice:
+            return True  # Default to last option if no choice
+
+        # Process selected option
+        selected_option = content['options'][int(choice) - 1]
+        
+        # Handle payment option
+        if selected_option['cost']:
+            cost = infestation_config['debugratization_cost']
+            if self.game.ship.money >= cost:
+                self.game.ship.money -= cost
+                self.game.display_simple_message(f"{infestation_name} threat neutralized!")
+                return False
+            else:
+                self.game.display_simple_message("Insufficient funds! Infestation begins!")
+                self.activate_infestation(infestation_name, infestation_config)
+                return True
+        else:
+            # Risk option
+            self.game.display_simple_message(f"{infestation_name} spreads!")
+            self.activate_infestation(infestation_name, infestation_config)
+            return True
+
+    def activate_infestation(self, infestation_name, infestation_config):
+        """Activate infestation effects on the ship"""
+        if not hasattr(self.game.ship, 'active_infestations'):
+            self.game.ship.active_infestations = {}
+        
+        # Add infestation with specific effects
+        self.game.ship.active_infestations[infestation_name.lower()] = {
+            'name': infestation_name,
+            'turns_active': 0,
+            'config': infestation_config,
+            'effect': self.infestation_turn_effect
+        }
+
+    def infestation_turn_effect(self, ship, infestation):
+        """Apply turn effects for a specific infestation"""
+        config = infestation['config']
+        
+        # Apply each defined effect
+        for effect in config['effects']:
+            if effect['type'] == 'cargo_consumption':
+                if ship.cargo[effect['cargo_type']] > 0:
+                    cargo_loss = int(ship.cargo[effect['cargo_type']] * effect['consumption_rate'])
+                    ship.cargo[effect['cargo_type']] = max(0, ship.cargo[effect['cargo_type']] - cargo_loss)
+                    self.game.display_simple_message(
+                        effect['message'].format(loss=cargo_loss)
+                    )
+            
+            elif effect['type'] == 'ship_damage':
+                if random.random() < effect.get('probability', 1.0):
+                    ship.damage += effect['damage_rate']
+                    self.game.display_simple_message(effect['message'])
+        
+        # Increment turns
+        infestation['turns_active'] += 1
+        
+        # Check for natural subsiding
+        if infestation['turns_active'] >= config.get('max_duration', 5):
+            return False
+        return True
+
+    def update_ship_infestations(self):
+        """Process active ship infestations each turn"""
+        if hasattr(self.game.ship, 'active_infestations'):
+            # Copy dict to avoid modification during iteration
+            for infestation_key, infestation in dict(self.game.ship.active_infestations).items():
+                # Apply infestation effect
+                if not infestation['effect'](self.game.ship, infestation):
+                    del self.game.ship.active_infestations[infestation_key]
+                    self.game.display_simple_message(f"{infestation['name']} naturally subsides.")
