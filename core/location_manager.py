@@ -42,51 +42,45 @@ class LocationManager:
         
 
     def load_locations(self):
-        """Load locations from data/locations.csv and use starting_locations"""
-        locations = []
-        try:
-            with open("data/locations.csv", "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    # Extract and process the requirements
-                    requirements = row.pop("requirements", "{}")
-                    requirements = self._parse_requirements(requirements)
+            """Load locations from data/locations.csv and use starting_locations"""
+            locations = []
+            try:
+                with open("data/locations.csv", "r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                      
+                        # Filter out non-location properties
+                        valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
+                        location_data = {k: row[k] for k in valid_keys if k in row}
 
-                   # Filter out non-location properties
-                    valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
-                    location_data = {k: row[k] for k in valid_keys if k in row}
+                        # Correct instantiation of location objects using the dictionary
+                        location = Location(**location_data, requirements={}) #empty requirements object, for now
 
-                    # Correct instantiation of location objects using the dictionary
-                    location = Location(**location_data, requirements=requirements)
-                    
-                    # Check if it's a starting location and if it needs to be unlocked
-                    for start_loc in self.game.settings.get("starting_locations", []):
-                        if start_loc.get("location_id") == location.name:
-                            
-                            # Check if unlocked or can be unlocked
-                            if start_loc.get("unlocked", False):
-                                locations.append(location)
-                                continue # Load location
-
-                            # Check if requirements are met
-                            if "requirements" in start_loc:
-                                start_requirements = start_loc["requirements"]
-                                if MilestoneRequirements.check_requirements(start_requirements, self.game):
+                        # Check if it's a starting location and if it needs to be unlocked
+                        for start_loc in self.game.settings.get("starting_locations", []):
+                            if start_loc.get("location_id") == location.name:
+                                
+                                # Check if unlocked or can be unlocked
+                                if start_loc.get("unlocked", False):
                                     locations.append(location)
-                                    continue  # Load location
+                                    continue # Load location
+
+                                # Check if requirements are met
+                                if "requirements" in start_loc:
+                                    start_requirements = start_loc["requirements"]
+                                    if MilestoneRequirements.check_requirements(start_requirements, self.game):
+                                        locations.append(location)
+                                        continue  # Load location
+                                
+                        locations.append(location)
                             
-                    if hasattr(location, 'requirements') and location.requirements:
-                       if MilestoneRequirements.check_requirements(location.requirements, self.game):
-                            locations.append(location)
-                    if not hasattr(location, "location_type"):
-                       continue
-        except FileNotFoundError:
-            print("Error: locations.csv not found. Using default locations.")
-        except Exception as e:
-            print(f"Error loading locations from CSV: {e}")
+            except FileNotFoundError:
+                print("Error: locations.csv not found. Using default locations.")
+            except Exception as e:
+                print(f"Error loading locations from CSV: {e}")
+            
+            return locations
         
-        return locations
-    
     def handle_location_discovery(self, location):
         """Handle discovery of a new location"""
         if location.name not in self.game.discovered_locations:
