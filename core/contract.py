@@ -1,4 +1,5 @@
 # core/contract.py
+import random
 
 class Contract:
     def __init__(self, contract_type, duration, requirements, rewards, description):

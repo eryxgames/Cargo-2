@@ -1,8 +1,13 @@
 # core/story.py
 import yaml
 import os
+import random
 from core.utils import display_logo
 from core.template import CharacterTemplate
+from core.location_data import LocationTerminology
+from core.quest import Quest
+from core.utils import format_money
+from core.story_requirements import MilestoneRequirements
 
 class StoryMilestone:
     def __init__(self, milestone_id, title, description, requirements, rewards=None, unlocks=None, story_text=None, alternate_text=None):

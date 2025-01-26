@@ -2,6 +2,7 @@
 import os
 import json
 import random
+import time
 import shutil
 from core.location import Planet, AsteroidBase, DeepSpaceOutpost, ResearchColony, Location
 from core.ship import Ship
@@ -32,6 +33,7 @@ from core.action import Action
 from core.research import Research
 from core.port import Port
 from core.uprising import ResourceTransportQuest, SyntheticEventManager, InfestationManager
+from core.shop import Shop
 from math import floor
 
 
@@ -989,3 +991,69 @@ class Game:
                 location.market['tech'] = max(1, location.market['tech'] * 0.8)  # Better tech prices
                 
         return new_locations
+    
+# missing methods
+
+    def handle_passenger_celebration(self):
+        """Handle passenger celebration event"""
+        for module in self.ship.passenger_modules:
+            for passenger in module.passengers:
+                passenger.satisfaction = min(100, passenger.satisfaction + 10)
+        self.display_simple_message("Passengers are having a celebration! Satisfaction increased!")
+
+    def handle_passenger_complaint(self):
+        """Handle passenger complaint event"""
+        for module in self.ship.passenger_modules:
+            for passenger in module.passengers:
+                passenger.satisfaction = max(0, passenger.satisfaction - 15)
+        self.display_simple_message("Passengers have filed complaints! Satisfaction decreased!")
+
+    def handle_medical_emergency(self):
+        """Handle medical emergency event"""
+        cost = random.randint(500, 1500)
+        if self.ship.money >= cost:
+            self.ship.money -= cost
+            self.display_simple_message(f"Medical emergency handled! Cost: {self.format_money(cost)}")
+        else:
+            # If can't afford medical care, big satisfaction hit
+            for module in self.ship.passenger_modules:
+                for passenger in module.passengers:
+                    passenger.satisfaction = max(0, passenger.satisfaction - 30)
+            self.display_simple_message("Couldn't afford medical care! Passengers very unhappy!")
+
+    def handle_vip_request(self):
+        """Handle VIP passenger request"""
+        cost = random.randint(1000, 2000)
+        if self.ship.money >= cost:
+            self.ship.money -= cost
+            self.ship.passenger_reputation += 2
+            self.display_simple_message(f"VIP request handled! Cost: {self.format_money(cost)}, Reputation increased!")
+        else:
+            self.ship.passenger_reputation = max(0, self.ship.passenger_reputation - 1)
+            self.display_simple_message("Couldn't fulfill VIP request! Reputation decreased!")
+
+    def handle_passenger_trade_info(self):
+        """Handle passengers sharing trade information"""
+        # Reveal profitable trade opportunities
+        self.display_simple_message("Passengers shared valuable trade information!")
+        # Implement trade tip functionality here
+        
+    def check_location_events(self, event_type):
+        """Handle location-specific event consequences"""
+        location = self.current_location
+        
+        if isinstance(location, AsteroidBase):
+            if event_type == "disaster":
+                # Asteroid bases might discover new mining opportunities after disasters
+                if random.random() < 0.2:
+                    mineral_type = random.choice(["salt", "fuel"])
+                    amount = random.randint(1000, 3000)
+                    location.mineral_deposits[mineral_type] = location.mineral_deposits.get(mineral_type, 0) + amount
+                    self.display_simple_message(f"The disaster revealed new {mineral_type} deposits!")
+                    
+        elif isinstance(location, ResearchColony):
+            if event_type == "exploration":
+                # Research colonies might gain research points from exploration events
+                bonus_points = random.randint(10, 30)
+                self.ship.research_points += bonus_points
+                self.display_simple_message(f"Colony researchers analyzed the phenomenon: +{bonus_points} RP")    

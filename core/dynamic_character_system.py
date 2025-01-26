@@ -3,7 +3,6 @@ import random
 from core.template import CharacterTemplate
 from core.character import SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
 
-
 class DynamicCharacterSystem:
     def __init__(self, game):
         self.game = game
@@ -215,11 +214,11 @@ class DynamicCharacterSystem:
                     game.ship.passenger_reputation >= 40 and
                     game.turn - game.reputation_manager.last_vip_spawn >= 5
                 ),
-                "generator": "special",  # Will use SpecialCharacterGenerator
+                "generator": "special",
                 "character_type": "vip_passenger",
-                "event_chain": None  # VIPs don't need event chains
+                "event_chain": None
             },
-            "grand_commander_voxx": {
+             "grand_commander_voxx": {
                 "condition": lambda game: (
                     game.ship.passenger_reputation >= 70 and
                     game.story_manager.get_chapter_number() >= 3
@@ -318,14 +317,16 @@ class DynamicCharacterSystem:
 
     def handle_character_interaction(self, character_id, choice, location_type):
         """Handle player interaction with a special character"""
-        character = self.active_characters[character_id]
-        template = self.templates[character["character"].template_id]
+        character = self.active_characters[character_id]["character"]
+        template = self.templates[character.template_id]
         
         # Get available interactions for location
         if 'interactions' in template and location_type in template['interactions']:
             interactions = template['interactions'][location_type]
             if not interactions or choice >= len(interactions):
                 return False
+            interaction = interactions[choice]
+            
         
         # Process interaction
         return self.process_interaction_outcome(character_id, interaction)
@@ -345,3 +346,11 @@ class DynamicCharacterSystem:
                 self.game.story_manager.plot_points += template.content['rewards']['plot_points']
         
         return True
+        
+    @staticmethod
+    def count_buildings(game, building_type):
+        """Count total number of specific buildings across all locations"""
+        return sum(
+            location.buildings.count(building_type)
+            for location in game.locations
+        )
