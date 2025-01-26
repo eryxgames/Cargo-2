@@ -1,6 +1,8 @@
 # core/uprising.py
 
 import random
+import json
+import os
 from core.utils import format_money
 
 class UprisingEffect:
@@ -525,54 +527,36 @@ class SyntheticEventManager:
 class InfestationManager:
     def __init__(self, game):
         self.game = game
-        self.infestation_types = {
-            "Bugrats": {
-                "trigger_buildings": ["Permaculture Paradise"],
-                "trigger_threshold": 5,
-                "debugratization_cost": 50000,
-                "content": {
-                    "title": "BUGRAT INFESTATION ALERT!",
-                    "introduction": "Highly adaptive insectoidal rodents are spreading through agricultural systems!",
-                    "options": [
-                        {"label": "Pay for Debugratization", "cost": True},
-                        {"label": "Risk Infestation", "cost": False}
-                    ]
-                },
-                "effects": [
-                    {
-                        "type": "cargo_consumption",
-                        "cargo_type": "agri",
-                        "consumption_rate": 0.25,
-                        "message": "Bugrats consume {loss} units of agricultural cargo!"
-                    },
-                    {
-                        "type": "ship_damage",
-                        "damage_rate": 5,
-                        "probability": 0.2,
-                        "message": "Bugrats damage ship systems!"
-                    }
-                ],
-                "max_duration": 5
-            }
-            # Add more infestation types here
-        }
-        
+        self.infestation_data = self.load_infestation_data()
+
+    def load_infestation_data(self):
+        """Load infestation data from data/infestations.json"""
+        try:
+            with open("data/infestations.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Error: infestations.json not found. Using default infestation data.")
+            return {"infestations": []}
+        except json.JSONDecodeError:
+            print("Error: Could not parse infestations.json. Using default infestation data.")
+            return {"infestations": []}
+
     def check_global_infestations(self):
         """Check for global infestation events"""
-        for infestation_name, infestation_config in self.infestation_types.items():
+        for infestation_name, config in self.infestation_data.get("infestations", {}).items():
             # Count buildings that trigger this infestation
             building_count = sum(
-                sum(loc.buildings.count(building) for building in infestation_config["trigger_buildings"])
+                sum(loc.buildings.count(building) for building in config["trigger_buildings"])
                 for loc in self.game.locations
             )
             
             # Check if threshold is met
-            if building_count >= infestation_config["trigger_threshold"]:
-                self.handle_infestation(infestation_name, infestation_config)
+            if building_count >= config["trigger_threshold"]:
+                self.handle_infestation(infestation_name, config)
     
     def handle_infestation(self, infestation_name, infestation_config):
-        """Handle specific infestation event with flexible options"""
-        # Prepare infestation content
+        """Handle specific infestation event with full flexibility"""
+        # Prepare infestation content from config
         content = infestation_config['content']
         infestation_content = {
             'title': content['title'],
@@ -581,7 +565,7 @@ class InfestationManager:
         }
         print(self.game.create_character_box(infestation_content))
 
-        # Generate valid choices
+        # Get player choice
         valid_choices = [str(i+1) for i in range(len(content['options']))]
         choice = self.game.validate_input("Choose action: ", valid_choices)
         
@@ -647,13 +631,3 @@ class InfestationManager:
         if infestation['turns_active'] >= config.get('max_duration', 5):
             return False
         return True
-
-    def update_ship_infestations(self):
-        """Process active ship infestations each turn"""
-        if hasattr(self.game.ship, 'active_infestations'):
-            # Copy dict to avoid modification during iteration
-            for infestation_key, infestation in dict(self.game.ship.active_infestations).items():
-                # Apply infestation effect
-                if not infestation['effect'](self.game.ship, infestation):
-                    del self.game.ship.active_infestations[infestation_key]
-                    self.game.display_simple_message(f"{infestation['name']} naturally subsides.")

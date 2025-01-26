@@ -1,5 +1,7 @@
 # core/character_encounters.py
 import random
+import yaml
+from core.template import CharacterTemplate
 
 class SpecialCharacterEncounters:
     def __init__(self, game):
@@ -31,44 +33,35 @@ class SpecialCharacterEncounters:
                 "rogue_captain": 0.4
             }
         }
+        self.enemy_data = self.load_enemy_data()
+        self.templates = CharacterTemplate.load_character_templates("data/characters.yml")
+
+    def load_enemy_data(self):
+        """Load enemy data from data/enemies.yml"""
+        try:
+            with open("data/enemies.yml", 'r') as f:
+                import yaml
+                return yaml.safe_load(f)
+        except FileNotFoundError:
+            print("Error: enemies.yml not found. Using default enemy data.")
+            return {}
+        except yaml.YAMLError as e:
+            print(f"Error loading enemies from YAML: {e}")
+            return {}    
 
     def generate_character(self, character_type):
-        """Generate a new character based on character type"""
-        race_types = ["Human", "Synthetic", "Alien"]
-        race = random.choice(race_types)
-        
-        if race == "Human":
-            name = f"{random.choice(['Capt.', 'Dr.', 'Prof.'])} {random.choice(['Smith', 'Chen', 'Patel', 'Kim'])}"
-        elif race == "Synthetic":
-            name = f"Unit-{random.randint(1000,9999)}"
-        else:
-            name = f"{random.choice(['Zx', 'Ky', 'Vr'])}{random.choice(['ak', 'tol', 'xis'])}"
-
-        characters = {
-            "merchant": {
-                "title": f"Wandering {race} Merchant",
-                "name": name,
-                "offers": self.generate_merchant_offers(),
-                "greeting": "I have rare goods for discerning customers...",
-                "hostile_chance": 0.1
-            },
-            "researcher": {
-                "title": f"{race} Research Coordinator",
-                "name": name,
-                "exchange_rate": random.randint(500, 1000),  # Credits per research point
-                "greeting": "Your data could advance our understanding...",
-                "hostile_chance": 0.05
-            },
-            "rogue_captain": {
-                "title": f"Rogue {race} Captain",
-                "name": name,
-                "demand": random.randint(5000, 15000),
-                "greeting": "Your cargo or your ship...",
-                "hostile_chance": 0.8
-            }
-        }
-        
-        return characters.get(character_type)
+         """Generate a new character based on character type using templates"""
+         
+         if character_type == 'merchant':
+            return self.game.character_generators["human"].generate_character("merchant_trader")
+         elif character_type == 'researcher':
+            return self.game.character_generators["human"].generate_character(
+                title="Research Coordinator",
+                specialization="research"
+            )
+         elif character_type == 'rogue_captain':
+             return self.game.character_generators["human"].generate_character("PirateCaptain")
+         return None
 
     def generate_merchant_offers(self):
         """Generate random merchant offers"""
@@ -81,25 +74,26 @@ class SpecialCharacterEncounters:
         ]
         return random.sample(possible_items, random.randint(2, 3))
 
+
     def handle_merchant_encounter(self, character):
         """Handle interaction with merchant"""
         content = [
-            [f"Encounter: {character['title']} {character['name']}"],
-            [character["greeting"]],
+            [f"Encounter: {character.full_name}"],
+            [character.content["dialogue"]["first_meeting"][0]],
             [""],
             ["Available Items:"]
         ]
         
-        for i, offer in enumerate(character["offers"], 1):
+        for i, offer in enumerate(self.generate_merchant_offers(), 1):
             content.append([
-                f"{i}. {offer['item'].title()}",
-                f"¤: {self.game.format_money(offer['price'])}",
-                offer['description']
+                f"{i}. {offer[0].title()}",
+                f"¤: {self.game.format_money(offer[1])}",
+                offer[2]
             ])
             
         print(self.game.ui.create_box(content, 'double'))
         
-        options = [str(i) for i in range(1, len(character["offers"]) + 1)] + ['0']
+        options = [str(i) for i in range(1, 4)] + ['0']
         choice = self.game.validate_input("Choose item to buy (0 to leave): ", options)
 
         # If choice is None, return immediately
@@ -109,23 +103,23 @@ class SpecialCharacterEncounters:
         if choice == '0':
             return
             
-        offer = character["offers"][int(choice) - 1]
-        if self.game.ship.money >= offer["price"]:
-            self.game.ship.money -= offer["price"]
-            self.game.ship.acquire_item(offer["item"])
-            self.mark_item_sold(offer["item"])
-            self.game.display_simple_message(f"You bought a {offer['item']}!")
+        offer = self.generate_merchant_offers()[int(choice) - 1]
+        if self.game.ship.money >= offer[1]:
+            self.game.ship.money -= offer[1]
+            self.game.ship.acquire_item(offer[0])
+            self.mark_item_sold(offer[0])
+            self.game.display_simple_message(f"You bought a {offer[0]}!")
         else:
             self.game.display_simple_message("Insufficient funds!")
-    
+
     def handle_researcher_encounter(self, character):
         """Handle interaction with researcher"""
-        exchange_rate = character["exchange_rate"]
+        exchange_rate = random.randint(500, 1000)
         max_points = int(self.game.ship.research_points / exchange_rate)
         
         content = [
-            [f"Encounter: {character['title']} {character['name']}"],
-            [character["greeting"]],
+            [f"Encounter: {character.full_name}"],
+            [f"Your data could advance our understanding..."],
             [""],
             [f"Exchange Rate: {self.game.format_money(exchange_rate)} credits per research point"],
             [f"Your funds: {self.game.format_money(self.game.ship.money)}"],
@@ -134,13 +128,12 @@ class SpecialCharacterEncounters:
         print(self.game.ui.create_box(content, 'double'))
         
         amount = self.game.validate_quantity_input("Enter research points to buy (max/m, half/h): ")
-
         if amount is None:
             return
         
         if amount == 'max':
             amount = max_points
-        if amount == 'half':
+        elif amount == 'half':
             amount = (max_points) // 2
             
         total_cost = amount * exchange_rate
@@ -156,10 +149,10 @@ class SpecialCharacterEncounters:
     def handle_rogue_captain_encounter(self, character):
         """Handle interaction with rogue captain"""
         content = [
-            [f"Encounter: {character['title']} {character['name']}"],
-            [character["greeting"]],
+            [f"Encounter: {character.full_name}"],
+            ["Your cargo or your ship..."],
             [""],
-            [f"Demands {self.game.format_money(character['demand'])} credits"],
+            [f"Demands {self.game.format_money(random.randint(5000, 15000))} credits"],
             [""],
             ["Options:"],
             ["1. Pay demand"],
@@ -171,8 +164,8 @@ class SpecialCharacterEncounters:
         choice = self.game.validate_input("Choose action (1/2/3): ", ['1', '2', '3'])
         
         if choice == '1':
-            if self.game.ship.money >= character["demand"]:
-                self.game.ship.money -= character["demand"]
+            if self.game.ship.money >= character.demand:
+                self.game.ship.money -= character.demand
                 self.game.display_simple_message("Demand paid. Rogue captain lets you pass.")
                 return True
             else:
@@ -205,9 +198,10 @@ class SpecialCharacterEncounters:
                 elif char_type == "rogue_captain":
                     if not self.handle_rogue_captain_encounter(character):
                         # Start combat with enhanced enemy stats
+                        enemy = self.enemy_data.get('pirate_scout')  # Default pirate for testing
                         enemy_stats = {
-                            "attack": self.game.ship.attack + 2,
-                            "defense": self.game.ship.defense + 1,
+                            "attack": self.game.ship.attack + enemy["attack"],
+                            "defense": self.game.ship.defense + enemy["defense"],
                             "type": "rogue_captain"
                         }
                         self.game.handle_combat(enemy_stats)

@@ -199,3 +199,140 @@ class AlienCharacterGenerator:
                 name += random.choice(patterns)
                 
         return name.capitalize()
+    
+# core/character.py
+# Removed here as now in template.py
+# class CharacterTemplate:
+
+class CharacterManager:
+    def __init__(self, game):
+        self.game = game
+        self.templates = CharacterTemplate.load_character_templates("data/characters.yml")
+        self.active_characters = {}
+        self.met_characters = set()
+        self.current_interactions = {}
+
+    def update(self):
+        """Check for character spawning each turn"""
+        self.cleanup_old_characters()  # Add this line first
+
+        location_type = self.game.current_location.location_type.lower()
+        
+        # Check each template for possible spawning
+        for template_id, template in self.templates.items():
+            if location_type in template['requirements'].get('spawn_locations', []):
+                if random.random() < template['requirements'].get('spawn_chance', 0):
+                    character = self.spawn_character(template_id, self.game.current_location)
+                    if character:
+                        self.announce_character(character.character_id)
+
+    def generate_character_from_template(self, template_id):
+        """Create character instance from template"""
+        if template_id not in self.templates:
+            return None
+            
+        template = self.templates[template_id]
+        basic_info = template['basic_info']
+        
+        # Generate name
+        title = random.choice(basic_info['title_pool'])
+        
+        # Create character
+        character = CharacterTemplate(
+            character_id=f"{template_id}_{self.game.turn}",
+            content=template
+        )
+        
+        # Add runtime attributes
+        character.full_name = title
+        character.template_id = template_id
+        
+        return character
+
+    def spawn_character(self, template_id, location):
+        """Spawn a character from template at location"""
+        template = self.templates[template_id]
+        
+        # Check spawn requirements
+        if not self.check_spawn_requirements(template, location):
+            return None
+            
+        # Generate character
+        character = self.generate_character_from_template(template_id)
+        
+        # Add to active characters
+        char_id = f"{template_id}_{self.game.turn}"
+        self.active_characters[char_id] = {
+            "character": character,
+            "location": location,
+            "spawn_turn": self.game.turn
+        }
+        
+        return character
+
+    def check_spawn_requirements(self, template, location):
+        """Check if character can spawn based on requirements"""
+        reqs = template["requirements"]
+        
+        # Check location
+        if location not in reqs.get("spawn_locations", []):
+            return False
+            
+        # Check reputation
+        if self.game.ship.passenger_reputation < reqs.get("min_reputation", 0):
+            return False
+            
+        # Check chance
+        if random.random() > reqs.get("spawn_chance", 0.1):
+            return False
+            
+        return True
+
+    def get_character_dialogue(self, character_id, dialogue_type, **kwargs):
+        """Get appropriate dialogue for character and context"""
+        character = self.active_characters[character_id]["character"]
+        template = self.templates[character.template_id]
+        
+        dialogue_pool = template["dialogue"].get(dialogue_type, [])
+        if not dialogue_pool:
+            return ""
+            
+        dialogue = random.choice(dialogue_pool)
+        return dialogue.format(**kwargs)
+
+    def handle_character_interaction(self, character_id, choice, location_type):
+        """Process player interaction with character"""
+        character = self.active_characters[character_id]["character"]
+        template = self.templates[character.template_id]
+        
+        # Get available interactions for location
+        interactions = template["interactions"].get(location_type, [])
+        if not interactions or choice >= len(interactions):
+            return False
+            
+        # Process interaction
+        interaction = interactions[choice]
+        return self.process_interaction_outcome(character_id, interaction)
+
+    def cleanup_old_characters(self):
+        """Remove characters that have been around too long"""
+        current_turn = self.game.turn
+        for char_id in list(self.active_characters.keys()):
+            if current_turn - self.active_characters[char_id]["spawn_turn"] > 5:  # 5 turn lifetime
+                del self.active_characters[char_id]  
+
+    def process_interaction_outcome(self, character_id, interaction):
+        """Process the result of a character interaction"""
+        character = self.active_characters[character_id]
+        template = self.templates[character["character"].template_id]
+        
+        # Apply rewards if any
+        if 'rewards' in template:
+            if 'money' in template['rewards']:
+                self.game.ship.money += template['rewards']['money']
+            if 'reputation_gain' in template['rewards']:
+                self.game.ship.passenger_reputation += template['rewards']['reputation_gain']
+            if 'plot_points' in template['rewards']:
+                self.game.story_manager.plot_points += template['rewards']['plot_points']
+        
+        return True

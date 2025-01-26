@@ -1,6 +1,8 @@
 # core/port.py
 import random
 import time
+import json
+import os
 
 class PassengerModule:
     def __init__(self, name, capacity, comfort_level, cost):
@@ -762,64 +764,36 @@ class PassengerReputationManager:
     """Manages passenger reputation effects and related story/character events"""
     def __init__(self, game):
         self.game = game
-        self.reputation_thresholds = {
-            20: "Reliable Transport",
-            40: "Luxury Provider",
-            60: "Elite Service",
-            80: "Legendary Captain",
-            100: "Stellar Legend"
-        }
-        self.vip_characters = {
-            "Ambassador": {
-                "rep_required": 30,
-                "plot_points": 3,
-                "rewards": {"money": 15000, "reputation": 10}
-            },
-            "Corporate Executive": {
-                "rep_required": 50,
-                "plot_points": 5,
-                "rewards": {"money": 25000, "reputation": 15}
-            },
-            "Research Director": {
-                "rep_required": 70,
-                "plot_points": 8,
-                "rewards": {"money": 40000, "reputation": 20}
-            }
-        }
-        self.story_characters = {
-            "Diplomatic Envoy": {
-                "rep_required": 45,
-                "trigger_chapter": 2,
-                "event_chain": "galactic_alliance"
-            },
-            "Rebel Leader": {
-                "rep_required": 65,
-                "trigger_chapter": 3,
-                "event_chain": "system_rebellion"
-            },
-            "Ancient Scholar": {
-                "rep_required": 85,
-                "trigger_chapter": 4,
-                "event_chain": "ancient_mysteries"
-            }
-        }
+        self.reputation_data = self.load_reputation_data()
         self.last_vip_spawn = 0
         self.spawned_characters = set()
         self.active_story_chains = {}
         # Add total_passengers tracking
         self.total_passengers = 0
         self.class_transports = {}
+    
+    def load_reputation_data(self):
+        """Load reputation data from data/reputation.json"""
+        try:
+            with open("data/reputation.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Error: reputation.json not found. Using default settings.")
+            return {}
+        except json.JSONDecodeError:
+            print("Error: Could not parse reputation.json. Using default settings.")
+            return {}
 
     def update_reputation(self, satisfaction, passenger=None):
         """Update passenger reputation based on satisfaction"""
         base_change = (satisfaction - 75) / 25  # -1 to +1 base change
         
         # Apply modifiers based on passenger class
-        class_multipliers = {
+        class_multipliers = self.reputation_data.get("class_multipliers", {
             "S": 1.5,  # Scientists
             "M": 1.3,  # Military
             "E": 1.4   # Engineers
-        }
+        })
         
         # Get passenger's class if available
         if passenger and hasattr(passenger, 'classification'):
@@ -845,8 +819,9 @@ class PassengerReputationManager:
 
     def check_reputation_thresholds(self, old_rep, new_rep):
         """Check if any reputation thresholds were crossed"""
-        for threshold, title in self.reputation_thresholds.items():
-            if old_rep < threshold <= new_rep:
+        thresholds = self.reputation_data.get("thresholds", {})
+        for threshold, title in thresholds.items():
+            if old_rep < int(threshold) <= new_rep:
                 self.game.display_simple_message([
                     f"Reputation Milestone Achieved: {title}!",
                     "Your excellent service is becoming legendary.",
@@ -866,7 +841,7 @@ class PassengerReputationManager:
             return
             
         # Check VIP characters
-        for char_type, data in self.vip_characters.items():
+        for char_type, data in self.reputation_data.get("vip_characters", {}).items():
             if (reputation >= data["rep_required"] and 
                 char_type not in self.spawned_characters and
                 random.random() < 0.3):  # 30% chance if all conditions met
@@ -900,8 +875,7 @@ class PassengerReputationManager:
                     
                     self.spawned_characters.add(char_type)
                     self.last_vip_spawn = current_turn
-
-    # Update to use enhanced systems of special passengers
+                    
     def spawn_special_passenger(self):
         """Spawn a special passenger using enhanced character systems"""
         # Check for story character triggers
@@ -1060,4 +1034,4 @@ class PassengerReputationManager:
                     change -= 2
                     
                 # Update satisfaction
-                passenger.satisfaction = max(0, min(100, passenger.satisfaction + change))                
+                passenger.satisfaction = max(0, min(100, passenger.satisfaction + change))         

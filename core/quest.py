@@ -1,5 +1,7 @@
 # core/quest.py
 import random
+import json
+import os
 
 class Quest:
     def __init__(self, name, description, reward_money, reward_rp, quest_type="generic", 
@@ -599,13 +601,29 @@ class ResourceTransportQuest:
     def __init__(self, game):
         self.game = game
         self.active_missions = []
-        
+        self.mission_data = self.load_mission_data()
+
+    def load_mission_data(self):
+        """Load mission data from data/transport_missions.json"""
+        try:
+            with open("data/transport_missions.json", 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Error: transport_missions.json not found.")
+            return {"missions": []}
+        except json.JSONDecodeError:
+            print("Error: Could not parse transport_missions.json.")
+            return {"missions": []}
+
     def generate_transport_mission(self):
         """Generate a resource transport mission"""
+        if not self.mission_data.get("missions"):
+            return None  # Return none if no missions are defined in data
+            
         # Find mining planets
         mining_planets = [loc for loc in self.game.locations 
                          if loc.mining_platforms and 
-                         any(p.current_amount > 0 for p in loc.mining_platforms)]
+                         any(p['capacity'] > 0 for p in loc.mining_platforms)]
         
         # Find planets with refineries
         refinery_planets = [loc for loc in self.game.locations 
@@ -617,20 +635,23 @@ class ResourceTransportQuest:
         # Select source and destination
         source = random.choice(mining_planets)
         destination = random.choice(refinery_planets)
+            
+        # Choose a random mission template
+        mission_template = random.choice(self.mission_data["missions"])
         
         # Select resource type and amount
-        platform = random.choice([p for p in source.mining_platforms if p.current_amount > 0])
-        resource_type = platform.resource_type
+        platform = random.choice([p for p in source.mining_platforms if p['capacity'] > 0])
+        resource_type = platform['type']
         
         # Calculate mission amount (25-50% of available resources)
-        available = platform.current_amount
+        available = platform['capacity']
         amount = random.randint(int(available * 0.25), int(available * 0.5))
         
         # Calculate reward (better than normal trading profit)
         base_cost = amount * source.market[resource_type]  # Cost at source
         sell_value = amount * destination.market[resource_type]  # Value at destination
         normal_profit = sell_value - base_cost
-        reward = int(normal_profit * 1.5)  # 50% bonus over normal trading
+        reward = int(normal_profit * mission_template.get("reward_mult", 1.5))  # Apply multiplier
         
         # Create mission
         mission = {
@@ -640,16 +661,16 @@ class ResourceTransportQuest:
             "source": source.name,
             "destination": destination.name,
             "reward": reward,
-            "time_limit": 10,  # 10 turns to complete
+            "time_limit": mission_template.get("time_limit", 10),  # 10 turns to complete as default
             "bonus_conditions": {
-                "quick_delivery": {"turns": 5, "bonus": int(reward * 0.3)},
-                "no_damage": {"bonus": int(reward * 0.2)}
+                "quick_delivery": {"turns": 5, "bonus": int(reward * mission_template.get("quick_delivery", 0.3))}, #Apply bonus multiplier from config file
+                "no_damage": {"bonus": int(reward * mission_template.get("no_damage", 0.2))}
             }
         }
         
         self.active_missions.append(mission)
         return mission
-        
+
     def check_mission_completion(self, ship, current_location):
         """Check if any transport missions are completed"""
         for mission in self.active_missions[:]:  # Copy list to allow removal
@@ -714,4 +735,4 @@ class ResourceTransportQuest:
                 str(mission["reward"]),
                 f"{mission['time_limit']} turns"
             ])
-        return mission_content        
+        return mission_content
