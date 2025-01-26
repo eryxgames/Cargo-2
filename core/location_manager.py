@@ -29,6 +29,26 @@ class LocationManager:
                 "alien_artifacts"
             ]
         }
+        
+    def _parse_requirements(self, requirements_str):
+            """Convert a string value from csv to a dictionary, if possible"""
+            if not requirements_str or requirements_str == "{}":
+                return {}
+            try:
+               # Remove all curly braces, quotes and spaces from start/end, then split by ','
+               stripped_str = requirements_str.strip('{}').replace('"','').replace("'",'')
+               pairs = stripped_str.split(",")
+                
+                # Split by colon and create key-value pairs. strip key values of unnecessary whitespace.
+               if any(":" in x for x in pairs):
+                    requirements = {pair.split(":", 1)[0].strip():  pair.split(":", 1)[1].strip() for pair in pairs}
+                    return requirements
+               else:
+                    return {}
+            except Exception as e:
+                print(f"Warning: Could not parse requirements: {requirements_str}, {e}")
+                return {}  # In case parsing fails, default to empty dictionary
+        
 
     def load_locations(self):
         """Load locations from data/locations.csv and use starting_locations"""
@@ -37,22 +57,9 @@ class LocationManager:
             with open("data/locations.csv", "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                     # Extract the requirements string and delete it from row
+                    # Extract and process the requirements
                     requirements = row.pop("requirements", "{}")
-                    try:
-                        if requirements and isinstance(requirements, str) and requirements != "{}":
-                            requirements = requirements.replace('{','').replace('}','').replace('"','').strip()
-                            
-                            # Attempt to load as JSON only if it is a valid dict-like string
-                            if requirements and requirements.count(":") > 0 and requirements.count(",") >= 0:
-                                requirements = json.loads(f"{{{requirements}}}")
-                            else:
-                                requirements = {}  # Default to an empty dict for other invalid cases
-                        else:
-                            requirements = {}
-                    except json.JSONDecodeError as e:
-                       print("Warning: Could not parse requirements JSON, skipping this location:", row.get('name'), requirements, e)
-                       continue
+                    requirements = self._parse_requirements(requirements)
 
                    # Filter out non-location properties
                     valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
@@ -78,17 +85,17 @@ class LocationManager:
                                     continue  # Load location
                             
                     if hasattr(location, 'requirements') and location.requirements:
-                        if MilestoneRequirements.check_requirements(location.requirements, self.game):
+                       if MilestoneRequirements.check_requirements(location.requirements, self.game):
                             locations.append(location)
-                    if not hasattr(location, "location_type"):
-                        continue
+                   if not hasattr(location, "location_type"):
+                       continue
         except FileNotFoundError:
             print("Error: locations.csv not found. Using default locations.")
         except Exception as e:
             print(f"Error loading locations from CSV: {e}")
         
         return locations
-
+    
     def handle_location_discovery(self, location):
         """Handle discovery of a new location"""
         if location.name not in self.game.discovered_locations:
