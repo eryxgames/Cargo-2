@@ -117,3 +117,31 @@ class LocationManager:
                 event = random.choice(possible_events)
                 self.game.story_manager.trigger_story_event(event, 
                     {"location": location.name, "type": location.location_type})
+                
+    def check_location_unlocks(self):
+        """Check for new location type unlocks"""
+        for location in self.game.locations: #check locations from all locations
+           # Check if it's a starting location and if it needs to be unlocked
+            for start_loc in self.game.settings.get("starting_locations", []):
+                 if start_loc.get("location_id") == location.name:
+                            
+                    # Check if unlocked or can be unlocked
+                    if start_loc.get("unlocked", False):
+                        continue #skip if already unlocked
+
+                    # Check if requirements are met
+                    if "requirements" in start_loc:
+                        start_requirements = start_loc["requirements"]
+                        if MilestoneRequirements.check_requirements(start_requirements, self.game):
+                            #trigger loading location
+                            self.game.known_locations.append(location.name)
+                            self.game.display_simple_message(f"New location available: {location.name}")
+                            start_loc["unlocked"] = True
+                            continue
+            
+            #check location unlock requirements using existing location data
+            if hasattr(location, 'requirements') and location.requirements:
+               if MilestoneRequirements.check_requirements(location.requirements, self.game):
+                   if location.location_type not in self.game.unlocked_location_types:
+                        self.game.unlocked_location_types.add(location.location_type)
+                        self.game.display_simple_message(f"New location type unlocked: {location.location_type}")

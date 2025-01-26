@@ -1,0 +1,42 @@
+{
+    "thresholds": {
+      "20": "Well Known",
+      "40": "Highly Regarded",
+      "60": "Famous Carrier",
+      "80": "Legendary Service"
+    },
+    "class_multipliers": {
+      "S": 1.5,  
+      "M": 1.3,  
+      "E": 1.4,  
+      "T": 1.2,  
+      "D": 1.6, 
+      "R": 1.4  
+    },
+    "vip_characters": {
+        "Galactic Envoy": {
+          "rep_required": 60,
+            "rewards": {
+              "money": 50000,
+               "research": 100
+             },
+             "plot_points": 10
+        },
+        "Corporate Director": {
+          "rep_required": 70,
+           "rewards": {
+              "money": 75000,
+               "research": 150
+           },
+           "plot_points": 12
+        },
+        "Chief Scholar": {
+          "rep_required": 80,
+          "rewards": {
+             "money": 100000,
+              "research": 200
+           },
+          "plot_points": 15
+        }
+    }
+  }

@@ -7,7 +7,8 @@ import os
 import json
 
 class AudioManager:
-    def __init__(self, frequency=44100, size=-16, channels=8, buffer=4096, num_reserved=2, settings=None):
+    def __init__(self, game, frequency=44100, size=-16, channels=8, buffer=4096, num_reserved=2, settings=None):
+        self.game = game # Now game object is passed here
         pygame.mixer.init(frequency=frequency, size=size, channels=channels, buffer=buffer)
         self.num_reserved = num_reserved
         pygame.mixer.set_reserved(self.num_reserved)
@@ -62,13 +63,13 @@ class AudioManager:
             return {"effects": []}
 
     def initialize_sounds(self, sound_files):
-        for name, file_path in sound_files.items():
-            try:
-                self.sounds[name] = pygame.mixer.Sound(file_path)
-            except pygame.error as e:
-                print(f"Error loading sound {name}: {e}")
-            except FileNotFoundError:
-                print(f"Error: sound file not found at: {file_path}")
+      for name, file_path in sound_files.items():
+          try:
+            self.sounds[name] = pygame.mixer.Sound(file_path)
+          except pygame.error as e:
+            print(f"Error loading sound {name}: {e}")
+          except FileNotFoundError:
+            print(f"Error: sound file not found at: {file_path}")
 
     def initialize_music(self, music_files):
         for name, file_path in music_files.items():
@@ -78,24 +79,24 @@ class AudioManager:
         if not self.settings.get("sound_enabled", True):
             return
         if not self.sound_effects_muted:
-           if name in self.sounds:
-              if priority:
-                 for i in range(self.num_reserved):
-                    channel = pygame.mixer.Channel(i)
-                    if not channel.get_busy():
-                        channel.set_volume(self.sound_effects_volume)
-                        channel.play(self.sounds[name])
-                        return
-              else:
-                 sound = self.sounds[name]
-                 sound.set_volume(self.sound_effects_volume)
-                 sound.play()
-           else:
-            # Fallback: print sound description if sound is not present
+            if name in self.sounds:
+                if priority:
+                    for i in range(self.num_reserved):
+                        channel = pygame.mixer.Channel(i)
+                        if not channel.get_busy():
+                            channel.set_volume(self.sound_effects_volume)
+                            channel.play(self.sounds[name])
+                            return
+                else:
+                    sound = self.sounds[name]
+                    sound.set_volume(self.sound_effects_volume)
+                    sound.play()
+            else:
+                # Fallback: print sound description if sound is not present
                 for effect in self.sound_data.get("effects", []):
                     if effect.get("effect_id") == name:
-                        print(f"Playing sound (fallback): {effect.get('description', 'Unknown sound')}")
-                        return
+                       self.display_description(effect.get('description', 'Unknown sound'))
+                       return
 
     def play_music(self, track, fade_time=0):
         with self.music_lock:
@@ -113,12 +114,12 @@ class AudioManager:
                         pygame.mixer.music.play(-1)
                         self.current_music = track
                     except pygame.error as e:
-                       print(f"Error loading music {track}: {e}")
+                        print(f"Error loading music {track}: {e}")
                         # Fallback: print music description if music is not present
-                       for track_data in self.music_data.get("tracks", []):
+                        for track_data in self.music_data.get("tracks", []):
                             if track_data.get("track_id") == track:
-                               self.display_description(track_data.get('title', 'Unknown track'))
-                               return
+                                self.display_description(track_data.get('title', 'Unknown track'))
+                                return
             else:
                 # Fallback: print music description if music is not present
                 for track_data in self.music_data.get("tracks", []):

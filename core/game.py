@@ -101,7 +101,7 @@ class Game:
         self.story_manager.start_game()
         self.music_data = self.load_music_data()
         self.sound_data = self.load_sound_data()
-        self.audio_manager = AudioManager(settings=self.settings)
+        self.audio_manager = AudioManager(self, settings=self.settings) #modified here, added self
         self.audio_manager.initialize_music(
             {track["track_id"]: track["path"] for track in self.music_data.get("tracks", [])}
         )

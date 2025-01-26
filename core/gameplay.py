@@ -9,7 +9,9 @@ from ui.text_ui import TextUI
 
 def play_turn(game):
     game.display_turn_info()
-    game.check_location_unlocks()
+    game.check_story_requirements() # check if any new story beats, quests and chapters have been triggered
+    game.check_location_events("turn_end")
+    game.location_manager.check_location_unlocks() #check for unlocks, moved from game to location manager
     game.check_milestone_triggers()
     game.character_system.check_character_triggers()
     game.story_manager.check_milestone_progress()

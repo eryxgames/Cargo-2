@@ -1,0 +1,72 @@
+{
+    "infestations": {
+        "tech_plague": {
+            "trigger_buildings": ["The Nanotech Nexus", "Neuroengineering Guild"],
+            "trigger_threshold": 3,
+            "debugratization_cost": 10000,
+            "content": {
+                "title": "Tech Plague Outbreak!",
+                "introduction": "Your ship's systems are now under siege of a tech-based plague!",
+                 "options": [
+                        {
+                            "label": "Attempt to debug the systems",
+                            "cost": true
+                         },
+                         {
+                           "label": "Let the infection spread",
+                            "cost": false
+                        }
+                    ]
+            },
+            "effects": [
+                {
+                    "type": "cargo_consumption",
+                    "cargo_type": "tech",
+                    "consumption_rate": 0.2,
+                    "message": "The infection consumes {loss} units of tech cargo!"
+                },
+                {
+                    "type": "ship_damage",
+                    "damage_rate": 5,
+                    "probability": 0.4,
+                    "message": "The plague is causing damage to the systems!"
+                }
+              ],
+            "max_duration": 10
+        },
+    "organic_infestation": {
+       "trigger_buildings": ["Organic Certification Authority", "Permaculture Paradise"],
+            "trigger_threshold": 3,
+            "debugratization_cost": 15000,
+        "content": {
+            "title": "Organic Infestation!",
+            "introduction": "Your ship is now being overrun with organic growth!",
+                "options": [
+                    {
+                        "label": "Attempt a complete sterilization",
+                        "cost": true
+                    },
+                     {
+                           "label": "Let the growth continue",
+                           "cost": false
+                       }
+                ]
+        },
+          "effects": [
+              {
+                   "type": "cargo_consumption",
+                   "cargo_type": "agri",
+                   "consumption_rate": 0.3,
+                   "message": "The organic growth consumes {loss} units of agri cargo!"
+                },
+                {
+                    "type": "ship_damage",
+                    "damage_rate": 7,
+                    "probability": 0.4,
+                    "message": "The organic growth is damaging the structure of the ship!"
+               }
+            ],
+          "max_duration": 8
+        }
+    }
+}

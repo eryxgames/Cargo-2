@@ -23,7 +23,12 @@ class CharacterTemplate:
                 if not data:
                     print("Warning: characters.yml is empty.")
                     return {}
-                return {key: CharacterTemplate(key, value) for key, value in data.items()}
+                # Only create CharacterTemplate if content is a dict, skip if its list
+                return {
+                    key: CharacterTemplate(key, value)
+                    for key, value in data.items()
+                    if isinstance(value, dict)
+                }
         except FileNotFoundError:
             print("Error: characters.yml not found. No character templates loaded.")
             return {}
