@@ -1,55 +1,132 @@
-# data/quests.yml
-deliver_tech:
-  name: "Deliver Tech Goods"
-  description: "Deliver {amount} units of Tech goods to {destination}"
-  type: "delivery"
-  rewards:
-    money: 5000
-    research_points: 50
-  requirements:
-    commodity: "tech"
-    amount: [50, 100]
-
-mine_salt:
-  name: "Mine Salt Deposits"
-  description: "Mine {amount} units of salt at {location}"
-  type: "mining"
-  rewards:
-    money: 3000
-    research_points: 30
-  requirements:
-    resource_type: "salt"
-    amount: [20, 50]
-
-hunt_pirates:
-  name: "Hunt Pirates"
-  description: "Eliminate {amount} pirate ships in this sector"
-  type: "combat"
-  rewards:
-      money: 7000
-      research_points: 70
-  requirements:
-      enemy_type: "pirate"
-      amount: [3, 6]
-
-scan_anomalies:
-  name: "Scan Anomalies"
-  description: "Scan spatial anomalies near {location}"
-  type: "exploration"
-  rewards:
-      money: 4000
-      research_points: 80
-  requirements:
-    location_type: ["DeepSpaceOutpost", "ResearchColony"]
-    amount: [1, 3]
-
-research_advanced_tech:
-  name: "Research Advanced Technology"
-  description: "Conduct research into new technologies"
-  type: "research"
-  rewards:
-      money: 6000
-      research_points: 100
-  requirements:
-    research_type: "data"
-    target_points: [40, 80]
+quests:
+    mining:
+        - name: "Mine salt"
+          description: "Extract {amount} units of salt from asteroid field"
+          requirements:
+            resource_type: "salt"
+            amount: [50, 100]
+          reward_money: 3000
+          reward_rp: 25
+        - name: "Extract Fuel"
+          description: "Extract {amount} units of fuel from deep space deposits"
+          requirements:
+            resource_type: "fuel"
+            amount: [40, 80]
+          reward_money: 3500
+          reward_rp: 30
+    combat:
+        - name: "Pirate Elimination"
+          description: "Eliminate {amount} pirate ships in this sector"
+          requirements:
+            enemy_type: "pirate"
+            amount: [3, 6]
+          reward_money: 8000
+          reward_rp: 100
+        - name: "Militia Hunt"
+          description: "Eliminate {amount} militia ships"
+          requirements:
+            enemy_type: "militia"
+            amount: [5, 10]
+          reward_money: 6000
+          reward_rp: 80
+    trade:
+      - name: "Trade Boost"
+        description: "Buy and sell 100 units of tech and gain {profit} profit."
+        requirements:
+           commodity: "tech"
+           profit: 2000
+        reward_money: 4000
+        reward_rp: 40
+      - name: "Trade Boost"
+        description: "Buy and sell 100 units of agri and gain {profit} profit"
+        requirements:
+          commodity: "agri"
+          profit: 1000
+        reward_money: 3000
+        reward_rp: 30
+    research:
+      - name: "Research Data"
+        description: "Collect {target_points} research data from space"
+        requirements:
+            research_type: "data"
+            target_points: [150, 200]
+        reward_money: 7000
+        reward_rp: 150
+      - name: "Experimental Research"
+        description: "Conduct high risk research project for {target_points} RP"
+        requirements:
+          research_type: "experiment"
+          target_points: [100, 150]
+        reward_money: 6000
+        reward_rp: 120
+    station:
+      - name: "Station Defense"
+        description: "Defend the station from incoming threats. Eliminate {victories} enemies, do not take damage more then {damage_threshold}%."
+        requirements:
+          victories: 3
+          damage_threshold: 20
+        type: "combat"
+        reward_money: 5000
+        reward_rp: 50
+    emergency:
+      - name: "Emergency Response"
+        description: "Help ships in distress while avoiding damage, rescue {rescues} and not take more then {max_damage}% damage."
+        requirements:
+           rescues: 2
+           max_damage: 30
+        type: "combat"
+        reward_money: 6000
+        reward_rp: 75
+    exploration:
+      - name: "Valuable Discovery"
+        description: "Find valuable resources during the exploration."
+        type: "exploration"
+        rewards:
+          money: 15000
+          research_points: 150
+        requirements: {}
+    item_delivery:
+        - name: "Deliver Scanner"
+          description: "Deliver {amount} scanner to the location"
+          rewards:
+             money: 3000
+             research_points: 30
+          type: "item_delivery"
+          requirements:
+              item: "scanner"
+              amount: [1, 2]
+        - name: "Deliver Turrets"
+          description: "Deliver {amount} turrets to the location"
+          rewards:
+             money: 4000
+             research_points: 40
+          type: "item_delivery"
+          requirements:
+              item: "turrets"
+              amount: [1,2]
+        - name: "Deliver Equipment"
+          description: "Deliver equipment to the location"
+          rewards:
+             money: 6000
+             research_points: 50
+          type: "item_delivery"
+          requirements:
+              item: ["scanner", "shield", "probe", "turrets"]
+              amount: 1
+transport_missions:
+    - type: "standard_cargo"
+      description: "Basic cargo mission, with normal rewards"
+      reward_mult: 1.5
+      quick_delivery: 0.3
+      no_damage: 0.2
+      time_limit: 10
+      requirements:
+          resource: ["salt", "fuel"]
+    - type: "advanced_cargo"
+      description: "Longer cargo mission, with slightly bigger rewards"
+      reward_mult: 2.0
+      quick_delivery: 0.35
+      no_damage: 0.25
+      time_limit: 15
+      requirements:
+        resource: ["tech", "agri"]

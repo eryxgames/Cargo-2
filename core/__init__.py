@@ -2,7 +2,8 @@
 from core.game import Game
 from core.location import Location
 from core.character import SpecialCharacter, SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
-from core.quest import Quest, QuestSystem, Contract
+from core.quest import Quest, QuestSystem # Removed Contract here
+from core.contract import Contract # Added Contract here
 from core.ship import Ship, PassengerModule, Passenger
 from core.research import Research
 from core.action import Action
