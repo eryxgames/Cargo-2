@@ -34,31 +34,36 @@ class LocationManager:
         """Load locations from data/locations.csv and use starting_locations"""
         locations = []
         try:
-            with open("data/locations.csv", "r") as f:
+            with open("data/locations.csv", "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                   # Extract the requirements string and delete it from row
-                   requirements = row.pop("requirements", "{}")
-                   
-                   try:
-                       if requirements and isinstance(requirements, str) and requirements != "{}": #Check if not empty string or json object
-                            requirements = json.loads(requirements)
-                       else:
+                     # Extract the requirements string and delete it from row
+                    requirements = row.pop("requirements", "{}")
+                    try:
+                        if requirements and isinstance(requirements, str) and requirements != "{}":
+                            requirements = requirements.replace('{','').replace('}','').replace('"','').strip()
+                            
+                            # Attempt to load as JSON only if it is a valid dict-like string
+                            if requirements and requirements.count(":") > 0 and requirements.count(",") >= 0:
+                                requirements = json.loads(f"{{{requirements}}}")
+                            else:
+                                requirements = {}  # Default to an empty dict for other invalid cases
+                        else:
                             requirements = {}
-                   except json.JSONDecodeError:
-                       print("Warning: Could not parse requirements JSON, skipping this location:", row.get('name'))
+                    except json.JSONDecodeError as e:
+                       print("Warning: Could not parse requirements JSON, skipping this location:", row.get('name'), requirements, e)
                        continue
-                    
+
                    # Filter out non-location properties
-                   valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
-                   location_data = {k: row[k] for k in valid_keys if k in row}
-                   
-                   # Correct instantiation of location objects using the dictionary
-                   location = Location(**location_data, requirements=requirements)
-                   
-                   # Check if it's a starting location and if it needs to be unlocked
-                   for start_loc in self.game.settings.get("starting_locations", []):
-                       if start_loc.get("location_id") == location.name:
+                    valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
+                    location_data = {k: row[k] for k in valid_keys if k in row}
+
+                    # Correct instantiation of location objects using the dictionary
+                    location = Location(**location_data, requirements=requirements)
+                    
+                    # Check if it's a starting location and if it needs to be unlocked
+                    for start_loc in self.game.settings.get("starting_locations", []):
+                        if start_loc.get("location_id") == location.name:
                             
                             # Check if unlocked or can be unlocked
                             if start_loc.get("unlocked", False):
@@ -67,16 +72,16 @@ class LocationManager:
 
                             # Check if requirements are met
                             if "requirements" in start_loc:
-                                requirements = start_loc["requirements"]
-                                if MilestoneRequirements.check_requirements(requirements, self.game):
+                                start_requirements = start_loc["requirements"]
+                                if MilestoneRequirements.check_requirements(start_requirements, self.game):
                                     locations.append(location)
                                     continue  # Load location
                             
-                   if hasattr(location, 'requirements') and location.requirements:
+                    if hasattr(location, 'requirements') and location.requirements:
                         if MilestoneRequirements.check_requirements(location.requirements, self.game):
                             locations.append(location)
-                   if not hasattr(location, "location_type"):
-                    continue
+                    if not hasattr(location, "location_type"):
+                        continue
         except FileNotFoundError:
             print("Error: locations.csv not found. Using default locations.")
         except Exception as e:
