@@ -4,16 +4,16 @@ import json
 import random
 import shutil
 import time
-from core.location import Location  # Now only base class
+from core.location import Location #Now only base class
 from core.ship import Ship
 from core.research import Research
 from core.action import Action
-from core.port import Port, PassengerReputationManager
+from core.port import Port, PassengerReputationManager # Fixed import
 from core.contract import ContractManager
 from core.story import StoryManager
 from core.location_manager import LocationManager
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
-from core.uprising import SyntheticEventManager, InfestationManager
+from core.uprising import SyntheticEventManager, InfestationManager, ResourceTransportQuest #Fixed imports
 from core.utils import display_logo, print_centered_text, format_money, word_wrap
 from ui.text_ui import TextUI
 from ui.theme_manager import ThemeManager
@@ -24,11 +24,9 @@ from core.template import CharacterTemplate
 from core.audio import AudioManager
 from core.game_events import GameEvents
 from core.quest import QuestSystem
-from core.uprising import ResourceTransportQuest
 from math import floor
 from core.shop import Shop
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
-
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -37,8 +35,7 @@ class Game:
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         self.difficulty = self.choose_difficulty()
-        self.location_manager = LocationManager(self)
-        self.locations = self.location_manager.load_locations()
+        self.locations = self.load_locations()
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop()
         self.ship = Ship(self)
@@ -51,6 +48,7 @@ class Game:
         self.story_manager = StoryManager(self)
         self.quest_system = QuestSystem(self)
         self.unlocked_location_types = {"Planet"}
+        self.location_manager = LocationManager(self)
         self.secret_quest_available = False
         self.stellar_portal_available = False
         self.research = Research()

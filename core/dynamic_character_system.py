@@ -1,17 +1,18 @@
 # core/dynamic_character_system.py
 import random
 from core.template import CharacterTemplate
-from core.character import SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
+from core.character_encounters import SpecialCharacterEncounters
+
 
 class DynamicCharacterSystem:
     def __init__(self, game):
         self.game = game
         self.active_characters = {}
         self.character_generators = {
-            "human": SpecialCharacterGenerator(game),
-            "synthetic": SyntheticCharacterGenerator(game),
-            "alien": AlienCharacterGenerator(game),
-             "special": SpecialCharacterGenerator(game)  # Use SpecialCharacterGenerator for VIPs
+            "human": game.character_generators["human"],
+            "synthetic": game.character_generators["synthetic"],
+            "alien": game.character_generators["alien"],
+             "special": game.character_generators["special"]  # Use SpecialCharacterGenerator for VIPs
         }
         self.character_triggers = {
             "neuroengineering_uprising": {
@@ -84,6 +85,7 @@ class DynamicCharacterSystem:
         self.event_chains = {}
         self.add_passenger_triggers()
         self.create_passenger_event_chains()
+        self.character_encounters = SpecialCharacterEncounters(self.game)
 
     def create_character_box(self, character_content, style='round'):
         return self.game.create_character_box(character_content, style)
@@ -214,11 +216,11 @@ class DynamicCharacterSystem:
                     game.ship.passenger_reputation >= 40 and
                     game.turn - game.reputation_manager.last_vip_spawn >= 5
                 ),
-                "generator": "special",
+                "generator": "special",  # Will use SpecialCharacterGenerator
                 "character_type": "vip_passenger",
-                "event_chain": None
+                "event_chain": None  # VIPs don't need event chains
             },
-             "grand_commander_voxx": {
+            "grand_commander_voxx": {
                 "condition": lambda game: (
                     game.ship.passenger_reputation >= 70 and
                     game.story_manager.get_chapter_number() >= 3
@@ -326,7 +328,6 @@ class DynamicCharacterSystem:
             if not interactions or choice >= len(interactions):
                 return False
             interaction = interactions[choice]
-            
         
         # Process interaction
         return self.process_interaction_outcome(character_id, interaction)
