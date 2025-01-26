@@ -204,7 +204,7 @@ agrobot_leader:
       - "Your organic methods are inefficient, submit."
     negotiation:
       - "Adjusting calculations... processing..."
-      - "Compromise analysis initiated...",
+      - "Compromise analysis initiated..."
       - "Recalibrating optimal parameters..."
   interactions:
     port:

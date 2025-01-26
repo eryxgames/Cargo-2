@@ -1,10 +1,9 @@
-# data/story.yml
 ch1:
   title: "First Steps"
   description: "Learn the basics of space trading"
   requirements: {}
   milestones:
-    first_trade:
+    - milestone_id: "first_trade"
       title: "First Trade"
       description: "Complete your first trade"
       requirements:
@@ -18,7 +17,7 @@ ch1:
       alternate_text: >
           The market is unforgiving. Your first transaction was clumsy, but
           you survived it.
-    first_combat:
+    - milestone_id: "first_combat"
       title: "Combat Initiation"
       description: "Win your first space battle"
       requirements:
@@ -32,7 +31,7 @@ ch1:
       alternate_text: >
           You were lucky to survive, but you did. It was not your skill, but
           a lucky shot.
-    basic_license:
+    - milestone_id: "basic_license"
       title: "Extended Trading License"
       description: "Prove your trading capabilities"
       requirements:
@@ -61,7 +60,7 @@ ch2a:
     plot_points: 15
     trades_completed: 10
   milestones:
-    establish_route:
+    - milestone_id: "establish_route"
       title: "Trade Route Network"
       description: "Establish profitable trade routes"
       requirements:
@@ -76,7 +75,7 @@ ch2a:
       alternate_text: >
         You are making some decent trades, still nothing that would change
         the galaxy.
-    passenger_business:
+    - milestone_id: "passenger_business"
       title: "Passenger Services"
       description: "Start passenger transport business"
       requirements:
@@ -100,7 +99,7 @@ ch2b:
     plot_points: 15
     combat_victories: 5
   milestones:
-      defeat_pirates:
+      - milestone_id: "defeat_pirates"
         title: "Pirate Hunter"
         description: "Clear the sector of pirates"
         requirements:
@@ -112,7 +111,7 @@ ch2b:
           You've become a known pirate hunter, making space lanes safer.
         alternate_text: >
           You've eliminated a few small groups of pirates. Nothing to be proud about.
-      defend_stations:
+      - milestone_id: "defend_stations"
         title: "Station Defender"
         description: "Successfully defend space stations"
         requirements:
@@ -136,7 +135,7 @@ ch3a:
     plot_points: 40
     trade_profit: 200000
   milestones:
-    market_control:
+    - milestone_id: "market_control"
       title: "Market Controller"
       description: "Control multiple market centers"
       requirements:
@@ -161,7 +160,7 @@ ch3b:
     plot_points: 40
     combat_victories: 25
   milestones:
-      fleet_commander:
+      - milestone_id: "fleet_commander"
         title: "Fleet Commander"
         description: "Lead successful fleet operations"
         requirements:
@@ -186,7 +185,7 @@ ch3c:
     plot_points: 50
     research_points: 300
   milestones:
-    alien_artifacts:
+    - milestone_id: "alien_artifacts"
       title: "Ancient Technology"
       description: "Discover alien artifacts"
       requirements:
@@ -210,7 +209,7 @@ ending_trade:
       plot_points: 100
       trade_profit: 1000000
   milestones:
-    trade_ending:
+    - milestone_id: "trade_ending"
       title: "Economic Victory"
       description: "Complete economic domination achieved"
       requirements:
@@ -235,7 +234,7 @@ ending_combat:
       plot_points: 100
       combat_victories: 50
   milestones:
-      combat_ending:
+      - milestone_id: "combat_ending"
         title: "Military Victory"
         description: "Complete military dominance achieved"
         requirements:
@@ -260,7 +259,7 @@ ending_discovery:
       plot_points: 100
       research_points: 1500
   milestones:
-      discovery_ending:
+      - milestone_id: "discovery_ending"
         title: "Discovery Victory"
         description: "Ancient mysteries solved"
         requirements:
