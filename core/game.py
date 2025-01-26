@@ -36,7 +36,13 @@ class Game:
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         self.difficulty = self.choose_difficulty()
-        self.locations = self.load_locations()
+        
+        self.location_manager = LocationManager(self)
+        self.locations = self.location_manager.load_locations()
+
+        if not self.locations or not any(loc.location_type == "Planet" for loc in self.locations):
+            raise ValueError("No planets available! Check your locations.csv data.")
+            
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop()
         self.ship = Ship(self)
@@ -49,7 +55,7 @@ class Game:
         self.story_manager = StoryManager(self)
         self.quest_system = QuestSystem(self)
         self.unlocked_location_types = {"Planet"}
-        self.location_manager = LocationManager(self)
+        
         self.secret_quest_available = False
         self.stellar_portal_available = False
         self.research = Research()

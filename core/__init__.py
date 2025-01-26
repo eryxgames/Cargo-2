@@ -8,11 +8,10 @@ from core.ship import Ship, PassengerModule, Passenger
 from core.research import Research
 from core.action import Action
 from core.port import Port
-from core.event import Event
 from core.uprising import UprisingEffect, SyntheticEventManager, InfestationManager
 from core.story import StoryManager, StoryChapter, StoryMilestone
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
-from core.gameplay import play_turn
+#from core.gameplay import play_turn # Removed import from here
 from core.template import CharacterTemplate
 from core.audio import AudioManager
 from core.game_events import GameEvents

@@ -7,9 +7,8 @@ from core.utils import format_money
 from core.template import CharacterTemplate
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
 
-
 class Location:
-    def __init__(self, name, location_type, tech_level, agri_level, research_points, economy, affiliation, relation_to_player):
+    def __init__(self, name, location_type, tech_level, agri_level, research_points, economy, affiliation, relation_to_player, requirements=None):
         self.name = name
         self.location_type = location_type
         self.tech_level = int(tech_level)  # Ensure type conversion
@@ -27,6 +26,8 @@ class Location:
         self.mineral_deposits = {}
         self.mining_platforms = []
         self.production_cooldown = {}
+        # Add new requirements property, if one is passed
+        self.requirements = requirements if requirements else {}
         # Generate market after initializing attributes
         self.market = self.generate_market()
         self.security_level = 5  # Initialize with medium security level
@@ -329,4 +330,4 @@ class Location:
 
     def get_research_multiplier(self):
         """Get research point multiplier for this location type"""
-        return self.get_capabilities().get("research_multiplier", 1.0) 
+        return self.get_capabilities().get("research_multiplier", 1.0)          
