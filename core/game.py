@@ -8,7 +8,6 @@ from core.location import Location #Now only base class
 from core.ship import Ship
 from core.research import Research
 from core.action import Action
-from core.port import Port, PassengerReputationManager # Fixed import
 from core.contract import ContractManager
 from core.story import StoryManager
 from core.location_manager import LocationManager
