@@ -96,20 +96,38 @@ class Game:
         self.character_manager = CharacterManager(self)
         self.infestation_manager = InfestationManager(self)
         self.game_events = GameEvents(self)
+         # Load building data from csv
+        self.building_data, self.building_costs, self.valid_building_options = self.load_building_data()
 
         # Initialize the story
         self.story_manager.start_game()
         self.music_data = self.load_music_data()
         self.sound_data = self.load_sound_data()
-        self.audio_manager = AudioManager(self, settings=self.settings) #modified here, added self
-        self.audio_manager.initialize_music(
-            {track["track_id"]: track["path"] for track in self.music_data.get("tracks", [])}
-        )
-        self.audio_manager.initialize_sounds(
-             {effect["effect_id"]: effect["path"] for effect in self.sound_data.get("effects", [])}
-        )
+        self.audio_manager = AudioManager(self, settings=self.settings) # Modified here to pass self
         self.play_music(self.settings.get("menu_theme", "menu_theme"))
         self.display_starting_info()
+
+    def load_building_data(self):
+        """Load building data from data/buildings.csv"""
+        building_data = {}
+        building_costs = {}
+        valid_options = []
+        try:
+            with open("data/buildings.csv", 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    building_id = row['building_id']
+                    building_data[row['name']] = row
+                    building_costs[row['name']] = int(row['cost'])
+                    valid_options.append(row['name'].lower())
+                    valid_options.append(building_id)
+            return building_data, building_costs, valid_options
+        except FileNotFoundError:
+            print("Error: buildings.csv not found. Using default buildings.")
+            return {}, {}, []
+        except Exception as e:
+            print(f"Error loading buildings from CSV: {e}")
+            return {}, {}, []
         
     def load_settings(self):
         """Load settings from data/settings.json"""

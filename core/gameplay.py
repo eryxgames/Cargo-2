@@ -12,9 +12,8 @@ def play_turn(game):
     game.check_story_requirements() # check if any new story beats, quests and chapters have been triggered
     game.check_location_events("turn_end")
     game.location_manager.check_location_unlocks() #check for unlocks, moved from game to location manager
-    game.check_milestone_triggers()
+    game.story_manager.check_milestone_progress() # re-added milestone checks here
     game.character_system.check_character_triggers()
-    game.story_manager.check_milestone_progress()
     game.story_manager.check_chapter_progress()
     game.force_check_chapter_progression()
     game.quest_system.check_active_quests()
@@ -162,41 +161,16 @@ def play_turn(game):
         game.display_location_info()
 
     elif action in ['build', 'bl']:
-        building_costs = {
-            'stockmarket': 5000,
-            'permaculture': 3000,
-            'organic': 4000,
-            'agrobot': 5000,
-            'nanotech': 6000,
-            'neuroengineering': 7000,
-            'mining': 10000,
-            'salt_refinery': 15000,
-            'fuel_refinery': 15000,
-            'combined_refinery': 25000
-        }
-
-        valid_options = [
-            'stockmarket', 'sm',
-            'permaculture', 'pc',
-            'organic', 'oc',
-            'agrobot', 'ab',
-            'nanotech', 'nt',
-            'neuroengineering', 'ne',
-            'mining', 'm',
-            'salt refinery', 'sr',
-            'fuel refinery', 'fr',
-            'combined refinery', 'cr'
-        ]
-
+        
         building_name = game.validate_input(
             "Choose building type: ",
-            valid_options
+            game.valid_building_options
         )
         
         if building_name is None:
             return
 
-        game.handle_building_construction(building_name, building_costs)
+        game.handle_building_construction(building_name, game.building_costs)
 
     elif action in ['cantina', 'c']:
         game.visit_cantina()

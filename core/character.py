@@ -220,8 +220,8 @@ class CharacterManager:
         
         # Check each template for possible spawning
         for template_id, template in self.templates.items():
-            if location_type in template['requirements'].get('spawn_locations', []):
-                if random.random() < template['requirements'].get('spawn_chance', 0):
+            if 'requirements' in template.content and location_type in template.content['requirements'].get('spawn_locations', []):
+                if random.random() < template.content['requirements'].get('spawn_chance', 0):
                     character = self.spawn_character(template_id, self.game.current_location)
                     if character:
                         self.announce_character(character.character_id)
@@ -232,7 +232,7 @@ class CharacterManager:
             return None
             
         template = self.templates[template_id]
-        basic_info = template['basic_info']
+        basic_info = template.content['basic_info']
         
         # Generate name
         title = random.choice(basic_info['title_pool'])
@@ -240,7 +240,7 @@ class CharacterManager:
         # Create character
         character = CharacterTemplate(
             character_id=f"{template_id}_{self.game.turn}",
-            content=template
+            content=template.content
         )
         
         # Add runtime attributes
@@ -272,7 +272,9 @@ class CharacterManager:
 
     def check_spawn_requirements(self, template, location):
         """Check if character can spawn based on requirements"""
-        reqs = template["requirements"]
+        if 'requirements' not in template.content:
+            return False
+        reqs = template.content["requirements"]
         
         # Check location
         if location not in reqs.get("spawn_locations", []):
@@ -293,7 +295,7 @@ class CharacterManager:
         character = self.active_characters[character_id]["character"]
         template = self.templates[character.template_id]
         
-        dialogue_pool = template["dialogue"].get(dialogue_type, [])
+        dialogue_pool = template.content["dialogue"].get(dialogue_type, [])
         if not dialogue_pool:
             return ""
             
@@ -306,7 +308,7 @@ class CharacterManager:
         template = self.templates[character.template_id]
         
         # Get available interactions for location
-        interactions = template["interactions"].get(location_type, [])
+        interactions = template.content["interactions"].get(location_type, [])
         if not interactions or choice >= len(interactions):
             return False
             
@@ -327,12 +329,12 @@ class CharacterManager:
         template = self.templates[character["character"].template_id]
         
         # Apply rewards if any
-        if 'rewards' in template:
-            if 'money' in template['rewards']:
-                self.game.ship.money += template['rewards']['money']
-            if 'reputation_gain' in template['rewards']:
-                self.game.ship.passenger_reputation += template['rewards']['reputation_gain']
-            if 'plot_points' in template['rewards']:
-                self.game.story_manager.plot_points += template['rewards']['plot_points']
+        if 'rewards' in template.content:
+            if 'money' in template.content['rewards']:
+                self.game.ship.money += template.content['rewards']['money']
+            if 'reputation_gain' in template.content['rewards']:
+                self.game.ship.passenger_reputation += template.content['rewards']['reputation_gain']
+            if 'plot_points' in template.content['rewards']:
+                self.game.story_manager.plot_points += template.content['rewards']['plot_points']
         
         return True
