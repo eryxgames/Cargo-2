@@ -5,6 +5,7 @@ from core.template import CharacterTemplate
 from core.location import Location
 from core.story_requirements import MilestoneRequirements
 import csv
+import json
 
 
 class LocationManager:
@@ -39,21 +40,20 @@ class LocationManager:
                    # Extract the requirements string and delete it from row
                    requirements = row.pop("requirements", "{}")
                    try:
-                        if requirements:
-                            import json
-                            requirements = json.loads(requirements)
-                        else:
+                       if requirements and isinstance(requirements, str):
+                         requirements = json.loads(requirements)
+                       else:
                             requirements = {}
                    except json.JSONDecodeError:
                        print("Warning: Could not parse requirements JSON, skipping this location:", row.get('name'))
                        continue
-
-                   # Correct instantiation of location objects using the dictionary
-                   location = Location(**row, requirements=requirements)
                    
-                   # Check if it's a starting location and if it needs to be unlocked
+                   # Correct instantiation of location objects using the dictionary
+                   location = Location(**row, requirements = requirements)
+
+                    # Check if it's a starting location and if it needs to be unlocked
                    for start_loc in self.game.settings.get("starting_locations", []):
-                       if start_loc["location_id"] == location.name:
+                       if start_loc.get("location_id") == location.name:
                             
                             # Check if unlocked or can be unlocked
                             if start_loc.get("unlocked", False):
@@ -66,16 +66,18 @@ class LocationManager:
                                 if MilestoneRequirements.check_requirements(requirements, self.game):
                                     locations.append(location)
                                     continue  # Load location
-                            
                    if hasattr(location, 'requirements') and location.requirements:
-                      if MilestoneRequirements.check_requirements(location.requirements, self.game):
-                        locations.append(location)
+                       if MilestoneRequirements.check_requirements(location.requirements, self.game):
+                            locations.append(location)
+                   if not hasattr(location, "location_type"):
+                    continue
         except FileNotFoundError:
             print("Error: locations.csv not found. Using default locations.")
         except Exception as e:
             print(f"Error loading locations from CSV: {e}")
+        
         return locations
-    
+
     def handle_location_discovery(self, location):
         """Handle discovery of a new location"""
         if location.name not in self.game.discovered_locations:
