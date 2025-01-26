@@ -4,7 +4,6 @@ import random
 import time
 import shutil
 from core.utils import display_logo, print_centered_text
-from core.location import Location, ResearchColony
 from core.ship import Ship
 from ui.text_ui import TextUI
 
@@ -64,7 +63,7 @@ def play_turn(game):
                     
     # Handle research/repair based on location type
     elif action in ['research', 'r']:
-        if isinstance(game.current_location, ResearchColony):
+        if game.current_location.location_type == "ResearchColony":
             game.handle_research_options()
         elif action == 'r':  # Only handle repair if 'r' and not at Research Colony
             if game.ship.damage > 0:

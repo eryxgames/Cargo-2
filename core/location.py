@@ -7,6 +7,7 @@ from core.utils import format_money
 from core.template import CharacterTemplate
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
 
+
 class Location:
     def __init__(self, name, location_type, tech_level, agri_level, research_points, economy, affiliation, relation_to_player):
         self.name = name
@@ -328,4 +329,4 @@ class Location:
 
     def get_research_multiplier(self):
         """Get research point multiplier for this location type"""
-        return self.get_capabilities().get("research_multiplier", 1.0)
+        return self.get_capabilities().get("research_multiplier", 1.0) 

@@ -1,14 +1,14 @@
 # core/game_events.py
 import random
 from core.utils import format_money
-from core.location import Location, ResearchColony
+#from core.location import Location, ResearchColony # Removed this line
 
 class GameEvents:
     def __init__(self, game):
         self.game = game
         self.event_data = self.load_event_data()
         self.enemy_data = self.load_enemy_data()
-        
+    
     def load_event_data(self):
         """Load event data from data/events.yml"""
         try:
@@ -19,9 +19,9 @@ class GameEvents:
             print("Error: events.yml not found. Using default event data.")
             return {}
         except yaml.YAMLError as e:
-             print(f"Error loading events from YAML: {e}")
-             return {}
-             
+            print(f"Error loading events from YAML: {e}")
+            return {}
+         
     def load_enemy_data(self):
         """Load enemy data from data/enemies.yml"""
         try:
@@ -34,7 +34,7 @@ class GameEvents:
         except yaml.YAMLError as e:
             print(f"Error loading enemies from YAML: {e}")
             return {}
-        
+    
     def check_event_conditions(self, event):
         """Check if an event's conditions are met"""
         conditions = event.get("conditions", {})
@@ -63,8 +63,8 @@ class GameEvents:
         if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
             return False
         if "min_trade_profit" in conditions:
-             total_profit = sum(self.game.ship.trade_profits.values())
-             if total_profit < conditions["min_trade_profit"]:
+            total_profit = sum(self.game.ship.trade_profits.values())
+            if total_profit < conditions["min_trade_profit"]:
                  return False
         if "min_cargo_amount" in conditions:
              if not hasattr(self.game.ship, 'cargo'):
@@ -83,7 +83,7 @@ class GameEvents:
     def handle_combat_event(self, event_name):
         """Handle combat event with proper victory/defeat recording and reputation gains"""
         event = self.event_data.get(event_name.lower().replace(" ", "_"), self.event_data["pirate_attack"])
-        
+    
         if not self.check_event_conditions(event):
             return False
             
@@ -245,9 +245,9 @@ class GameEvents:
                 "Stellar Hero": 3.0,
                 "Galactic Legend": 3.5
             }.get(self.game.rank, 1.0)
-            
+        
             location_bonus = 1.0
-            if isinstance(self.game.current_location, ResearchColony):
+            if self.game.current_location.location_type == "ResearchColony":
                 location_bonus = 1.5
             
             # Apply rewards
@@ -276,7 +276,7 @@ class GameEvents:
                 f"Earned {self.game.format_money(money_reward)} credits",
                 f"Gained {rp_reward} research points"
             ], color='32')
-            
+        
         else:
             # Handle exploration failure
             damage = random.randint(5, 15)
@@ -409,7 +409,7 @@ class GameEvents:
         if outcome == "rare elements":
             tech_goods = random.randint(5, 15)
             self.ship.cargo['tech'] += tech_goods
-            self.display_simple_message(f"You found {self.format_money(tech_goods)} tech goods.", 3, color='32')
+            self.display_simple_message(f"You found {self.game.format_money(tech_goods)} tech goods.", 3, color='32')
         elif outcome == "scientific samples":
             research_points = random.randint(5, 15)
             self.ship.research_points+= research_points
