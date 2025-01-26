@@ -41,7 +41,7 @@ class Game:
         self.locations = self.location_manager.load_locations()
         
         if not self.locations or not any(loc.location_type == "Planet" for loc in self.locations):
-            raise ValueError("No planets available! Check your locations.csv data.")
+            raise ValueError("No planets available! Check your locations.csv data and ensure that there is at least one location with location type as Planet.")
 
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop()

@@ -39,19 +39,24 @@ class LocationManager:
                 for row in reader:
                    # Extract the requirements string and delete it from row
                    requirements = row.pop("requirements", "{}")
+                   
                    try:
-                       if requirements and isinstance(requirements, str):
-                         requirements = json.loads(requirements)
+                       if requirements and isinstance(requirements, str) and requirements != "{}": #Check if not empty string or json object
+                            requirements = json.loads(requirements)
                        else:
                             requirements = {}
                    except json.JSONDecodeError:
                        print("Warning: Could not parse requirements JSON, skipping this location:", row.get('name'))
                        continue
+                    
+                   # Filter out non-location properties
+                   valid_keys = ["name", "location_type", "tech_level", "agri_level", "research_points", "economy", "affiliation", "relation_to_player"]
+                   location_data = {k: row[k] for k in valid_keys if k in row}
                    
                    # Correct instantiation of location objects using the dictionary
-                   location = Location(**row, requirements = requirements)
-
-                    # Check if it's a starting location and if it needs to be unlocked
+                   location = Location(**location_data, requirements=requirements)
+                   
+                   # Check if it's a starting location and if it needs to be unlocked
                    for start_loc in self.game.settings.get("starting_locations", []):
                        if start_loc.get("location_id") == location.name:
                             
@@ -66,8 +71,9 @@ class LocationManager:
                                 if MilestoneRequirements.check_requirements(requirements, self.game):
                                     locations.append(location)
                                     continue  # Load location
+                            
                    if hasattr(location, 'requirements') and location.requirements:
-                       if MilestoneRequirements.check_requirements(location.requirements, self.game):
+                        if MilestoneRequirements.check_requirements(location.requirements, self.game):
                             locations.append(location)
                    if not hasattr(location, "location_type"):
                     continue
