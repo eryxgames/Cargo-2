@@ -2,7 +2,6 @@
 import os
 import json
 import random
-import time
 import shutil
 from core.location import Planet, AsteroidBase, DeepSpaceOutpost, ResearchColony, Location
 from core.ship import Ship
@@ -24,18 +23,10 @@ from core.template import CharacterTemplate
 from core.audio import AudioManager
 from core.game_events import GameEvents
 from core.quest import QuestSystem
-from core.uprising import UprisingEffect, SyntheticEventManager, InfestationManager
-from core.port import PassengerReputationManager
-from core.quest import QuestSystem
-from core.contract import ContractManager
-from core.ship import Ship
-from core.action import Action
-from core.research import Research
-from core.port import Port
-from core.uprising import ResourceTransportQuest, SyntheticEventManager, InfestationManager
-from core.shop import Shop
+from core.uprising import ResourceTransportQuest
 from math import floor
-
+from core.shop import Shop
+import time
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -126,31 +117,32 @@ class Game:
             return {}
 
 
+    # core/game.py
     def load_locations(self):
-        """Load locations from data/locations.csv"""
-        locations = []
-        try:
-            with open("data/locations.csv", "r") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    location_type = row["location_type"]
-                    if location_type == "Planet":
-                        locations.append(Planet(**row))
-                    elif location_type == "AsteroidBase":
-                        locations.append(AsteroidBase(**row))
-                    elif location_type == "DeepSpaceOutpost":
-                        locations.append(DeepSpaceOutpost(**row))
-                    elif location_type == "ResearchColony":
-                        locations.append(ResearchColony(**row))
-                    else:
-                        locations.append(Location(**row))  # Generic Location for any other type
-        except FileNotFoundError:
-            print("Error: locations.csv not found. Using default locations.")
-            return self.generate_initial_locations()
-        except Exception as e:
-            print(f"Error loading locations from CSV: {e}")
-            return self.generate_initial_locations()
-        return locations
+            """Load locations from data/locations.csv"""
+            locations = []
+            try:
+                with open("data/locations.csv", "r") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        location_type = row["location_type"]
+                        if location_type == "Planet":
+                            locations.append(Planet(**row))
+                        elif location_type == "AsteroidBase":
+                            locations.append(AsteroidBase(**row))
+                        elif location_type == "DeepSpaceOutpost":
+                            locations.append(DeepSpaceOutpost(**row))
+                        elif location_type == "ResearchColony":
+                            locations.append(ResearchColony(**row))
+                        else:
+                            locations.append(Location(**row))  # Generic Location for any other type
+            except FileNotFoundError:
+                print("Error: locations.csv not found. Using default locations.")
+                return self.generate_initial_locations()
+            except Exception as e:
+                print(f"Error loading locations from CSV: {e}")
+                return self.generate_initial_locations()
+            return locations
     
     def load_music_data(self):
         """Load music data from data/music.json"""
@@ -1056,4 +1048,4 @@ class Game:
                 # Research colonies might gain research points from exploration events
                 bonus_points = random.randint(10, 30)
                 self.ship.research_points += bonus_points
-                self.display_simple_message(f"Colony researchers analyzed the phenomenon: +{bonus_points} RP")    
+                self.display_simple_message(f"Colony researchers analyzed the phenomenon: +{bonus_points} RP")
