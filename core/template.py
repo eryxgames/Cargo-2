@@ -10,26 +10,9 @@ class CharacterTemplate:
         self.validate_content()
 
     def validate_content(self):
-        """Ensure all required content sections exist"""
-        required_sections = {
-            'basic_info',   # Always required
-            'dialogue'      # Always required
-        }
-        
-        optional_sections = {
-            'interactions',
-            'requirements',
-            'rewards'
-        }
-        
-        missing = required_sections - set(self.content.keys())
-        if missing:
-            raise ValueError(f"Missing required sections: {missing}")
-            
-        # Add any optional sections that don't exist as empty dicts
-        for section in optional_sections:
-            if section not in self.content:
-                self.content[section] = {}
+        """Ensure that content is a dictionary"""
+        if not isinstance(self.content, dict):
+            raise ValueError(f"Character content must be a dictionary, not {type(self.content)}")
 
     @staticmethod
     def load_character_templates(filepath):
