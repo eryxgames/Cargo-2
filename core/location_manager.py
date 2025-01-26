@@ -1,4 +1,3 @@
-# core/location_manager.py
 import random
 from core.utils import format_money
 from core.template import CharacterTemplate
@@ -31,23 +30,15 @@ class LocationManager:
         }
         
     def _parse_requirements(self, requirements_str):
-            """Convert a string value from csv to a dictionary, if possible"""
-            if not requirements_str or requirements_str == "{}":
-                return {}
-            try:
-               # Remove all curly braces, quotes and spaces from start/end, then split by ','
-               stripped_str = requirements_str.strip('{}').replace('"','').replace("'",'')
-               pairs = stripped_str.split(",")
-                
-                # Split by colon and create key-value pairs. strip key values of unnecessary whitespace.
-               if any(":" in x for x in pairs):
-                    requirements = {pair.split(":", 1)[0].strip():  pair.split(":", 1)[1].strip() for pair in pairs}
-                    return requirements
-               else:
-                    return {}
-            except Exception as e:
-                print(f"Warning: Could not parse requirements: {requirements_str}, {e}")
-                return {}  # In case parsing fails, default to empty dictionary
+        """Convert a string value from csv to a dictionary, if possible"""
+        if not requirements_str or requirements_str == "{}":
+            return {}
+        try:
+            # Attempt to parse the string as JSON
+            return json.loads(requirements_str)
+        except json.JSONDecodeError as e:
+            print(f"Warning: Could not parse requirements: {requirements_str}, {e}")
+            return {}  # Return empty dict if JSON parsing fails
         
 
     def load_locations(self):
@@ -87,7 +78,7 @@ class LocationManager:
                     if hasattr(location, 'requirements') and location.requirements:
                        if MilestoneRequirements.check_requirements(location.requirements, self.game):
                             locations.append(location)
-                   if not hasattr(location, "location_type"):
+                    if not hasattr(location, "location_type"):
                        continue
         except FileNotFoundError:
             print("Error: locations.csv not found. Using default locations.")
