@@ -7,7 +7,6 @@ import time
 from core.location import Location #Now only base class
 from core.ship import Ship
 from core.port import Port 
-from core.port import PassengerReputationManager
 from core.research import Research
 from core.action import Action
 from core.contract import ContractManager
@@ -28,6 +27,7 @@ from core.quest import QuestSystem, ResourceTransportQuest
 from math import floor
 from core.shop import Shop
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
+from core.reputation import PassengerReputationManager #added import here
 
 class Game:
     def __init__(self, settings=None, ui=None):
