@@ -3,7 +3,8 @@ import os
 import json
 import random
 import shutil
-from core.location import Planet, AsteroidBase, DeepSpaceOutpost, ResearchColony, Location
+import time
+from core.location import Location  # Now only base class
 from core.ship import Ship
 from core.research import Research
 from core.action import Action
@@ -26,7 +27,8 @@ from core.quest import QuestSystem
 from core.uprising import ResourceTransportQuest
 from math import floor
 from core.shop import Shop
-import time
+from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
+
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -35,8 +37,9 @@ class Game:
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         self.difficulty = self.choose_difficulty()
-        self.locations = self.load_locations()
-        self.current_location = random.choice([loc for loc in self.locations if isinstance(loc, Planet)])
+        self.location_manager = LocationManager(self)
+        self.locations = self.location_manager.load_locations()
+        self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop()
         self.ship = Ship(self)
         self.turn = 0
@@ -48,7 +51,6 @@ class Game:
         self.story_manager = StoryManager(self)
         self.quest_system = QuestSystem(self)
         self.unlocked_location_types = {"Planet"}
-        self.location_manager = LocationManager(self)
         self.secret_quest_available = False
         self.stellar_portal_available = False
         self.research = Research()
@@ -117,32 +119,6 @@ class Game:
             return {}
 
 
-    # core/game.py
-    def load_locations(self):
-            """Load locations from data/locations.csv"""
-            locations = []
-            try:
-                with open("data/locations.csv", "r") as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        location_type = row["location_type"]
-                        if location_type == "Planet":
-                            locations.append(Planet(**row))
-                        elif location_type == "AsteroidBase":
-                            locations.append(AsteroidBase(**row))
-                        elif location_type == "DeepSpaceOutpost":
-                            locations.append(DeepSpaceOutpost(**row))
-                        elif location_type == "ResearchColony":
-                            locations.append(ResearchColony(**row))
-                        else:
-                            locations.append(Location(**row))  # Generic Location for any other type
-            except FileNotFoundError:
-                print("Error: locations.csv not found. Using default locations.")
-                return self.generate_initial_locations()
-            except Exception as e:
-                print(f"Error loading locations from CSV: {e}")
-                return self.generate_initial_locations()
-            return locations
     
     def load_music_data(self):
         """Load music data from data/music.json"""
@@ -176,57 +152,7 @@ class Game:
        """Plays a specific sound effect"""
        self.audio_manager.play_sound(effect_id)
 
-    def generate_initial_locations(self):
-        """Generate initial game locations and store hidden locations for later unlock"""
-        # Starting planets - always available
-        initial_locations = [
-            Planet("Alpha", 5, 3, 10, "Stable"),
-            Planet("Beta", 2, 7, 15, "Booming"),
-            Planet("Gamma", 8, 2, 20, "Declining"),
-            Planet("Delta", 4, 6, 25, "Formative"),
-            Planet("Epsilon", 7, 4, 30, "Stable")
-        ]
-        
-        # Hidden locations - unlocked through story progression
-        self.hidden_locations = {
-            "AsteroidBase": [
-                AsteroidBase("Omega XIV", 6, 2, 15, "Stable"),
-                AsteroidBase("Sigma VII", 7, 1, 20, "Declining"),
-                AsteroidBase("Theta III", 5, 3, 25, "Booming")
-            ],
-            "DeepSpaceOutpost": [
-                DeepSpaceOutpost("DSO-Alpha", 8, 3, 25, "Formative"),
-                DeepSpaceOutpost("DSO-Beta", 9, 2, 30, "Booming"),
-                DeepSpaceOutpost("DSO-Gamma", 7, 4, 35, "Stable")
-            ],
-            "ResearchColony": [
-                ResearchColony("Nova Labs", 10, 4, 40, "Stable"),
-                ResearchColony("Quantum Center", 9, 5, 35, "Booming"),
-                ResearchColony("Stellar Institute", 8, 6, 45, "Formative")
-            ]
-        }
-        
-        # Add chapter-specific locations
-        self.chapter_locations = {
-            3: {  # Available in Chapter 3
-                "AncientRuins": [
-                    Location("Ancient Ruins Alpha", "Ancient Ruins", 12, 1, 50, "Mysterious"),
-                    Location("Ancient Ruins Beta", "Ancient Ruins", 15, 1, 60, "Mysterious")
-                ]
-            },
-            4: {  # Available in Chapter 4
-                "AlienOutpost": [
-                    Location("Alien Outpost X", "Alien Outpost", 20, 5, 100, "Unknown"),
-                    Location("Alien Outpost Y", "Alien Outpost", 25, 5, 120, "Unknown")
-                ]
-            }
-        }
-        
-        # Initialize unlocked locations tracking
-        self.unlocked_location_types = {"Planet"}  # Start with only regular planets
-        self.discovered_locations = set()  # Track which specific locations player has found
-        
-        return initial_locations
+
     
 # core/game.py
     def get_terminal_width(self):
@@ -895,6 +821,8 @@ class Game:
             else:
                 self.story_manager.start_chapter(next_chapters[0].id)
 
+# core/game.py
+
     def play(self):
         while True:
             # Play a turn
@@ -925,8 +853,8 @@ class Game:
             # Check for special quest availability
             # Only check planets and locations that can have stockmarkets
             valid_locations = [loc for loc in self.locations 
-                            if isinstance(loc, Planet) or 
-                            loc.location_type in ["Planet", "AsteroidBase", "DeepSpaceOutpost"]]
+                            if loc.location_type == "Planet" or 
+                            loc.location_type in ["AsteroidBase", "DeepSpaceOutpost"]]
             
             if valid_locations and all(loc.stockmarket_base for loc in valid_locations):
                 self.secret_quest_available = True
@@ -960,29 +888,8 @@ class Game:
                     self.play()
                 break
 
-    def generate_new_locations(self):
-        """Generate new locations for the late-game content"""
-        new_locations = [
-            Planet("Zeta", 10, 1, 5, "Stable"),
-            Planet("Eta", 1, 10, 5, "Booming"),
-            Planet("Theta", 8, 8, 10, "Declining"),
-            AsteroidBase("Omega-1", 5, 5, 15, "Formative"),
-            DeepSpaceOutpost("DSO-Delta", 7, 3, 20, "Stable")
-        ]
-        
-        # Add some special bonuses for late-game locations
-        for location in new_locations:
-            location.exogeology += 20  # Better mining in new locations
-            location.research_points *= 2     # Double research points
-            location.tech_level += 2         # Higher tech levels
-            
-            # Special location-type bonuses
-            if isinstance(location, AsteroidBase):
-                location.exogeology += 10  # Extra mining bonus
-            elif isinstance(location, DeepSpaceOutpost):
-                location.market['tech'] = max(1, location.market['tech'] * 0.8)  # Better tech prices
-                
-        return new_locations
+#    def generate_new_locations(self):
+
     
 # missing methods
 
@@ -1034,7 +941,7 @@ class Game:
         """Handle location-specific event consequences"""
         location = self.current_location
         
-        if isinstance(location, AsteroidBase):
+        if location.location_type == "AsteroidBase":
             if event_type == "disaster":
                 # Asteroid bases might discover new mining opportunities after disasters
                 if random.random() < 0.2:
@@ -1043,7 +950,7 @@ class Game:
                     location.mineral_deposits[mineral_type] = location.mineral_deposits.get(mineral_type, 0) + amount
                     self.display_simple_message(f"The disaster revealed new {mineral_type} deposits!")
                     
-        elif isinstance(location, ResearchColony):
+        elif location.location_type == "ResearchColony":
             if event_type == "exploration":
                 # Research colonies might gain research points from exploration events
                 bonus_points = random.randint(10, 30)
