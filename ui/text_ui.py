@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 
-class TextUI:
+class TextUI(object):
     def __init__(self, theme_manager=None):
         self.theme_manager = theme_manager
         self.default_theme = {
@@ -237,10 +237,12 @@ class TextUI:
             box_content = message
         else:
             box_content = [message]
-
+        theme = self.get_current_theme()
         box = self.create_simple_box(box_content, style)
         if color:
             box = f"\033[{color}m{box}\033[0m"
+        elif theme.get("text_color"):
+             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
         print(box)
         if pause > 0:
             time.sleep(pause)
@@ -250,38 +252,29 @@ class TextUI:
             box_content = message
         else:
             box_content = [message]
-
+        theme = self.get_current_theme()
         box = self.create_box(box_content, style)
         if color:
             box = f"\033[{color}m{box}\033[0m"
+        elif theme.get("text_color"):
+             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
         print(box)
         if pause > 0:
             time.sleep(pause)
-
-    def validate_input(self, prompt, valid_options):
-        """
-        Validate user input against a list of valid options
-        default_prompt: Default prompt text
-        valid_options: List of valid input options
-        prompt: Optional custom prompt to override default
-        """
-        term_width = shutil.get_terminal_size().columns
-
-        while True:
-            wrapped_prompt = self.word_wrap(prompt, term_width - 4)
-            self.display_simple_message(wrapped_prompt, 0)
-
-            try:
-                user_input = input(">>> ").strip().lower()
-                if not user_input:
-                    self.display_simple_message("Command cancelled.")
-                    return None
-                if user_input in [opt.lower() for opt in valid_options]: #modified here
-                    return user_input
-                self.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
-            except KeyboardInterrupt:
-                print(f"Do you want to exit? (yes/no):")
-                confirm = input(">>> ").strip().lower()
-                if confirm == 'yes':
-                    self.display_simple_message("Goodbye!", 1)
-                    exit()
+            
+    def fast_message(self, message, pause=0.5, style='round', color=None, clear_screen=True):
+        if isinstance(message, list):
+            box_content = message
+        else:
+            box_content = [message]
+        theme = self.get_current_theme()
+        box = self.create_simple_box(box_content, style)
+        if color:
+            box = f"\033[{color}m{box}\033[0m"
+        elif theme.get("text_color"):
+             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
+        print(box)
+        if pause > 0:
+            time.sleep(pause)
+        if clear_screen:
+            os.system('clear' if os.name == 'posix' else 'cls')

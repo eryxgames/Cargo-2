@@ -121,6 +121,57 @@ class Game:
         # Initialize cantina
         self.cantina = Cantina(self)
 
+
+    def get_player_name(self):
+        self.clear_screen()
+        
+        display_logo(self.settings.get("logo_data", []), centered=False)
+        
+        self.ui.display_simple_message([
+            "Enter your pilot name",
+            "Press Enter for random"
+        ], 0)
+        
+        name = input(">>> ").strip()
+        
+        if not name:
+            titles = ["Captain", "Commander", "Pilot", "Hauler", "Trucker", "Starfarer", "Operator", "Rigger","Freerunner","Navigator", "Doc", "Docker" ]
+            surnames = ["Aen Stark", "Orr-Slagg", "Dragg Voxx", "Swigg", "Doc Brainac", "Json", "Nova", "Drake", "Phoenix", "Wolf", "Kayo Wu", "Lyra Nyx", "Elerra Solis", "Bryce", "Q'Ella", "Cael Yaro", "Q'Orin"]
+            name = f"{random.choice(titles)} {random.choice(surnames)}"
+            self.ui.display_simple_message(f"Neural Signature Verified: {name}")
+        
+        self.ui.display_simple_message(f"Welcome aboard, {name}!")    
+        return name
+
+    def choose_difficulty(self):
+        self.clear_screen()
+        display_logo(self.settings.get("logo_data", []), centered=False)
+        difficulty_info = [
+#            ["DIFFICULTY SELECTION"],
+            [""],
+            ["  1. EASY"],
+            ["  2. NORMAL"],
+            ["  3. EXPERT"],
+            ["     "]
+            
+        ]
+        
+        for line in difficulty_info:
+            print(line[0])
+            time.sleep(0.1)
+        
+        while True:
+            self.ui.display_simple_message("Select difficulty (1-3):", 0)
+            choice = input(">>> ").strip()
+            
+            if choice in ['1', '2', '3']:
+                difficulty_names = ['EASY', 'NORMAL', 'EXPERT']
+                selected = difficulty_names[int(choice) - 1]
+                self.ui.display_simple_message(f"Setting difficulty: {selected}")
+                return int(choice) - 1
+            else:
+                self.ui.display_simple_message("Please select 1, 2, or 3.", 1)
+
     def handle_theme_change(self):
          """Handle changing the theme in the game."""
          theme_names = list(self.ui.theme_manager.themes.keys())
@@ -173,8 +224,8 @@ class Game:
             self.ui.display_simple_message("No other locations available to travel!", 1)
             return False
         
-        available_names = [loc.name.lower() for loc in available_planets] #modified here
-        location_choice = self.validate_input(
+        available_names = [loc.name.lower() for loc in available_planets]
+        location_choice = self.ui.validate_input( #modified here
             f"Choose location to travel to: ",
             available_names
         )
@@ -182,7 +233,7 @@ class Game:
             return False
 
         # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None) #modified here
+        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
         if chosen_location:
             self.current_location = chosen_location
             self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
@@ -192,10 +243,10 @@ class Game:
         else:
             self.ui.display_simple_message("Invalid location selected!")
             return False
-
+        
     def handle_building_construction(self, building_name, building_costs):
         """Handle building construction with proper capability checking and building process"""
-        # Create mapping with building name and shortname to access correct data
+        # Map short commands to full building names and their base types
         building_mapping = {}
         for key, value in self.building_data.items():
             building_mapping[value['name'].lower()] = value
@@ -222,10 +273,10 @@ class Game:
         # Deduct money first (will be refunded if build fails)
         self.ship.money -= final_cost
 
-        # Add building directly to location's buildings list
+        # Add building directly to location's building list
         self.current_location.buildings.append(full_building_name)
         # Apply building effects, by calling building methods from location class
-        self.current_location.build_building(building_name) #modified this line
+        self.current_location.build_building(full_building_name) #modified this line
         
         self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
         return True
@@ -352,47 +403,7 @@ class Game:
             return f"{amount/1_000:.1f}K"
         return str(floor(amount))
 
-    def display_simple_message(self, message, pause=1, style='round', color=None):
-        if isinstance(message, list):
-            box_content = message
-        else:
-            box_content = [message]
-
-        box = self.ui.create_simple_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        print(box)
-        if pause > 0:
-            time.sleep(pause)
-            
-    def fast_message(self, message, pause=0.5, style='round', color=None, clear_screen=True):
-        if isinstance(message, list):
-            box_content = message
-        else:
-            box_content = [message]
-
-        box = self.ui.create_simple_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        print(box)
-        if pause > 0:
-            time.sleep(pause)
-        if clear_screen:
-            self.clear_screen()            
-    def display_message(self, message, pause=2, style='round', color=None):
-        if isinstance(message, list):
-            box_content = message
-        else:
-            box_content = [message]
-
-        box = self.ui.create_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        print(box)
-        if pause > 0:
-            time.sleep(pause)
-
-    def validate_input(self, default_prompt, valid_options, prompt=None):
+    def validate_input(self, prompt, valid_options):
         """
         Validate user input against a list of valid options
         default_prompt: Default prompt text
@@ -402,7 +413,7 @@ class Game:
         term_width = shutil.get_terminal_size().columns
 
         while True:
-            wrapped_prompt = self.word_wrap(prompt or default_prompt, term_width - 4)
+            wrapped_prompt = self.word_wrap(prompt, term_width - 4)
             self.display_simple_message(wrapped_prompt, 0)
 
             try:
@@ -410,7 +421,7 @@ class Game:
                 if not user_input:
                     self.display_simple_message("Command cancelled.")
                     return None
-                if user_input in valid_options:
+                if user_input in [opt.lower() for opt in valid_options]: #modified here
                     return user_input
                 self.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
             except KeyboardInterrupt:
