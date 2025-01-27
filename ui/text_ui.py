@@ -1,7 +1,7 @@
-# ui/text_ui.py
 import os
 import shutil
 import time
+import re
 
 class TextUI(object):
     def __init__(self, theme_manager=None):
@@ -13,21 +13,52 @@ class TextUI(object):
             "success_color": "32",
             "error_color": "31",
             "warning_color": "33",
-            "box_style": "single"
+            "box_style": "single",
+            "font_face": "default",
+            "header_style": "bold",
+            "text_style": "normal",
+            "border_color": "37"
         }
         self.available_themes = []
         if theme_manager:
             self.available_themes = list(theme_manager.themes.keys())
         self.current_theme_index = 0
-
+        self.rich_installed = False
+        try:
+            import rich
+            self.rich_installed = True
+        except ImportError:
+            pass
 
     def get_current_theme(self):
         return self.theme_manager.current_theme if self.theme_manager else self.default_theme
+    
+    def format_text(self, text, color=None, style=None):
+        """Formats a string with optional style and color from theme."""
+        theme = self.get_current_theme()
+        if not color:
+            color = theme.get("text_color", "37") #default color
+        if not style:
+           style = theme.get("text_style", "normal") #default style
+        
+        if style == 'bold' and self.rich_installed:
+             return f'\033[{color}m\033[1m{text}\033[0m'
+        elif style == 'italic' and self.rich_installed:
+            return f'\033[{color}m\033[3m{text}\033[0m'
+        elif style == 'underline' and self.rich_installed:
+            return f'\033[{color}m\033[4m{text}\033[0m'
+        else:
+            return f'\033[{color}m{text}\033[0m'
+
+    def get_text_length(self, text):
+        """Get length of the text, excluding control chars"""
+        return len(re.sub(r'\033\[\d+m', '', text))
 
     def create_simple_box(self, content, style='single'):
         term_width = shutil.get_terminal_size().columns
         width = term_width - 4  # Adjust for padding
         theme = self.get_current_theme()
+        border_color = theme.get("border_color", "37")  # Get border color from theme
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║'},
@@ -43,19 +74,18 @@ class TextUI(object):
 
         lines = []
         if style != 'none':
-             lines.append(f"{chars['tl']}{chars['h'] * width}{chars['tr']}")
+            lines.append(self.format_text(f"{chars['tl']}{chars['h'] * width}{chars['tr']}", color=border_color))
 
         for row in content:
             wrapped_row = self.word_wrap(row, width - 2)
             for line in wrapped_row:
-                text_color = theme.get("text_color", "37")
-                lines.append(f"{chars['v']} \033[{text_color}m{line:<{width-2}}\033[0m {chars['v']}")
+                lines.append(f"{self.format_text(chars['v'], color=border_color)} {self.format_text(line, theme.get('text_color', '37')):<{width-2}} {self.format_text(chars['v'], color=border_color)}")
 
         if style != 'none':
-            lines.append(f"{chars['bl']}{chars['h'] * width}{chars['br']}")
+            lines.append(self.format_text(f"{chars['bl']}{chars['h'] * width}{chars['br']}", color=border_color))
         return '\n'.join(lines)
     
-    def create_box(self, content, style='single'):
+    def create_box(self, content, style='single', text_color=None, header_color=None, text_style=None, header_style=None, double_border=False, border_color=None):
         """Create a box that expands to terminal width with proportionally sized columns."""
         # Get terminal width and account for borders and spacing
         term_width = shutil.get_terminal_size().columns
@@ -63,8 +93,18 @@ class TextUI(object):
         
         # Get theme data
         theme = self.get_current_theme()
+        
+        if not text_color:
+            text_color = theme.get("text_color", "37")
+        if not header_color:
+            header_color = theme.get("header_color", "33")
+        if not text_style:
+            text_style = theme.get("text_style", "normal")
+        if not header_style:
+            header_style = theme.get("header_style", "bold")
+        if not border_color:
+            border_color = theme.get("border_color", "37")
 
-        # Define box characters
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│', 'sep': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║', 'sep': '║'},
@@ -75,7 +115,7 @@ class TextUI(object):
             'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃', 'sep': '┃'},
             'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█', 'sep': '█'},
             'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|', 'sep': '│'},
-             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
+            'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
         }[style if style else theme.get("box_style", "single")]
 
         # Calculate number of columns and get content lengths
@@ -86,14 +126,12 @@ class TextUI(object):
         for row in content:
             for i, cell in enumerate(row):
                 if i < num_cols:
-                    max_lengths[i] = max(max_lengths[i], len(str(cell)))
-
-        # Calculate spacing requirements
+                    max_lengths[i] = max(max_lengths[i], self.get_text_length(str(cell)))
+        
+        # Calculate available space for content
         separator_space = 3  # Space for " │ " between columns
         total_separator_width = separator_space * (num_cols - 1)
         padding_width = 2  # Space for padding around content " x "
-        
-        # Calculate available space for content
         available_content_width = usable_width - total_separator_width - padding_width
         
         # Calculate proportional column widths
@@ -106,67 +144,84 @@ class TextUI(object):
                 # Last column gets remaining width
                 width = remaining_width
             else:
-                # Calculate proportional width
-                proportion = max_lengths[i] / total_content_length
+                proportion = max_lengths[i] / total_content_length if total_content_length > 0 else 1/num_cols
                 width = max(3, min(
                     int(available_content_width * proportion),
                     max_lengths[i] + 2
                 ))
                 remaining_width -= width
             col_widths.append(width)
-
+        
         # Ensure minimum widths and adjust if necessary
         for i in range(num_cols):
             col_widths[i] = max(3, min(col_widths[i], max_lengths[i] + 10))
 
         # Calculate final horizontal width
         horizontal_width = sum(col_widths) + total_separator_width + padding_width
-
+        
         # Create the box
         lines = []
         
         # Top border
         if style != 'none':
-            lines.append(f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}")
-        
+            border_line = f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}"
+            if double_border:
+                lines.append(self.format_text(border_line, color=border_color))
+                lines.append(self.format_text(f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}", color=border_color))
+            else:
+                lines.append(self.format_text(border_line, color=border_color))
+
         # Content rows
         for row in content:
-            # Pad row with empty strings if necessary
             padded_row = row + [''] * (num_cols - len(row))
-            
-            # Format each cell
             formatted_cells = []
             for i, cell in enumerate(padded_row):
                 cell_str = str(cell)
-                if len(cell_str) > col_widths[i]:
+                if self.get_text_length(cell_str) > col_widths[i]:
                     cell_str = cell_str[:col_widths[i]-3] + "..."
-                formatted_cells.append(f"{cell_str:<{col_widths[i]}}")
+                formatted_cells.append(f"{self.format_text(cell_str, text_color, text_style):<{col_widths[i]}}")
             
-            # Join cells with separators
-            row_str = f"{chars['v']} {(' ' + chars['sep'] + ' ').join(formatted_cells)} {chars['v']}"
+            separator_string = (' ' + self.format_text(chars['sep'], color=border_color) + ' ').join(['' for _ in range(num_cols - 1)])
+            row_str = f"{self.format_text(chars['v'], color=border_color)}{separator_string.join(formatted_cells)}{self.format_text(chars['v'], color=border_color)}"
             lines.append(row_str)
         
         # Bottom border
         if style != 'none':
-             lines.append(f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}")
+            border_line = f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}"
+            if double_border:
+                lines.append(self.format_text(border_line, color=border_color))
+                lines.append(self.format_text(f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}", color=border_color))
+            else:
+                lines.append(self.format_text(border_line, color=border_color))
         
         return '\n'.join(lines)
-    
-    def create_character_box(self, character_content, style='round'):
+
+    def create_character_box(self, character_content, style='round', text_color=None, header_color=None, text_style=None, header_style=None):
         """Create a character display box optimized for different terminal widths"""
         try:
             term_width = os.get_terminal_size().columns
         except OSError:
             term_width = 80  # Default width
                 
-        # Adjust width based on terminal size
         if term_width < 60:
             content_width = term_width - 4
             compact_mode = True
         else:
-            content_width = min(80, term_width - 4)  # Cap at 80 chars
+            content_width = min(80, term_width - 4)
             compact_mode = False
+            
         theme = self.get_current_theme()    
+        
+        if not text_color:
+            text_color = theme.get("text_color", "37")
+        if not header_color:
+            header_color = theme.get("header_color", "33")
+        if not text_style:
+            text_style = theme.get("text_style", "normal")
+        if not header_style:
+            header_style = theme.get("header_style", "bold")
+        border_color = theme.get("border_color", "37")  # Get border color from theme
+
         chars = {
             'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║'},
@@ -177,36 +232,32 @@ class TextUI(object):
             'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃'},
             'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█'},
             'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|'},
-             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' '}
+            'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' '}
         }[style if style else theme.get("box_style", "single")]
             
         lines = []
         if style != 'none':
-            lines.append(f"{chars['tl']}{chars['h'] * content_width}{chars['tr']}")
+            lines.append(self.format_text(f"{chars['tl']}{chars['h'] * content_width}{chars['tr']}", color=border_color))
             
-        # Process title section
         if 'title' in character_content:
             wrapped_title = self.word_wrap(character_content['title'], content_width - 2)
             for line in wrapped_title:
-                header_color = theme.get("header_color", "33")
-                lines.append(f"{chars['v']} \033[{header_color}m{line:<{content_width-2}}\033[0m {chars['v']}")
+                lines.append(f"{self.format_text(chars['v'], color=border_color)} {self.format_text(line, header_color, header_style):<{content_width-2}} {self.format_text(chars['v'], color=border_color)}")
             if style != 'none':
-                lines.append(f"{chars['v']}{chars['h'] * content_width}{chars['v']}")
+                lines.append(f"{self.format_text(chars['v'], color=border_color)}{chars['h'] * content_width}{self.format_text(chars['v'], color=border_color)}")
             
-        # Process main content with proper sections
         for section in ['introduction', 'description', 'demands', 'options']:
             if section in character_content:
                 if not compact_mode:
-                    lines.append(f"{chars['v']}{' ' * content_width}{chars['v']}")
+                    lines.append(f"{self.format_text(chars['v'], color=border_color)}{' ' * content_width}{self.format_text(chars['v'], color=border_color)}")
                     
                 wrapped_content = self.word_wrap(character_content[section], content_width - 2)
                 for line in wrapped_content:
-                    text_color = theme.get("text_color", "37")
-                    lines.append(f"{chars['v']} \033[{text_color}m{line:<{content_width-2}}\033[0m {chars['v']}")
-        
-        if style != 'none':
-             lines.append(f"{chars['bl']}{chars['h'] * content_width}{chars['br']}")
-        return '\n'.join(lines)
+                    lines.append(f"{self.format_text(chars['v'], color=border_color)} {self.format_text(line, text_color, text_style):<{content_width-2}} {self.format_text(chars['v'], color=border_color)}")
+                            
+                    if style != 'none':
+                        lines.append(self.format_text(f"{chars['bl']}{chars['h'] * content_width}{chars['br']}", color=border_color))
+                        return '\n'.join(lines)
 
     def word_wrap(self, text, width=None):
         if width is None:
@@ -232,33 +283,37 @@ class TextUI(object):
 
         return lines
 
-    def display_simple_message(self, message, pause=1, style='round', color=None):
+    def display_simple_message(self, message, pause=1, style='round', color=None, text_style=None):
         if isinstance(message, list):
             box_content = message
         else:
             box_content = [message]
         theme = self.get_current_theme()
         box = self.create_simple_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        elif theme.get("text_color"):
-             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
-        print(box)
+        
+        # Apply the color and style
+        if color or theme.get("text_color") or text_style or theme.get("text_style"):
+            formatted_box = self.format_text(box, color if color else theme.get("text_color"), text_style if text_style else theme.get("text_style"))
+            print(formatted_box)
+        else:
+            print(box)
         if pause > 0:
             time.sleep(pause)
             
-    def display_message(self, message, pause=2, style='round', color=None):
+    def display_message(self, message, pause=2, style='round', color=None, text_style=None, header_style=None):
         if isinstance(message, list):
             box_content = message
         else:
             box_content = [message]
         theme = self.get_current_theme()
-        box = self.create_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        elif theme.get("text_color"):
-             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
-        print(box)
+        box = self.create_box(box_content, style, color, text_style=text_style, header_style=header_style)
+        
+        # Apply color if specified
+        if color or theme.get("text_color") or text_style or theme.get("text_style"):
+            formatted_box = self.format_text(box, color if color else theme.get("text_color", "37"), text_style if text_style else theme.get("text_style"))
+            print(formatted_box)
+        else:
+            print(box)
         if pause > 0:
             time.sleep(pause)
             
@@ -272,7 +327,7 @@ class TextUI(object):
         if color:
             box = f"\033[{color}m{box}\033[0m"
         elif theme.get("text_color"):
-             box = f"\033[{theme.get('text_color')}m{box}\033[0m"
+            box = f"\033[{theme.get('text_color')}m{box}\033[0m"
         print(box)
         if pause > 0:
             time.sleep(pause)
