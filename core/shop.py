@@ -1,216 +1,182 @@
 # core/shop.py
 import random
-import json
+import csv
 import os
+import time
+
 class Shop:
-    def __init__(self):
-        self.base_equipment = {
-            "navcomp": {
-                "price": 500,
-                "description": "Navigation computer reveals all destinations",
-                "tech_required": 1,
-                "plot_required": 0
-            },
-            "scanner": {
-                "price": 700,
-                "description": "Basic scanner improves resource detection",
-                "tech_required": 2,
-                "plot_required": 0
-            },
-            "probe": {
-                "price": 900,
-                "description": "Deep space probe increases exploration success",
-                "tech_required": 3,
-                "plot_required": 10
-            },
-            "turrets": {
-                "price": 1200,
-                "description": "Defense turrets to automatically repel pirates",
-                "tech_required": 4,
-                "plot_required": 15
-            },
-            "shield": {
-                "price": 1500,
-                "description": "Energy shield reduces damage taken in combat",
-                "tech_required": 5,
-                "plot_required": 20
-            },
-            "patcher": {
-                "price": 300,
-                "description": "Hull patcher repairs minor combat damage",
-                "tech_required": 1,
-                "plot_required": 0
-            },
-            # Transport Equipment
-            "cargo_extender": {
-                "price": 5000,
-                "description": "Increases cargo capacity by 20%",
-                "tech_required": 3,
-                "plot_required": 25
-            },
-            "containment_field": {
-                "price": 8000,
-                "description": "Specialized storage for salt/fuel (+30% capacity)",
-                "tech_required": 4,
-                "plot_required": 30
-            },
-            "auto_loader": {
-                "price": 12000,
-                "description": "Reduces loading/unloading time (-1 turn per trade)",
-                "tech_required": 5,
-                "plot_required": 35
-            },
-            # Advanced Transport Equipment
-            "quantum_compressor": {
-                "price": 20000,
-                "description": "Advanced compression (+50% capacity for all cargo)",
-                "tech_required": 6,
-                "plot_required": 50
-            },
-            "stasis_vault": {
-                "price": 25000,
-                "description": "Perfect resource preservation (+75% capacity for special resources)",
-                "tech_required": 7,
-                "plot_required": 60
-            },
-            "temporal_accelerator": {
-                "price": 30000,
-                "description": "Time dilation for faster delivery (-2 turns per trade)",
-                "tech_required": 8,
-                "plot_required": 75
-            }
-        }
+    def __init__(self, game):
+         self.game = game
+         self.item_data = self.load_item_data()
+         # Track items for current turn
+         self.current_turn_items = []
+         self.sold_items = set()
+         self.current_turn = 0
+         self.current_offerings = []  # Keep this
+        
+         # Track discounts and special offers
+         self.current_discounts = {}
+         self.special_offers = {}
 
-        # Location-specific items with requirements
-        self.location_equipment = {
-            "AsteroidBase": {
-                "mining_laser": {
-                    "price": 2000,
-                    "description": "Improves mining efficiency and defense",
-                    "tech_required": 3,
-                    "plot_required": 15
-                },  
-                "cargo_scanner": {
-                    "price": 1800,
-                    "description": "Detects valuable mineral deposits",
-                    "tech_required": 4,
-                    "plot_required": 20
-                },
-                "shield_booster": {
-                    "price": 2500,
-                    "description": "Offers extra protection in asteroid fields",
-                    "tech_required": 5,
-                    "plot_required": 25
-                },
-                "mining_compressor": {
-                    "price": 15000,
-                    "description": "Specialized for asteroid mining (+40% capacity for mined resources)",
-                    "tech_required": 6,
-                    "plot_required": 40
-                }
-            },
-            "DeepSpaceOutpost": {
-                "advanced_radar": {
-                    "price": 2200,
-                    "description": "Early warning system for threats",
-                    "tech_required": 4,
-                    "plot_required": 30
-                },
-                "combat_drone": {
-                    "price": 3000,
-                    "description": "Assists in space battles",
-                    "tech_required": 5,
-                    "plot_required": 35
-                },
-                "repair_bot": {
-                    "price": 2800,
-                    "description": "Automatic repairs during travel",
-                    "tech_required": 6,
-                    "plot_required": 40
-                },
-                "emergency_warp": {
-                    "price": 18000,
-                    "description": "Emergency escape system (50% chance to avoid combat)",
-                    "tech_required": 7,
-                    "plot_required": 50
-                }
-            },
-            "ResearchColony": {
-                "research_module": {
-                    "price": 2500,
-                    "description": "Improves research point gains",
-                    "tech_required": 5,
-                    "plot_required": 40
-                },
-                "data_analyzer": {
-                    "price": 2800,
-                    "description": "Better research success rates",
-                    "tech_required": 6,
-                    "plot_required": 45
-                },
-                "quantum_scanner": {
-                    "price": 3500,
-                    "description": "Reveals anomalies and secrets",
-                    "tech_required": 7,
-                    "plot_required": 50
-                },
-                "containment_optimizer": {
-                    "price": 22000,
-                    "description": "Smart cargo optimization (+25% capacity and -1 turn per trade)",
-                    "tech_required": 8,
-                    "plot_required": 60
-                }
-            }
-        }
+    def load_item_data(self):
+        """Load item data from items.csv"""
+        item_data = {}
+        try:
+            with open("data/items.csv", 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    item_data[row['item_id']] = row
+            return item_data
+        except FileNotFoundError:
+            print("Error: items.csv not found. Using default items.")
+            return {}
+        except Exception as e:
+            print(f"Error loading items from CSV: {e}")
+            return {}
 
-        # Add specialized location-specific transport equipment
-        self.location_equipment["AsteroidBase"]["mining_compressor"] = {
-            "price": 15000,
-            "description": "Specialized for asteroid mining (+40% capacity for mined resources)"
-        }
+    def handle_shop_menu(self):
+        """Enhanced shop interface with persistent sold items"""
+        self.game.display_simple_message("Welcome to the Shop!", 1)
+
+        # Display current money and location info
+        status_content = [
+            [f"Credits: {self.game.format_money(self.game.ship.money)}"],
+            [f"Tech Level: {self.game.current_location.tech_level}"]
+        ]
+        print(self.game.create_box(status_content, 'single'))
+
+        # Display current inventory
+        inventory_content = [["Your Items"]]
+        if self.game.ship.items:
+            for item, count in self.game.ship.items.items():
+                inventory_content.append([f"{item}: {count}"])
+        else:
+            inventory_content.append(["No items"])
+        print(self.game.create_box(inventory_content, 'single'))
+
+        # Get available items for this location
+        if not hasattr(self, 'current_turn_items') or not self.current_turn_items:  # Changed condition
+            # Only get new items if we haven't already for this turn
+            self.current_turn_items = self.get_available_items(
+                location=self.game.current_location,
+                plot_points=self.game.story_manager.plot_points
+            )
+
+        # Get terminal width
+        try:
+            term_width = os.get_terminal_size().columns
+        except OSError:
+            term_width = 80
+
+        # Adjust display based on terminal width
+        if term_width < 80:  # Narrow display
+            shop_content = [["Item", "Price", "Description/Status"]]
+            
+            for item_name, item_data in self.current_turn_items:
+                if self.is_item_sold(item_name):
+                    # Show SOLD in place of description
+                    description = "SOLD"
+                else:
+                    description = item_data["description"]
+                    if len(description) > 30:
+                        description = description[:27] + "..."
+                    
+                shop_content.append([
+                    item_name.title(),
+                    self.game.format_money(self.get_item_price(item_name)),
+                    description
+                ])
+        else:  # Wide display
+            shop_content = [["Item", "¤", "Description", ""]]
+            
+            for item_name, item_data in self.current_turn_items:
+                status = "Avail"
+                description = self.get_item_description(item_name)
+                
+                if self.is_item_sold(item_name):
+                    status = "SOLD"
+                    
+                if len(description) > 40:
+                    description = description[:37] + "..."
+                    
+                shop_content.append([
+                    item_name.title(),
+                    self.game.format_money(self.get_item_price(item_name)),
+                    description,
+                    status
+                ])
         
-        self.location_equipment["DeepSpaceOutpost"]["emergency_warp"] = {
-            "price": 18000,
-            "description": "Emergency escape system (50% chance to avoid combat during transport)"
-        }
+        print(self.game.create_box(shop_content, 'double'))
+
+        # Only show unsold items in options
+        available_items_names = [
+            item[0] for item in self.current_turn_items 
+            if not self.is_item_sold(item[0])
+        ]
+
+        if not available_items_names:
+            self.game.display_simple_message("All items are sold out!")
+            return
+
+        item_choice = self.game.validate_input(
+            "Choose item to buy (or 'none' to exit): ",
+            available_items_names + ['none']
+        )
         
-        self.location_equipment["ResearchColony"]["containment_optimizer"] = {
-            "price": 22000,
-            "description": "Smart cargo optimization (+25% capacity and -1 turn per trade)"
-        }
-        
-        # Track sold items per turn
-        # Track items for current turn
-        self.current_turn_items = []
-        self.sold_items = set()
-        self.current_turn = 0
-        self.current_offerings = []  # Keep this
-        
-        # Track discounts and special offers
-        self.current_discounts = {}
-        self.special_offers = {}
+        if item_choice == 'none':
+            return
+
+        for item_name, item_data in self.current_turn_items:
+            if item_choice == item_name:
+                price = self.get_item_price(item_name)
+                if self.game.ship.money >= price:
+                    self.game.ship.money -= price
+                    self.game.ship.acquire_item(item_name)
+                    self.mark_item_sold(item_name)
+                    
+                    self.game.display_simple_message([
+                        f"You bought a {item_name}!",
+                        f"Effect: {self.get_item_description(item_name)}",
+                        f"Remaining credits: {self.game.format_money(self.game.ship.money)}"
+                    ])
+                else:
+                    missing = price - self.game.ship.money
+                    self.game.display_simple_message([
+                        "Not enough money to buy this item.",
+                        f"Price: {self.game.format_money(price)}",
+                        f"Your credits: {self.game.format_money(self.game.ship.money)}",
+                        f"Missing: {self.game.format_money(missing)}"
+                    ])
+                return
+
+        time.sleep(1)
 
     def get_available_items(self, location, plot_points):
         """Get available items based on location and plot points"""
         available_pool = []
         
         # Start with base equipment pool, filtering by requirements
-        for name, data in self.base_equipment.items():
-            if (location.tech_level >= data["tech_required"] and 
-                plot_points >= data["plot_required"]):
-                available_pool.append((name, data))
-        
+        for item_name, item_data in self.item_data.items():
+              if (
+                item_data.get('type') == 'equipment' and 
+                location.tech_level >= int(item_data.get('tech_required', 0)) and
+                plot_points >= int(item_data.get('plot_required', 0))
+            ):
+                available_pool.append((item_name, item_data))
+            
         # Add location-specific items if applicable, also filtering
         location_type = location.location_type
-        if location_type in self.location_equipment:
-            for name, data in self.location_equipment[location_type].items():
-                if (location.tech_level >= data["tech_required"] and 
-                    plot_points >= data["plot_required"]):
-                    available_pool.append((name, data))
+        for item_name, item_data in self.item_data.items():
+            if (
+                location_type in item_data.get('location_type', '').split(',') and
+                location.tech_level >= int(item_data.get('tech_required', 0)) and
+                plot_points >= int(item_data.get('plot_required', 0))
+            ):
+                  available_pool.append((item_name, item_data))
             
         # Select random items from filtered pool
         if available_pool:
-            selected_items = random.sample(available_pool, min(2, len(available_pool)))
+            selected_items = random.sample(available_pool, min(3, len(available_pool)))
             self.current_offerings = [item[0] for item in selected_items]
             return selected_items
         
@@ -218,19 +184,13 @@ class Shop:
     
     def get_item_requirements(self, item_name, location_type=None):
         """Get tech level and plot point requirements for an item"""
-        if item_name in self.base_equipment:
-            data = self.base_equipment[item_name]
+        item_data = self.item_data.get(item_name, {})
+        
+        if item_data:
             return {
-                "tech_required": data["tech_required"],
-                "plot_required": data["plot_required"]
+                "tech_required": int(item_data.get("tech_required", 0)),
+                "plot_required": int(item_data.get("plot_required", 0))
             }
-        elif location_type and location_type in self.location_equipment:
-            if item_name in self.location_equipment[location_type]:
-                data = self.location_equipment[location_type][item_name]
-                return {
-                    "tech_required": data["tech_required"],
-                    "plot_required": data["plot_required"]
-                }
         return None    
 
     def mark_item_sold(self, item_name):
@@ -251,35 +211,21 @@ class Shop:
             
         # If location provided, check tech and plot requirements
         if location:
-            item_data = None
-            if item_name in self.base_equipment:
-                item_data = self.base_equipment[item_name]
-            elif location.location_type in self.location_equipment:
-                if item_name in self.location_equipment[location.location_type]:
-                    item_data = self.location_equipment[location.location_type][item_name]
-            
+            item_data = self.item_data.get(item_name,{})
             if item_data:
-                if (location.tech_level < item_data["tech_required"] or
-                    location.story_manager.plot_points < item_data["plot_required"]):
+                if (location.tech_level < int(item_data.get("tech_required", 0)) or
+                    self.game.story_manager.plot_points < int(item_data.get("plot_required", 0))):
                     return False
                     
         return True
 
-    def get_item_price(self, item_name, location_type=None):
+    def get_item_price(self, item_name):
         """Get the current price of an item, including any discounts"""
-        base_price = None
-        
-        # Check base equipment
-        if item_name in self.base_equipment:
-            base_price = self.base_equipment[item_name]["price"]
-        
-        # Check location-specific equipment
-        elif location_type and location_type in self.location_equipment:
-            if item_name in self.location_equipment[location_type]:
-                base_price = self.location_equipment[location_type][item_name]["price"]
-        
-        if base_price is None:
+        item_data = self.item_data.get(item_name)
+        if not item_data:
             return None
+        
+        base_price = int(item_data.get('price', 0))
             
         # Apply any active discounts
         discount = self.current_discounts.get(item_name, 0)
@@ -287,18 +233,10 @@ class Shop:
         
         return int(final_price)
 
-    def get_item_description(self, item_name, location_type=None):
+    def get_item_description(self, item_name):
         """Get the description of an item"""
-        # Check base equipment
-        if item_name in self.base_equipment:
-            return self.base_equipment[item_name]["description"]
-        
-        # Check location-specific equipment
-        if location_type and location_type in self.location_equipment:
-            if item_name in self.location_equipment[location_type]:
-                return self.location_equipment[location_type][item_name]["description"]
-        
-        return "No description available"
+        item_data = self.item_data.get(item_name, {})
+        return item_data.get('description', "No description available")
 
     def add_special_offer(self, item_name, discount):
         """Add a special offer with a discount percentage (0-1)"""

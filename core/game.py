@@ -25,10 +25,11 @@ from core.audio import AudioManager
 from core.game_events import GameEvents
 from core.quest import QuestSystem, ResourceTransportQuest
 from math import floor
-from core.shop import Shop
+from core.shop import Shop # Import here
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
 from core.reputation import PassengerReputationManager #added import here
 from core.captain import Captain #added import here
+from core.cantina import Cantina #added import here
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -45,7 +46,7 @@ class Game:
             raise ValueError("No planets available! Check your locations.csv data and ensure that there is at least one location with location type as Planet.")
 
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
-        self.shop = Shop()
+        self.shop = Shop(self) #Modified here
         self.ship = Ship(self)
         self.turn = 0
         self.known_locations = [self.current_location.name]
@@ -115,6 +116,9 @@ class Game:
         self.audio_manager = AudioManager(self, settings=self.settings) # Modified here to pass self
         self.play_music(self.settings.get("menu_theme", "menu_theme"))
         self.display_starting_info()
+
+        # Initialize cantina
+        self.cantina = Cantina(self)
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""

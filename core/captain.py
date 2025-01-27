@@ -55,7 +55,10 @@ class Captain:
         recent_activity = self.get_recent_activity()
         if recent_activity:
              total_activity = sum(recent_activity.values())
-             proportions = {key: value / total_activity for key, value in recent_activity.items()}
+             if total_activity > 0:  # Check for zero before calculating proportions
+                 proportions = {key: value / total_activity for key, value in recent_activity.items()}
+             else:
+                 proportions = {}
         else:
              proportions = {}
         # Check categories

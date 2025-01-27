@@ -34,6 +34,7 @@ cargo-2/
 │   ├── contract.py
 │   ├── ship.py
 │   ├── shop.py
+│   ├── cantina.py
 │   ├── research.py
 │   ├── reputation.py
 │   ├── audio.py

@@ -176,10 +176,10 @@ def play_turn(game):
         game.handle_building_construction(building_name, game.building_costs)
 
     elif action in ['cantina', 'c']:
-        game.visit_cantina()
+         game.cantina.handle_cantina_menu()
 
     elif action in ['shop', 'sh']:
-        game.visit_shop()
+        game.shop.handle_shop_menu()
 
     elif action in ['action', 'a']:
         game.handle_actions()
