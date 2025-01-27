@@ -26,6 +26,7 @@ cargo-2/
 │   ├── location.py
 │   ├── location_data.py
 │   ├── location_manager.py
+│   ├── captain.py
 │   ├── character.py
 │   ├── character_encounters.py
 │   ├── dynamic_character_system.py
@@ -56,6 +57,9 @@ cargo-2/
 │   ├── quests.yml
 │   ├── contracts.yml
 │   ├── story.yml
+│   ├── infestations.json
+│   ├── ranks.json
+│   ├── reputation.json
 │   ├── settings.json
 │   ├── themes.json
 │   ├── music.json

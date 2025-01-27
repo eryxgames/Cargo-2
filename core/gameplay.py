@@ -103,7 +103,8 @@ def play_turn(game):
             game.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
             return
             
-        tax_rate = game.current_location.calculate_tax_rate(game.rank, price)
+        #tax_rate = game.current_location.calculate_tax_rate(game.rank, price) #removed player_rank
+        tax_rate = game.current_location.calculate_tax_rate(game.rank, price, game) #now passing game object
         price_with_tax = price * (1 + tax_rate)
         max_quantity = int(game.ship.money / price_with_tax)
 
@@ -231,9 +232,10 @@ def play_turn(game):
         game.turn += 1
         game.random_event()
         game.shop.reset_turn()  # Reset shop state at end of each turn
-        game.captain.update_rank() # now calls captain to update the rank
+        game.captain.update_rank()
         # Clean up old activity logs
-        
+        game.activity_log = [activity for activity in game.activity_log 
+                         if game.turn - activity["turn"] < game.rank_check_interval]
         return
 
     else:
