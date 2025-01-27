@@ -3,7 +3,7 @@ import os
 import random
 import time
 import shutil
-from core.utils import display_logo, logo_data, print_centered_text
+from core.utils import display_logo, print_centered_text
 from core.ship import Ship
 from ui.text_ui import TextUI
 
@@ -205,10 +205,10 @@ def play_turn(game):
         return    # Return after showing log to avoid counting it as a turn
 
     elif action in ['version', 'v']:
-        display_logo(logo_data, centered=True)
+        display_logo(game.settings.get("logo_data", []), centered=True)
         print_centered_text("")
         print_centered_text("Created by Dan Sandner")
-        print_centered_text("v0.1.0-a, ©2025")
+        print_centered_text("v1.0.2, ©2025")
 
         time.sleep(3)
         return    
