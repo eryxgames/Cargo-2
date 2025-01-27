@@ -193,6 +193,43 @@ class Game:
             self.ui.display_simple_message("Invalid location selected!")
             return False
 
+    def handle_building_construction(self, building_name, building_costs):
+        """Handle building construction with proper capability checking and building process"""
+        # Create mapping with building name and shortname to access correct data
+        building_mapping = {}
+        for key, value in self.building_data.items():
+            building_mapping[value['name'].lower()] = value
+            building_mapping[value['short_name'].lower()] = value
+
+        if building_name.lower() not in building_mapping:
+            self.ui.display_simple_message("Invalid building type.")
+            return False
+        
+        building_data = building_mapping[building_name.lower()]
+        full_building_name = building_data['name']
+        base_type = building_data['building_id']
+        
+        # Get base cost and calculate final cost
+        base_cost = int(building_data.get('cost', 3000))
+        cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
+        final_cost = base_cost * cost_multiplier
+
+        # Check if we can afford it
+        if self.ship.money < final_cost:
+            self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
+            return False
+
+        # Deduct money first (will be refunded if build fails)
+        self.ship.money -= final_cost
+
+        # Add building directly to location's buildings list
+        self.current_location.buildings.append(full_building_name)
+        # Apply building effects, by calling building methods from location class
+        self.current_location.build_building(building_name) #modified this line
+        
+        self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
+        return True
+
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
         building_data = {}

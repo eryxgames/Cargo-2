@@ -133,6 +133,12 @@ def play_turn(game):
         quantity = game.validate_quantity_input("Enter quantity to sell (max/m, half/h): ")
         if quantity is None:
             return
+        
+        # Get price *before* checking quantity and making sale
+        price = game.current_location.market[item]
+        if price <= 0:
+            game.ui.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
+            return
 
         if quantity == 'max':
             quantity = game.ship.cargo[item]
