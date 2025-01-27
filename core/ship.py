@@ -266,7 +266,7 @@ class Ship:
 
      cost = quantity * price
      if self.money >= cost:
-         tax_rate = planet.calculate_tax_rate(player_rank, cost)
+         tax_rate = planet.calculate_tax_rate(player_rank, price)
          tax_amount = cost * tax_rate
          total_cost = cost + tax_amount
          
@@ -300,7 +300,8 @@ class Ship:
              
      if self.cargo[item] >= quantity:
          revenue = quantity * price
-         tax_rate = planet.calculate_tax_rate(player_rank, revenue)
+         #tax_rate = planet.calculate_tax_rate(player_rank, revenue)
+         tax_rate = planet.calculate_tax_rate(self.game.captain.rank, revenue) #modified here
          tax_amount = revenue * tax_rate
          net_revenue = revenue - tax_amount
          

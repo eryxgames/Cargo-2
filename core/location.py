@@ -191,20 +191,11 @@ class Location:
         for resource_type in list(self.production_cooldown.keys()):
             if self.production_cooldown[resource_type] > 0:
                 self.production_cooldown[resource_type] -= 1
-
+    
     def calculate_tax_rate(self, player_rank, profit):
         """Calculate tax rate based on player rank and location type"""
         base_tax = 0.05  # 5% base tax
-        rank_multiplier = {
-            "Explorer": 1,
-            "Pilot": 1.2,
-            "Captain": 1.4,
-            "Commander": 1.6,
-            "Star Commander": 1.8,
-            "Space Admiral": 2.0,
-            "Stellar Hero": 2.2,
-            "Galactic Legend": 2.5
-        }
+        rank_multiplier = self.game.captain.rank_multiplier("tax_multiplier")
         
         # Reduce tax based on number of buildings
         building_discount = len(self.buildings) * 0.02  # 2% reduction per building
@@ -218,7 +209,7 @@ class Location:
         }
         
         location_modifier = location_tax_modifier.get(self.location_type, 1.0)
-        final_tax_rate = (base_tax * rank_multiplier.get(player_rank, 1) * location_modifier) - building_discount
+        final_tax_rate = (base_tax * rank_multiplier * location_modifier) - building_discount
         return max(0.01, min(0.25, final_tax_rate))  # Keep between 1% and 25%
 
     def add_temporary_ban(self, commodity, duration):
@@ -330,4 +321,4 @@ class Location:
 
     def get_research_multiplier(self):
         """Get research point multiplier for this location type"""
-        return self.get_capabilities().get("research_multiplier", 1.0)          
+        return self.get_capabilities().get("research_multiplier", 1.0)

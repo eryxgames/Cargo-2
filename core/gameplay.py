@@ -115,6 +115,7 @@ def play_turn(game):
         if game.ship.buy(item, quantity, game.current_location.market[item], 
                         game.current_location, game.rank):
             game.display_simple_message(f"Bought {game.format_money(quantity)} {item}.")
+            game.captain.record_activity("trades")
             game.handle_trade('buy', item, quantity, price)
 
     elif action in ['sell', 's']:
@@ -139,6 +140,7 @@ def play_turn(game):
         if game.ship.sell(item, quantity, game.current_location.market[item], 
                         game.current_location, game.rank):
             game.display_simple_message(f"Sold {game.format_money(quantity)} {item}.")
+            game.captain.record_activity("trades")
             game.handle_trade('sell', item, quantity, price)
 
     elif action in ['upgrade', 'u']:
@@ -190,6 +192,11 @@ def play_turn(game):
             game.port_system.update_passenger_satisfaction()
         else:
             game.display_simple_message("No port available at this location.")
+            
+        if port_is_available and hasattr(game.port_system, 'waiting_passengers'):
+                location = game.current_location.name
+                if location in game.port_system.waiting_passengers:
+                     game.captain.record_activity("passengers", len(game.port_system.waiting_passengers[location]))
 
     elif action in ['log', 'l']:
         game.story_manager.display_story_progress()
@@ -223,7 +230,10 @@ def play_turn(game):
             game.port_system.update_passenger_satisfaction()
         game.turn += 1
         game.random_event()
-        game.shop.reset_turn()  # Reset shop state at end of each turn 
+        game.shop.reset_turn()  # Reset shop state at end of each turn
+        game.captain.update_rank() # now calls captain to update the rank
+        # Clean up old activity logs
+        
         return
 
     else:

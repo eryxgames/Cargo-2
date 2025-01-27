@@ -1,0 +1,81 @@
+{
+    "trade": {
+        "ranks": [
+            {"trades": 10, "rank": "Pilot"},
+            {"trades": 25, "rank": "Hauler"},
+            {"trades": 50, "rank": "Freighter"},
+            {"trades": 100, "rank": "Merchant"},
+            {"trades": 250, "rank": "Trade Baron"},
+            {"trades": 500, "rank": "Trade King"},
+            {"trades": 1000, "rank": "Galactic Mogul"}
+        ]
+    },
+    "combat": {
+        "ranks": [
+            {"victories": 5, "rank": "Rookie"},
+            {"victories": 10, "rank": "Veteran"},
+            {"victories": 25, "rank": "Squad Leader"},
+            {"victories": 50, "rank": "Commander"},
+            {"victories": 100, "rank": "Admiral"},
+            {"victories": 250, "rank": "Fleet Master"},
+            {"victories": 500, "rank": "Grand Admiral"}
+        ]
+    },
+    "research": {
+        "ranks": [
+            {"research": 50, "rank": "Adept"},
+            {"research": 100, "rank": "Scholar"},
+            {"research": 200, "rank": "Master"},
+            {"research": 400, "rank": "Innovator"},
+            {"research": 800, "rank": "Visionary"},
+            {"research": 1200, "rank": "Sage"}
+        ]
+    },
+    "passenger": {
+        "ranks": [
+            {"passengers": 10, "rank": "Space Taxi"},
+            {"passengers": 25, "rank": "Space Bus"},
+            {"passengers": 50, "rank": "Space Liner"},
+            {"passengers": 100, "rank": "Shuttle Captain"},
+            {"passengers": 250, "rank": "Space Transporter"},
+            {"passengers": 500, "rank": "Cosmic Carrier"}
+        ]
+    },
+   "contract": {
+        "ranks": [
+            {"contracts": 5, "rank": "Contractor"},
+            {"contracts": 10, "rank": "Reliable Hauler"},
+            {"contracts": 25, "rank": "Contract Master"},
+            {"contracts": 50, "rank": "Legendary Contractor"},
+            {"contracts": 100, "rank": "Galactic Broker"}
+        ]
+      },
+    "quest": {
+        "ranks": [
+            {"quests": 5, "rank": "Explorer"},
+            {"quests": 10, "rank": "Pathfinder"},
+            {"quests": 25, "rank": "Trailblazer"},
+            {"quests": 50, "rank": "Legend Seeker"},
+            {"quests": 100, "rank": "Galactic Hero"}
+        ]
+    },
+      "general": {
+          "ranks": [
+            {"trades": 50, "combat": 10, "research": 50, "rank": "Spacefarer"},
+            {"trades": 100, "combat": 20, "research": 100, "rank": "Star Explorer"},
+            {"trades": 200, "combat": 30, "research": 200, "rank": "Trailblazer"}
+        ]
+    },
+     "final": {
+        "ranks": [
+            {"rank": "Explorer", "multiplier": 1.0, "tax_multiplier": 1.0},
+            {"rank": "Pilot", "multiplier": 1.2, "tax_multiplier": 1.1},
+            {"rank": "Captain", "multiplier": 1.5, "tax_multiplier": 1.2},
+            {"rank": "Commander", "multiplier": 2.0, "tax_multiplier": 1.3},
+            {"rank": "Star Commander", "multiplier": 4.0, "tax_multiplier": 1.4},
+            {"rank": "Space Admiral", "multiplier": 6.0, "tax_multiplier": 1.5},
+            {"rank": "Stellar Hero", "multiplier": 8.0, "tax_multiplier": 1.6},
+            {"rank": "Galactic Legend", "multiplier": 10.0, "tax_multiplier": 1.7}
+          ]
+      }
+  }

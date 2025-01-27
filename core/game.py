@@ -28,6 +28,7 @@ from math import floor
 from core.shop import Shop
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
 from core.reputation import PassengerReputationManager #added import here
+from core.captain import Captain #added import here
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -98,6 +99,14 @@ class Game:
         self.game_events = GameEvents(self)
          # Load building data from csv
         self.building_data, self.building_costs, self.valid_building_options = self.load_building_data()
+        
+        # Load rank data from JSON
+        self.rank_data = self.load_rank_data()
+        # Add variable for total research
+        self.total_research_points = 0
+        
+        # Initialize Captain Class
+        self.captain = Captain(self, name=self.player_name) #modified here
 
         # Initialize the story
         self.story_manager.start_game()
@@ -128,6 +137,42 @@ class Game:
         except Exception as e:
             print(f"Error loading buildings from CSV: {e}")
             return {}, {}, []
+        
+    def load_rank_data(self):
+        """Load rank data from data/ranks.json"""
+        try:
+            with open("data/ranks.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Error: ranks.json not found. Using default settings.")
+            return {}
+        except json.JSONDecodeError:
+            print("Error: Could not parse ranks.json. Using default settings.")
+            return {}
+
+    def update_rank(self):
+         self.captain.update_rank() # now calls update_rank from Captain class
+         self.rank = self.captain.rank # rank is defined from captain
+    
+    def rank_multiplier(self):
+       """Returns rank multiplier for calculations"""
+       return self.captain.rank_multiplier("multiplier") # now calls rank_multiplier from Captain class
+    
+    def get_tax_multiplier(self):
+        """Returns tax multiplier for tax calculations"""
+        return self.captain.rank_multiplier("tax_multiplier") # Get specific multiplier type
+       
+    def record_activity(self, activity_type, amount=1):
+        """Record player activity for calculating rank."""
+        self.captain.record_activity(activity_type, amount)
+    
+    def get_recent_activity(self):
+        """Get a summary of player activities for the last few turns."""
+        return self.captain.get_recent_activity()
+
+    def handle_research_gain(self, points):
+         self.total_research_points += points
+         self.record_activity("research", points)
         
     def load_settings(self):
         """Load settings from data/settings.json"""
