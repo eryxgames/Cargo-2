@@ -208,7 +208,7 @@ def play_turn(game):
         display_logo(logo_data, centered=True)
         print_centered_text("")
         print_centered_text("Created by Dan Sandner")
-        print_centered_text("v1.0.2, ©2025")
+        print_centered_text("v0.1.0-a, ©2025")
 
         time.sleep(3)
         return    

@@ -44,7 +44,6 @@ cargo-2/
 │   ├── uprising.py
 │   ├── utils.py
 │   ├── template.py
-│   ├── ui.py
 │   ├── uprising.py
 │   ├── story_requirements.py
 │   └── story.py
