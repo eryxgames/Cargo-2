@@ -276,7 +276,7 @@ class TextUI:
                 if not user_input:
                     self.display_simple_message("Command cancelled.")
                     return None
-                if user_input in valid_options:
+                if user_input in [opt.lower() for opt in valid_options]: #modified here
                     return user_input
                 self.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
             except KeyboardInterrupt:

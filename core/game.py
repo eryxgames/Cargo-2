@@ -121,57 +121,6 @@ class Game:
         # Initialize cantina
         self.cantina = Cantina(self)
 
-
-    def get_player_name(self):
-        self.clear_screen()
-        
-        display_logo(self.settings.get("logo_data", []), centered=False)
-        
-        self.ui.display_simple_message([
-            "Enter your pilot name",
-            "Press Enter for random"
-        ], 0)
-        
-        name = input(">>> ").strip()
-        
-        if not name:
-            titles = ["Captain", "Commander", "Pilot", "Hauler", "Trucker", "Starfarer", "Operator", "Rigger","Freerunner","Navigator", "Doc", "Docker" ]
-            surnames = ["Aen Stark", "Orr-Slagg", "Dragg Voxx", "Swigg", "Doc Brainac", "Json", "Nova", "Drake", "Phoenix", "Wolf", "Kayo Wu", "Lyra Nyx", "Elerra Solis", "Bryce", "Q'Ella", "Cael Yaro", "Q'Orin"]
-            name = f"{random.choice(titles)} {random.choice(surnames)}"
-            self.ui.display_simple_message(f"Neural Signature Verified: {name}")
-        
-        self.ui.display_simple_message(f"Welcome aboard, {name}!")    
-        return name
-
-    def choose_difficulty(self):
-        self.clear_screen()
-        display_logo(self.settings.get("logo_data", []), centered=False)
-        difficulty_info = [
-#            ["DIFFICULTY SELECTION"],
-            [""],
-            ["  1. EASY"],
-            ["  2. NORMAL"],
-            ["  3. EXPERT"],
-            ["     "]
-            
-        ]
-        
-        for line in difficulty_info:
-            print(line[0])
-            time.sleep(0.1)
-        
-        while True:
-            self.ui.display_simple_message("Select difficulty (1-3):", 0)
-            choice = input(">>> ").strip()
-            
-            if choice in ['1', '2', '3']:
-                difficulty_names = ['EASY', 'NORMAL', 'EXPERT']
-                selected = difficulty_names[int(choice) - 1]
-                self.ui.display_simple_message(f"Setting difficulty: {selected}")
-                return int(choice) - 1
-            else:
-                self.ui.display_simple_message("Please select 1, 2, or 3.", 1)
-
     def handle_theme_change(self):
          """Handle changing the theme in the game."""
          theme_names = list(self.ui.theme_manager.themes.keys())
@@ -212,6 +161,37 @@ class Game:
                 "amount": quantity,
             }
           )
+    
+    def handle_travel(self):
+        """Handle travelling to a new location"""
+        
+        available_planets = [loc for loc in self.locations
+                            if loc.name != self.current_location.name and 
+                               loc.location_type in self.unlocked_location_types]
+
+        if not available_planets:
+            self.ui.display_simple_message("No other locations available to travel!", 1)
+            return False
+        
+        available_names = [loc.name.lower() for loc in available_planets] #modified here
+        location_choice = self.validate_input(
+            f"Choose location to travel to: ",
+            available_names
+        )
+        if not location_choice:
+            return False
+
+        # Find actual Location object with chosen name
+        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None) #modified here
+        if chosen_location:
+            self.current_location = chosen_location
+            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+            self.record_activity('travel') #record travel activity
+            self.location_manager.handle_location_discovery(self.current_location)
+            return True
+        else:
+            self.ui.display_simple_message("Invalid location selected!")
+            return False
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
