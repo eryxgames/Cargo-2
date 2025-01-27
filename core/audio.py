@@ -1,6 +1,7 @@
 # core/audio.py
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+from ui.text_ui import TextUI
 import pygame
 import threading
 import os
@@ -127,7 +128,7 @@ class AudioManager:
                         self.display_description(track_data.get('title', 'Unknown track'))
                         return
     def display_description(self, text):
-         self.game.fast_message(text, 0.5, clear_screen=False)
+         self.game.ui.fast_message(text, 0.5, clear_screen=False)
 
     def mute_music(self):
         if not self.music_muted:

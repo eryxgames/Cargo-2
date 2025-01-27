@@ -225,7 +225,7 @@ class Game:
             return False
         
         available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.ui.validate_input( #modified here
+        location_choice = self.validate_input( #modified here
             f"Choose location to travel to: ",
             available_names
         )
@@ -414,30 +414,30 @@ class Game:
 
         while True:
             wrapped_prompt = self.word_wrap(prompt, term_width - 4)
-            self.display_simple_message(wrapped_prompt, 0)
+            self.ui.display_simple_message(wrapped_prompt, 0)
 
             try:
                 user_input = input(">>> ").strip().lower()
                 if not user_input:
-                    self.display_simple_message("Command cancelled.")
+                    self.ui.display_simple_message("Command cancelled.")
                     return None
                 if user_input in [opt.lower() for opt in valid_options]: #modified here
                     return user_input
-                self.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
+                self.ui.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
             except KeyboardInterrupt:
                 print(f"Do you want to exit? (yes/no):")
                 confirm = input(">>> ").strip().lower()
                 if confirm == 'yes':
-                    self.display_simple_message("Goodbye!", 1)
+                    self.ui.display_simple_message("Goodbye!", 1)
                     exit()
 
     def validate_quantity_input(self, prompt):
         while True:
-            self.display_simple_message(prompt, 0)
+            self.ui.display_simple_message(prompt, 0)
             try:
                 user_input = input(">>> ").strip().lower()
                 if not user_input:
-                    self.display_simple_message("Command cancelled.")
+                    self.ui.display_simple_message("Command cancelled.")
                     return None
                 if user_input in ['max', 'm']:
                     return 'max'
@@ -446,17 +446,17 @@ class Game:
                 quantity = int(user_input)
                 if quantity > 0:
                     return quantity
-                self.display_simple_message("Please enter a positive number, 'max/m', or 'half/h'", 1)
+                self.ui.display_simple_message("Please enter a positive number, 'max/m', or 'half/h'", 1)
             except ValueError:
-                self.display_simple_message("Invalid input. Please enter a number, 'max/m', or 'half/h'", 1)
+                self.ui.display_simple_message("Invalid input. Please enter a number, 'max/m', or 'half/h'", 1)
 
     def validate_planet_input(self, prompt):
         while True:
-            self.display_simple_message(prompt, 0)
+            self.ui.display_simple_message(prompt, 0)
             try:
                 user_input = input(">>> ").strip().lower()
                 if not user_input:
-                    self.display_simple_message("Command cancelled.")
+                    self.ui.display_simple_message("Command cancelled.")
                     return None
                 if user_input.isdigit():
                     index = int(user_input) - 1
@@ -465,13 +465,13 @@ class Game:
                 for planet in self.planets:
                     if planet.name.lower() == user_input:
                         return planet.name
-                self.display_simple_message(f"Invalid input. Valid options: {', '.join([planet.name for planet in self.planets])}", 1)
+                self.ui.display_simple_message(f"Invalid input. Valid options: {', '.join([planet.name for planet in self.planets])}", 1)
             except KeyboardInterrupt:
                 print(f"Do you want to exit? (yes/no):")
 #                self.display_message("Do you want to exit? (yes/no)", 0)
                 confirm = input(">>> ").strip().lower()
                 if confirm == 'yes':
-                    self.display_simple_message("Goodbye!", 1)
+                    self.ui.display_simple_message("Goodbye!", 1)
                     exit()
 
     def calculate_quest_reward(self, base_reward):
@@ -566,7 +566,7 @@ class Game:
         
         ]
     #    print(self.create_box(commands, 'round'))
-        self.display_simple_message(f"Commands: buy/b, sell/s, travel/t, port/p, cantina/c, shop/sh, upgrade/u, repair/r, action/a, mine/m, build/bl, log/l, info/i...", 1)
+        self.ui.display_simple_message(f"Commands: buy/b, sell/s, travel/t, port/p, cantina/c, shop/sh, upgrade/u, repair/r, action/a, mine/m, build/bl, log/l, info/i...", 1)
 
         # Display active effects
         if self.research.unlocked_options:
@@ -697,7 +697,7 @@ class Game:
     def build_mining_platform(self):
         """Build a new mining platform on the current planet"""
         if not self.current_location.mineral_deposits:
-            self.display_simple_message("No mineral deposits found! Use geoscan first.")
+            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
             return
             
         available_deposits = list(self.current_location.mineral_deposits.keys())
@@ -717,9 +717,9 @@ class Game:
                 'efficiency': self.current_location.exogeology,
                 'capacity': random.randint(100, 200)
             })
-            self.display_simple_message(f"Mining platform for {deposit_type} built!")
+            self.ui.display_simple_message(f"Mining platform for {deposit_type} built!")
         else:
-            self.display_simple_message("Not enough money to build mining platform.")
+            self.ui.display_simple_message("Not enough money to build mining platform.")
 
     def format_buildings(self):
         building_counts = {}
@@ -748,16 +748,16 @@ class Game:
             time.sleep(0.1)
         
         while True:
-            self.display_simple_message("Select difficulty (1-3):", 0)
+            self.ui.display_simple_message("Select difficulty (1-3):", 0)
             choice = input(">>> ").strip()
             
             if choice in ['1', '2', '3']:
                 difficulty_names = ['EASY', 'NORMAL', 'EXPERT']
                 selected = difficulty_names[int(choice) - 1]
-                self.display_simple_message(f"Setting difficulty: {selected}")
+                self.ui.display_simple_message(f"Setting difficulty: {selected}")
                 return int(choice) - 1
             else:
-                self.display_simple_message("Please select 1, 2, or 3.", 1)
+                self.ui.display_simple_message("Please select 1, 2, or 3.", 1)
 
     def enable_psychodynamics(self):
         """Enable market manipulation capabilities"""
@@ -862,18 +862,18 @@ class Game:
     def handle_anomaly(self):
         damage = random.randint(10, 30)
         self.ship.damage += damage
-        self.display_simple_message(f"Anomaly surge! Ship took {damage}% damage!")
+        self.ui.display_simple_message(f"Anomaly surge! Ship took {damage}% damage!")
 
     def handle_instability(self):
         loss = int(self.ship.money * 0.1)
         self.ship.money -= loss
-        self.display_simple_message(f"System instability! Lost {self.format_money(loss)} credits!")
+        self.ui.display_simple_message(f"System instability! Lost {self.format_money(loss)} credits!")
 
     def handle_migration(self):
         for location in self.locations:
             location.market['tech'] *= 1.2
             location.market['agri'] *= 1.2
-        self.display_simple_message("Mass migration affecting market prices!")
+        self.ui.display_simple_message("Mass migration affecting market prices!")
 
     def handle_research_breakthrough(self):
         tech_boost = 0.2
@@ -911,7 +911,7 @@ class Game:
         
         display_logo(logo_data, centered=True) #modified here
         
-        self.display_simple_message([
+        self.ui.display_simple_message([
             "Enter your pilot name",
             "Press Enter for random"
         ], 0)
@@ -922,9 +922,9 @@ class Game:
             titles = ["Captain", "Commander", "Pilot", "Hauler", "Trucker", "Starfarer", "Operator", "Rigger","Freerunner","Navigator", "Doc", "Docker" ]
             surnames = ["Aen Stark", "Orr-Slagg", "Dragg Voxx", "Swigg", "Doc Brainac", "Json", "Nova", "Drake", "Phoenix", "Wolf", "Kayo Wu", "Lyra Nyx", "Elerra Solis", "Bryce", "Q'Ella", "Cael Yaro", "Q'Orin"]
             name = f"{random.choice(titles)} {random.choice(surnames)}"
-            self.display_simple_message(f"Neural Signature Verified: {name}")
+            self.ui.display_simple_message(f"Neural Signature Verified: {name}")
         
-        self.display_simple_message(f"Welcome aboard, {name}!")    
+        self.ui.display_simple_message(f"Welcome aboard, {name}!")    
         return name
 
     def display_starting_info(self):
@@ -1023,10 +1023,10 @@ class Game:
             
             # Check if player quit or resigned
             if turn_result == "quit":
-                self.display_simple_message("Thanks for playing!")
+                self.ui.display_simple_message("Thanks for playing!")
                 break
             elif turn_result == "resign":
-                self.display_simple_message("Resigning from current game...")
+                self.ui.display_simple_message("Resigning from current game...")
                 self.display_score()
                 break
                 
@@ -1034,12 +1034,12 @@ class Game:
 
             # Check game over conditions
             if self.ship.money <= 0 and self.ship.is_empty_cargo():
-                self.display_simple_message("Game Over: No money and no cargo left.", 2)
+                self.ui.display_simple_message("Game Over: No money and no cargo left.", 2)
                 self.display_score()
                 break
 
             if self.ship.damage >= 100:
-                self.display_simple_message("Game Over: Ship destroyed!", 2)
+                self.ui.display_simple_message("Game Over: Ship destroyed!", 2)
                 self.display_score()
                 break
 
@@ -1059,19 +1059,19 @@ class Game:
                     print("Your story will be remembered throughout the galaxy.")
                     break
                 else:
-                    self.display_simple_message("You have chosen to continue your adventure into the unknown.")
+                    self.ui.display_simple_message("You have chosen to continue your adventure into the unknown.")
                     self.stellar_portal_available = True
                     if self.ship.money >= 1500:
                         self.ship.money -= 1500
-                        self.display_simple_message("You have paid for the secret quest and a Stellar Portal appears on this location.")
+                        self.ui.display_simple_message("You have paid for the secret quest and a Stellar Portal appears on this location.")
                         # Generate new locations
                         new_locations = self.generate_new_locations()
                         self.locations.extend(new_locations)
                         self.current_location = random.choice(new_locations)
                         self.known_locations = [self.current_location.name]
-                        self.display_simple_message("You have traveled to a new set of locations with more volatile price movements.")
+                        self.ui.display_simple_message("You have traveled to a new set of locations with more volatile price movements.")
                     else:
-                        self.display_simple_message("Not enough money to pay for the secret quest.")
+                        self.ui.display_simple_message("Not enough money to pay for the secret quest.")
 
             # Ask to play again
             if turn_result == "quit":
@@ -1091,27 +1091,27 @@ class Game:
         for module in self.ship.passenger_modules:
             for passenger in module.passengers:
                 passenger.satisfaction = min(100, passenger.satisfaction + 10)
-        self.display_simple_message("Passengers are having a celebration! Satisfaction increased!")
+        self.ui.display_simple_message("Passengers are having a celebration! Satisfaction increased!")
 
     def handle_passenger_complaint(self):
         """Handle passenger complaint event"""
         for module in self.ship.passenger_modules:
             for passenger in module.passengers:
                 passenger.satisfaction = max(0, passenger.satisfaction - 15)
-        self.display_simple_message("Passengers have filed complaints! Satisfaction decreased!")
+        self.ui.display_simple_message("Passengers have filed complaints! Satisfaction decreased!")
 
     def handle_medical_emergency(self):
         """Handle medical emergency event"""
         cost = random.randint(500, 1500)
         if self.ship.money >= cost:
             self.ship.money -= cost
-            self.display_simple_message(f"Medical emergency handled! Cost: {self.format_money(cost)}")
+            self.ui.display_simple_message(f"Medical emergency handled! Cost: {self.format_money(cost)}")
         else:
             # If can't afford medical care, big satisfaction hit
             for module in self.ship.passenger_modules:
                 for passenger in module.passengers:
                     passenger.satisfaction = max(0, passenger.satisfaction - 30)
-            self.display_simple_message("Couldn't afford medical care! Passengers very unhappy!")
+            self.ui.display_simple_message("Couldn't afford medical care! Passengers very unhappy!")
 
     def handle_vip_request(self):
         """Handle VIP passenger request"""
@@ -1119,15 +1119,15 @@ class Game:
         if self.ship.money >= cost:
             self.ship.money -= cost
             self.ship.passenger_reputation += 2
-            self.display_simple_message(f"VIP request handled! Cost: {self.format_money(cost)}, Reputation increased!")
+            self.ui.display_simple_message(f"VIP request handled! Cost: {self.format_money(cost)}, Reputation increased!")
         else:
             self.ship.passenger_reputation = max(0, self.ship.passenger_reputation - 1)
-            self.display_simple_message("Couldn't fulfill VIP request! Reputation decreased!")
+            self.ui.display_simple_message("Couldn't fulfill VIP request! Reputation decreased!")
 
     def handle_passenger_trade_info(self):
         """Handle passengers sharing trade information"""
         # Reveal profitable trade opportunities
-        self.display_simple_message("Passengers shared valuable trade information!")
+        self.ui.display_simple_message("Passengers shared valuable trade information!")
         # Implement trade tip functionality here
         
     def check_location_events(self, event_type):
@@ -1141,11 +1141,11 @@ class Game:
                     mineral_type = random.choice(["salt", "fuel"])
                     amount = random.randint(1000, 3000)
                     location.mineral_deposits[mineral_type] = location.mineral_deposits.get(mineral_type, 0) + amount
-                    self.display_simple_message(f"The disaster revealed new {mineral_type} deposits!")
+                    self.ui.display_simple_message(f"The disaster revealed new {mineral_type} deposits!")
                     
         elif location.location_type == "ResearchColony":
             if event_type == "exploration":
                 # Research colonies might gain research points from exploration events
                 bonus_points = random.randint(10, 30)
                 self.ship.research_points += bonus_points
-                self.display_simple_message(f"Colony researchers analyzed the phenomenon: +{bonus_points} RP")
+                self.ui.display_simple_message(f"Colony researchers analyzed the phenomenon: +{bonus_points} RP")
