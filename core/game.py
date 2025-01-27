@@ -14,7 +14,7 @@ from core.story import StoryManager
 from core.location_manager import LocationManager
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
 from core.uprising import SyntheticEventManager, InfestationManager #Fixed imports
-from core.utils import display_logo, print_centered_text, format_money #removed word_wrap
+from core.utils import display_logo, logo_data, print_centered_text, format_money #removed word_wrap
 from ui.text_ui import TextUI
 from ui.theme_manager import ThemeManager
 from core.character import CharacterManager, SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
@@ -120,6 +120,27 @@ class Game:
 
         # Initialize cantina
         self.cantina = Cantina(self)
+
+    def handle_theme_change(self):
+         """Handle changing the theme in the game."""
+         theme_names = list(self.ui.theme_manager.themes.keys())
+         
+         theme_content = [["Choose Theme:"]]
+         for i, theme in enumerate(theme_names, 1):
+              theme_content.append([f"{i}. {theme}"])
+        
+         print(self.ui.create_box(theme_content, 'single'))
+        
+         choice = self.validate_input("Choose a theme by number (or '/' for next theme): ", [str(i) for i in range(1, len(theme_names) + 1)] + ['/'])
+         if choice:
+              if choice == '/':
+                self.ui.current_theme_index = (self.ui.current_theme_index + 1) % len(self.ui.available_themes)
+                selected_theme = self.ui.available_themes[self.ui.current_theme_index]
+              else:
+                  selected_theme = theme_names[int(choice) - 1]
+                  
+              self.ui.theme_manager.load_theme(selected_theme)
+              self.ui.display_simple_message(f"Theme switched to {selected_theme}")
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
@@ -612,7 +633,7 @@ class Game:
 
     def choose_difficulty(self):
         self.clear_screen()
-        display_logo(self.settings.get("logo_data", []), centered=False)
+        display_logo(logo_data, centered=True)
         difficulty_info = [
 #            ["DIFFICULTY SELECTION"],
             [""],
@@ -789,7 +810,7 @@ class Game:
     def get_player_name(self):
         self.clear_screen()
         
-        display_logo(self.settings.get("logo_data", []), centered=False)
+        display_logo(logo_data, centered=True) #modified here
         
         self.display_simple_message([
             "Enter your pilot name",

@@ -4,6 +4,13 @@ import shutil
 import time
 from math import floor
 
+logo_data = [
+    "╔═══════ C Δ R G Ω ][═══════╗",
+    "║     Space Trading Saga    ║",
+    "╚═══════════════════════════╝"
+]
+
+
 def display_logo(logo, centered=True):
     """Displays the logo, optionally centered."""
     try:

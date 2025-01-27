@@ -2,9 +2,8 @@
 import os
 import shutil
 import time
-from ui import UI_Interface
 
-class TextUI(UI_Interface):
+class TextUI:
     def __init__(self, theme_manager=None):
         self.theme_manager = theme_manager
         self.default_theme = {
@@ -16,6 +15,11 @@ class TextUI(UI_Interface):
             "warning_color": "33",
             "box_style": "single"
         }
+        self.available_themes = []
+        if theme_manager:
+            self.available_themes = list(theme_manager.themes.keys())
+        self.current_theme_index = 0
+
 
     def get_current_theme(self):
         return self.theme_manager.current_theme if self.theme_manager else self.default_theme

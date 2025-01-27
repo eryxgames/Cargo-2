@@ -3,7 +3,7 @@ import os
 import random
 import time
 import shutil
-from core.utils import display_logo, print_centered_text
+from core.utils import display_logo, logo_data, print_centered_text
 from core.ship import Ship
 from ui.text_ui import TextUI
 
@@ -55,6 +55,7 @@ def play_turn(game):
     # Add global commands
     valid_actions.extend(['quit', 'q', 'resign', 'rs', 'version', 'v'])
     valid_actions.extend(['log', 'l'])  # Add but don't show in command hints
+    valid_actions.extend(['theme', '/'])  # Add theme switch
 
     action = game.validate_input("Choose action: ", valid_actions)
 
@@ -70,13 +71,13 @@ def play_turn(game):
             if game.ship.damage > 0:
                 cost = game.ship.damage * 10
                 if game.ship.repair(cost):
-                    game.display_simple_message("Ship repaired.")
+                    game.ui.display_simple_message("Ship repaired.")
                 else:
-                    game.display_simple_message(
+                    game.ui.display_simple_message(
                         f"Not enough money to repair. Cost: {game.format_money(cost)}"
                     )
             else:
-                game.display_simple_message("Ship doesn't need repairs.")            
+                game.ui.display_simple_message("Ship doesn't need repairs.")            
 
     elif action in ['buy', 'b']:
         item = game.validate_input("Choose item (tech/agri/salt/fuel): ", 
@@ -85,13 +86,13 @@ def play_turn(game):
             return
 
         if not game.current_location.can_trade(item):
-            game.display_simple_message(f"Trading of {item} is banned on this planet!")
+            game.ui.display_simple_message(f"Trading of {item} is banned on this planet!")
             return
 
         if item in ['salt', 'fuel']:
             has_platform = any(p['type'] == item for p in game.current_location.mining_platforms)
             if not has_platform:
-                game.display_simple_message(f"No mining platform for {item} on this planet.")
+                game.ui.display_simple_message(f"No mining platform for {item} on this planet.")
                 return
 
         quantity = game.validate_quantity_input("Enter quantity (max/m, half/h): ")
@@ -100,7 +101,7 @@ def play_turn(game):
 
         price = game.current_location.market[item]
         if price <= 0:
-            game.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
+            game.ui.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
             return
             
         #tax_rate = game.current_location.calculate_tax_rate(game.rank, price) #removed player_rank
@@ -115,7 +116,7 @@ def play_turn(game):
 
         if game.ship.buy(item, quantity, game.current_location.market[item], 
                         game.current_location, game.rank):
-            game.display_simple_message(f"Bought {game.format_money(quantity)} {item}.")
+            game.ui.display_simple_message(f"Bought {game.format_money(quantity)} {item}.")
             game.captain.record_activity("trades")
             game.handle_trade('buy', item, quantity, price)
 
@@ -126,7 +127,7 @@ def play_turn(game):
             return
 
         if not game.current_location.can_trade(item):
-            game.display_simple_message(f"Trading of {item} is banned on this planet!")
+            game.ui.display_simple_message(f"Trading of {item} is banned on this planet!")
             return
 
         quantity = game.validate_quantity_input("Enter quantity to sell (max/m, half/h): ")
@@ -140,7 +141,7 @@ def play_turn(game):
 
         if game.ship.sell(item, quantity, game.current_location.market[item], 
                         game.current_location, game.rank):
-            game.display_simple_message(f"Sold {game.format_money(quantity)} {item}.")
+            game.ui.display_simple_message(f"Sold {game.format_money(quantity)} {item}.")
             game.captain.record_activity("trades")
             game.handle_trade('sell', item, quantity, price)
 
@@ -154,7 +155,7 @@ def play_turn(game):
 
         cost = game.ship.upgrade_costs[property_name]
         if game.ship.upgrade(property_name, cost):
-            game.display_simple_message(f"Upgraded {property_name}.")
+            game.ui.display_simple_message(f"Upgraded {property_name}.")
             game.ship.upgrade_costs[property_name] = int(cost * 1.5)
 
     elif action in ['travel', 't']:
@@ -192,7 +193,7 @@ def play_turn(game):
             game.port_system.handle_port_menu()
             game.port_system.update_passenger_satisfaction()
         else:
-            game.display_simple_message("No port available at this location.")
+            game.ui.display_simple_message("No port available at this location.")
             
         if port_is_available and hasattr(game.port_system, 'waiting_passengers'):
                 location = game.current_location.name
@@ -204,18 +205,21 @@ def play_turn(game):
         return    # Return after showing log to avoid counting it as a turn
 
     elif action in ['version', 'v']:
-        display_logo(game.settings.get("logo_data", []), centered=True)
+        display_logo(logo_data, centered=True)
         print_centered_text("")
         print_centered_text("Created by Dan Sandner")
         print_centered_text("v1.0.2, ©2025")
 
         time.sleep(3)
         return    
+    
+    elif action in ['theme', '/']:
+        game.handle_theme_change()
 
     # Handle quit and resign commands
     elif action in ['quit', 'q']:
         if game.validate_input("Are you sure you want to quit? (yes/no): ", ['yes', 'no']) == 'yes':
-            game.display_simple_message("Thanks for playing!")
+            game.ui.display_simple_message("Thanks for playing!")
             exit()
         return
 
@@ -239,4 +243,4 @@ def play_turn(game):
         return
 
     else:
-        game.display_simple_message("Invalid action.")
+        game.ui.display_simple_message("Invalid action.")
