@@ -246,11 +246,9 @@ class Quest:
                 if self.rewards.get("bonus_item"):
                     completion_message.append(f"• Bonus item: {self.rewards['bonus_item']}")
 
-            game.display_story_message(completion_message)
+            game.ui.display_story_message(completion_message)
 
 
-
-# Quest class remains unchanged
 class ResourceTransportQuest:
     def __init__(self, game):
         self.game = game
@@ -371,7 +369,7 @@ class ResourceTransportQuest:
             mission["time_limit"] -= 1
             if mission["time_limit"] <= 0:
                 self.active_missions.remove(mission)
-                self.game.display_simple_message(
+                self.game.ui.display_simple_message(
                     f"Transport mission expired: {mission['amount']} {mission['resource']} " +
                     f"from {mission['source']} to {mission['destination']}"
                 )
@@ -453,7 +451,7 @@ class QuestSystem:
             
             print(self.game.ui.create_box(quest_content, 'double'))
         else:
-            self.game.display_simple_message("No active quests.")
+            self.game.ui.display_simple_message("No active quests.")
         
         input("Press Enter to continue...")        
         
@@ -644,7 +642,8 @@ class QuestSystem:
             reward_money=int(rewards.get("money", base_reward) * (1 + difficulty * 0.1)),
             reward_rp=int(rewards.get("research_points", research_reward) * (1 + difficulty * 0.1)),
             quest_type=quest_type,
-            requirements=requirements
+            requirements=requirements,
+            rewards = rewards
         )
 
 
@@ -654,7 +653,7 @@ class QuestSystem:
             progress_text = f"Quest Progress: {quest.name}"
             if quest.target_progress > 1:
                 progress_text += f" ({quest.progress}/{quest.target_progress})"
-            self.game.display_simple_message(progress_text)
+            self.game.ui.display_simple_message(progress_text)
 
     def get_available_quest_types(self):
         """Get available quest types based on game progress"""
@@ -687,7 +686,7 @@ class QuestSystem:
         
         # Check if we've already shown this quest message
         if quest_id not in self.quest_message_shown:
-            self.game.display_story_message([
+            self.game.ui.display_simple_message([
                 "New Quest Available!",
                 quest.name,
                 quest.description,

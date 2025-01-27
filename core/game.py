@@ -205,11 +205,13 @@ class Game:
             }
             self.contract_manager.update_contract_progress(event_data)
 
-          self.quest_system.update_from_trade(event_data= {
-              "action": action,
-              "commodity": item,
-              "amount": quantity,
-          })
+          self.quest_system.update_from_trade(
+              {
+                "action": action,
+                "commodity": item,
+                "amount": quantity,
+            }
+          )
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
