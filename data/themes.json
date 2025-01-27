@@ -11,6 +11,10 @@
       "path": "blue.json",
       "name": "Blue Theme"
     },
+    "orange": {
+        "path": "orange.json",
+        "name": "Hercules"
+    },
     "green": {
         "path": "green.json",
         "name": "Green Theme"
