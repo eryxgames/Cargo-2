@@ -88,7 +88,7 @@ class DynamicCharacterSystem:
         self.character_encounters = SpecialCharacterEncounters(self.game)
 
     def create_character_box(self, character_content, style='round'):
-        return self.game.create_character_box(character_content, style)
+        return self.game.ui.create_box(character_content, style)
 
     def check_character_triggers(self):
         """Check for new character appearances based on game state"""
@@ -165,7 +165,7 @@ class DynamicCharacterSystem:
             content['options'] = ", ".join(str(opt) for opt in interactions) if interactions else ""
         
         # Display character box
-        print(self.game.create_character_box(content, 'round'))
+        print(self.create_character_box(content, 'round'))
         
         # If options exist, allow interaction
         if content['options']:

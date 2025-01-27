@@ -108,9 +108,9 @@ class SpecialCharacterEncounters:
             self.game.ship.money -= offer[1]
             self.game.ship.acquire_item(offer[0])
             self.mark_item_sold(offer[0])
-            self.game.display_simple_message(f"You bought a {offer[0]}!")
+            self.game.ui.display_simple_message(f"You bought a {offer[0]}!")
         else:
-            self.game.display_simple_message("Insufficient funds!")
+            self.game.ui.display_simple_message("Insufficient funds!")
 
     def handle_researcher_encounter(self, character):
         """Handle interaction with researcher"""
@@ -140,11 +140,11 @@ class SpecialCharacterEncounters:
         if self.game.ship.money >= total_cost:
             self.game.ship.money -= total_cost
             self.game.ship.research_points += amount
-            self.game.display_simple_message(
+            self.game.ui.display_simple_message(
                 f"Exchanged {self.game.format_money(total_cost)} credits for {amount} research points!"
             )
         else:
-            self.game.display_simple_message("Insufficient funds!")
+            self.game.ui.display_simple_message("Insufficient funds!")
 
     def handle_rogue_captain_encounter(self, character):
         """Handle interaction with rogue captain"""
@@ -159,29 +159,29 @@ class SpecialCharacterEncounters:
             ["2. Attempt to flee"],
             ["3. Stand and fight"]
         ]
-        print(self.game.create_box(content, 'double'))
+        print(self.game.ui.create_box(content, 'double'))
         
         choice = self.game.validate_input("Choose action (1/2/3): ", ['1', '2', '3'])
         
         if choice == '1':
             if self.game.ship.money >= character.demand:
                 self.game.ship.money -= character.demand
-                self.game.display_simple_message("Demand paid. Rogue captain lets you pass.")
+                self.game.ui.display_simple_message("Demand paid. Rogue captain lets you pass.")
                 return True
             else:
-                self.game.display_simple_message("Can't pay! Prepare for combat!")
+                self.game.ui.display_simple_message("Can't pay! Prepare for combat!")
                 return False
         elif choice == '2':
             # Chance to escape based on speed
             escape_chance = min(0.8, self.game.ship.speed * 0.2)
             if random.random() < escape_chance:
-                self.game.display_simple_message("Successfully evaded the rogue captain!")
+                self.game.ui.display_simple_message("Successfully evaded the rogue captain!")
                 return True
             else:
-                self.game.display_simple_message("Failed to escape! Prepare for combat!")
+                self.game.ui.display_simple_message("Failed to escape! Prepare for combat!")
                 return False
         else:
-            self.game.display_simple_message("Preparing for combat with rogue captain...")
+            self.game.ui.display_simple_message("Preparing for combat with rogue captain...")
             return False
 
     def trigger_random_encounter(self, location_type="Space"):

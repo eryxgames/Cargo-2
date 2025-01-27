@@ -2,8 +2,9 @@
 import os
 import shutil
 import time
+from ui import UI_Interface
 
-class TextUI:
+class TextUI(UI_Interface):
     def __init__(self, theme_manager=None):
         self.theme_manager = theme_manager
         self.default_theme = {
@@ -70,7 +71,7 @@ class TextUI:
             'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃', 'sep': '┃'},
             'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█', 'sep': '█'},
             'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|', 'sep': '│'},
-            'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
+             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
         }[style if style else theme.get("box_style", "single")]
 
         # Calculate number of columns and get content lengths

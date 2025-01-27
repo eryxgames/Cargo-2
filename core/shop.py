@@ -36,14 +36,14 @@ class Shop:
 
     def handle_shop_menu(self):
         """Enhanced shop interface with persistent sold items"""
-        self.game.display_simple_message("Welcome to the Shop!", 1)
+        self.game.ui.display_simple_message("Welcome to the Shop!", 1)
 
         # Display current money and location info
         status_content = [
             [f"Credits: {self.game.format_money(self.game.ship.money)}"],
             [f"Tech Level: {self.game.current_location.tech_level}"]
         ]
-        print(self.game.create_box(status_content, 'single'))
+        print(self.game.ui.create_box(status_content, 'single'))
 
         # Display current inventory
         inventory_content = [["Your Items"]]
@@ -52,7 +52,7 @@ class Shop:
                 inventory_content.append([f"{item}: {count}"])
         else:
             inventory_content.append(["No items"])
-        print(self.game.create_box(inventory_content, 'single'))
+        print(self.game.ui.create_box(inventory_content, 'single'))
 
         # Get available items for this location
         if not hasattr(self, 'current_turn_items') or not self.current_turn_items:  # Changed condition
@@ -106,7 +106,7 @@ class Shop:
                     status
                 ])
         
-        print(self.game.create_box(shop_content, 'double'))
+        print(self.game.ui.create_box(shop_content, 'double'))
 
         # Only show unsold items in options
         available_items_names = [
@@ -115,7 +115,7 @@ class Shop:
         ]
 
         if not available_items_names:
-            self.game.display_simple_message("All items are sold out!")
+            self.game.ui.display_simple_message("All items are sold out!")
             return
 
         item_choice = self.game.validate_input(
@@ -134,14 +134,14 @@ class Shop:
                     self.game.ship.acquire_item(item_name)
                     self.mark_item_sold(item_name)
                     
-                    self.game.display_simple_message([
+                    self.game.ui.display_simple_message([
                         f"You bought a {item_name}!",
                         f"Effect: {self.get_item_description(item_name)}",
                         f"Remaining credits: {self.game.format_money(self.game.ship.money)}"
                     ])
                 else:
                     missing = price - self.game.ship.money
-                    self.game.display_simple_message([
+                    self.game.ui.display_simple_message([
                         "Not enough money to buy this item.",
                         f"Price: {self.game.format_money(price)}",
                         f"Your credits: {self.game.format_money(self.game.ship.money)}",

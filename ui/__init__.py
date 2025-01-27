@@ -1,5 +1,5 @@
 # ui/__init__.py
-from ui.text_ui import TextUI
+#from ui.text_ui import TextUI # Remove TextUI import
 from ui.theme_manager import ThemeManager
 
 class UI_Interface:

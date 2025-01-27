@@ -8,7 +8,7 @@ class Cantina:
 
     def handle_cantina_menu(self):
         self.game.clear_screen()
-        self.game.display_simple_message("Welcome to the Cantina!", 0)
+        self.game.ui.display_simple_message("Welcome to the Cantina!", 0)
 
         # Check for present characters and announce them first
         present_characters = [char for char_id, char in 
@@ -43,7 +43,7 @@ class Cantina:
             menu_content.append([f""])
             for cmd, (shortcut, desc) in options.items():
                 menu_content.append([f"{cmd}/{shortcut if shortcut else ''}: {desc}"])
-            print(self.game.create_box(menu_content, 'single'))
+            print(self.game.ui.create_box(menu_content, 'single'))
 
             valid_inputs = [cmd for cmd in options.keys()] + [s[0] for s in options.values() if s[0]]
             action = self.game.validate_input("Choose action: ", valid_inputs)
@@ -110,13 +110,13 @@ class Cantina:
                     if features:
                         map_content.append(["└─ Features: " + ", ".join(features), "", "", "", ""])
                 
-                print(self.game.create_box(map_content, 'double'))
+                print(self.game.ui.create_box(map_content, 'double'))
                 input("Press Enter to continue...")
             else:
                 self.game.ship.money += 200  # Refund if no new locations
-                self.game.display_simple_message("No new locations to discover!")
+                self.game.ui.display_simple_message("No new locations to discover!")
         else:
-            self.game.display_simple_message("Not enough money to buy a map.")
+            self.game.ui.display_simple_message("Not enough money to buy a map.")
 
     def handle_update_map(self):
         if self.game.ship.money >= 350:
@@ -161,13 +161,13 @@ class Cantina:
                             market_content.append(["└─ " + feature, "", "", "", ""])
             
             if has_data:
-                print(self.game.create_box(market_content, 'double'))
+                print(self.game.ui.create_box(market_content, 'double'))
                 input("Press Enter to continue...")
             else:
                 self.game.ship.money += 350  # Refund if no data to show
-                self.game.display_simple_message("No new information available!")
+                self.game.ui.display_simple_message("No new information available!")
         else:
-            self.game.display_simple_message("Not enough money to update the map.")
+            self.game.ui.display_simple_message("Not enough money to update the map.")
 
     def handle_gossip(self):
         """Handle gossip and quest generation in cantina"""
@@ -197,23 +197,23 @@ class Cantina:
                             gossip_content.append([f"└─ {gossip}"])
                 
             if found_gossip:
-                print(self.game.create_box(gossip_content, 'double'))
+                print(self.game.ui.create_box(gossip_content, 'double'))
                 
                 # 30% chance to get a quest
                 if random.random() < 0.3:
                     quest = self.game.quest_system.generate_quest(quest_type="cantina", difficulty=1)
                     if quest:
                         self.game.quest_system.add_quest(quest)
-                        self.game.display_story_message([
+                        self.game.ui.display_simple_message([
                             "New Quest Available!",
                             quest.name,
                             quest.description,
                             f"Rewards: {self.game.format_money(quest.reward_money)} credits, {quest.reward_rp} RP"
                         ])
             else:
-                self.game.display_simple_message("No interesting gossip today!")
+                self.game.ui.display_simple_message("No interesting gossip today!")
         else:
-            self.game.display_simple_message("Not enough money to listen to gossip.")
+            self.game.ui.display_simple_message("Not enough money to listen to gossip.")
 
     def display_story_status(self):
         """Display story progress and achievements"""
@@ -246,5 +246,5 @@ class Cantina:
             for loc_type, count in self.game.story_manager.discovered_locations_by_type.items():
                 story_content.append([f"• {loc_type}: {count} discovered"])
         
-        print(self.game.create_box(story_content, 'double'))
+        print(self.game.ui.create_box(story_content, 'double'))
         input("Press Enter to continue...")

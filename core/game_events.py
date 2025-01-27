@@ -94,14 +94,14 @@ class GameEvents:
         
         # Check for automatic defense
         if "turrets" in self.game.ship.items and random.random() < 0.4:
-            self.game.display_simple_message(f"Event! {event['message']} repelled by defense systems!", 3, color='32')
+            self.game.ui.display_simple_message(f"Event! {event['message']} repelled by defense systems!", 3, color='32')
             # Count automatic defense as a victory and add reputation
             self.game.ship.record_combat_victory(enemy_type)
             if enemy_type == "pirate":
                 rep_gain = random.randint(1, 3)  # Smaller gain for automated defense
                 self.game.reputation += rep_gain
                 self.game.ship.passenger_reputation += rep_gain
-                self.game.display_simple_message(f"Gained {rep_gain} reputation for automated pirate defense!")
+                self.game.ui.display_simple_message(f"Gained {rep_gain} reputation for automated pirate defense!")
             # Gain some experience even when automatically defending
             self.game.ship.research_points += int(5 * enemy.get("reward_mult", 1))
             return True
@@ -162,14 +162,14 @@ class GameEvents:
             
             if losses:
                 loss_text = ", ".join(losses)
-                self.game.display_simple_message(
+                self.game.ui.display_simple_message(
                     f"Event! {event['message']} caused {damage_dealt}% damage and stole {loss_text}!\n" +
                     f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" +
                     rep_message,
                     3, color='32'
                 )
             else:
-                self.game.display_simple_message(
+                self.game.ui.display_simple_message(
                     f"Event! {event['message']} caused {damage_dealt}% damage!\n" +
                     f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" +
                     rep_message,
@@ -190,13 +190,13 @@ class GameEvents:
             
             if losses:
                 loss_text = ", ".join(losses)
-                self.game.display_simple_message(
+                self.game.ui.display_simple_message(
                     f"Event! {event['message']} caused {damage_dealt}% damage and stole {loss_text}!" +
                     rep_message,
                     3, color='31'
                 )
             else:
-                self.game.display_simple_message(
+                self.game.ui.display_simple_message(
                     f"Event! {event['message']} caused {damage_dealt}% damage!" +
                     rep_message,
                     3, color='31'
@@ -269,9 +269,9 @@ class GameEvents:
                 if random.random() < 0.4:  # 40% chance
                     tech_bonus = random.choice(["attack", "defense", "speed"])
                     self.game.ship.upgrade_property(tech_bonus, 1)
-                    self.game.display_simple_message(f"The technology improved your ship's {tech_bonus}!")
+                    self.game.ui.display_simple_message(f"The technology improved your ship's {tech_bonus}!")
             
-            self.game.display_simple_message([
+            self.game.ui.display_simple_message([
                 f"Exploration Success! Found {discovery}!",
                 f"Earned {self.game.format_money(money_reward)} credits",
                 f"Gained {rp_reward} research points"
@@ -282,7 +282,7 @@ class GameEvents:
             damage = random.randint(5, 15)
             self.game.ship.damage = min(99, self.game.ship.damage + damage)
             
-            self.game.display_simple_message([
+            self.game.ui.display_simple_message([
                 "Exploration failed!",
                 f"Ship took {damage}% damage from hazardous conditions."
             ], color='31')
@@ -334,7 +334,7 @@ class GameEvents:
             "minor": f"Minor market fluctuation. {event['message']}"
         }
         
-        self.game.display_simple_message([
+        self.game.ui.display_simple_message([
             messages[severity],
             f"Affected commodities: {', '.join(affected_commodities)}",
             "Check market prices for details."
@@ -359,7 +359,7 @@ class GameEvents:
         if "shield" in self.game.ship.items and event.get("shield_protection", 0) > 0:
             if random.random() < event.get("shield_protection", 0):
                 damage = int(damage * 0.4)  # 60% reduction when shields work
-                self.game.display_simple_message("Shields partially mitigated the disaster!", 2, color='32')
+                self.game.ui.display_simple_message("Shields partially mitigated the disaster!", 2, color='32')
         
         # Apply final damage
         self.game.ship.damage = min(99, self.game.ship.damage + damage)
@@ -373,7 +373,7 @@ class GameEvents:
                     self.game.ship.cargo[cargo_type] = max(0, self.game.ship.cargo[cargo_type] - lost)
                     if lost > 0:
                         cargo_lost = True
-                        self.game.display_simple_message(
+                        self.game.ui.display_simple_message(
                             f"Lost {self.game.format_money(lost)} units of {cargo_type}!",
                             2, color='31'
                         )
@@ -385,10 +385,10 @@ class GameEvents:
                 self.game.ship.items[item] -= 1
                 if self.game.ship.items[item] <= 0:
                     del self.game.ship.items[item]
-                self.game.display_simple_message(f"Equipment failure! Lost {item}!", 2, color='31')
+                self.game.ui.display_simple_message(f"Equipment failure! Lost {item}!", 2, color='31')
         
         # Display final disaster results
-        self.game.display_simple_message(
+        self.game.ui.display_simple_message(
             f"Event! {event['message']} caused {damage}% damage to the ship!",
             3, color='31'
         )
@@ -397,7 +397,7 @@ class GameEvents:
         if "repair_bot" in self.game.ship.items and random.random() < 0.4:
             repair = random.randint(5, 15)
             self.game.ship.damage = max(0, self.game.ship.damage - repair)
-            self.game.display_simple_message(
+            self.game.ui.display_simple_message(
                 f"Repair bot automatically fixed {repair}% damage!",
                 2, color='32'
             )
@@ -409,11 +409,11 @@ class GameEvents:
         if outcome == "rare elements":
             tech_goods = random.randint(5, 15)
             self.ship.cargo['tech'] += tech_goods
-            self.display_simple_message(f"You found {self.game.format_money(tech_goods)} tech goods.", 3, color='32')
+            self.game.ui.display_simple_message(f"You found {self.game.format_money(tech_goods)} tech goods.", 3, color='32')
         elif outcome == "scientific samples":
             research_points = random.randint(5, 15)
             self.ship.research_points+= research_points
-            self.display_simple_message(f"You gained {self.game.format_money(research_points)} research points.", 3, color='32')
+            self.game.ui.display_simple_message(f"You gained {self.game.format_money(research_points)} research points.", 3, color='32')
 
     def battle_event(self, enemy_attack, enemy_defense, enemy_speed):
         print(f"An enemy is attacking! Enemy stats: ATK {enemy_attack}, DEF {enemy_defense}, SPD {enemy_speed}")
@@ -447,16 +447,16 @@ class GameEvents:
             ])
             if reward[0] == "money":
                 self.ship.money += reward[1]
-                self.display_simple_message(f"Reward: {self.format_money(reward[1])} money", 3, color='32')
+                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} money", 3, color='32')
             elif reward[0] == "tech":
                 self.ship.cargo['tech'] += reward[1]
-                self.display_simple_message(f"Reward: {self.format_money(reward[1])} tech goods", 3, color='32')
+                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} tech goods", 3, color='32')
             elif reward[0] == "agri":
                 self.ship.cargo['agri'] += reward[1]
-                self.display_simple_message(f"Reward: {self.format_money(reward[1])} agri goods", 3, color='32')
+                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} agri goods", 3, color='32')
             elif reward[0] == "item":
                 self.ship.acquire_item(reward[1])
-                self.display_simple_message(f"Reward: {reward[1]} item", 3, color='32')
+                self.game.ui.display_simple_message(f"Reward: {reward[1]} item", 3, color='32')
         else:
             print("You lost the battle!")
             penalty = random.choice([
@@ -467,13 +467,13 @@ class GameEvents:
             ])
             if penalty[0] == "money":
                 self.ship.money = max(0, self.ship.money - penalty[1])
-                self.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} money", 3, color='31')
+                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} money", 3, color='31')
             elif penalty[0] == "tech":
                 self.ship.cargo['tech'] = max(0, self.ship.cargo['tech'] - penalty[1])
-                self.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} tech goods", 3, color='31')
+                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} tech goods", 3, color='31')
             elif penalty[0] == "agri":
                 self.ship.cargo['agri'] = max(0, self.ship.cargo['agri'] - penalty[1])
-                self.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} agri goods", 3, color='31')
+                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} agri goods", 3, color='31')
             elif penalty[0] == "damage":
                 self.ship.damage += penalty[1]
-                self.display_simple_message(f"Penalty: {penalty[1]}% additional damage", 3, color='31')
+                self.game.ui.display_simple_message(f"Penalty: {penalty[1]}% additional damage", 3, color='31')
