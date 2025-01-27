@@ -55,10 +55,17 @@ class TextUI(object):
         return len(re.sub(r'\033\[\d+m', '', text))
 
     def create_simple_box(self, content, style='single'):
+        """Create a simple box with proper width calculations for both single and multi-line content."""
         term_width = shutil.get_terminal_size().columns
-        width = term_width - 4  # Adjust for padding
         theme = self.get_current_theme()
-        border_color = theme.get("border_color", "37")  # Get border color from theme
+        border_color = theme.get("border_color", "37")
+
+        # Convert single string to list and handle empty content
+        if isinstance(content, str):
+            content = [content]
+        if not content:
+            content = [""]  # Provide default empty string if content is empty
+        
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║'},
@@ -72,26 +79,66 @@ class TextUI(object):
             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' '}
         }[style if style else theme.get("box_style", "single")]
 
+        # Calculate maximum content width needed
+        max_content_width = 0
+        wrapped_content = []
+        
+        for line in content:
+            # Handle None or empty string cases
+            if line is None:
+                line = ""
+            wrapped_lines = self.word_wrap(str(line), term_width - 4)  # -4 for borders and minimum padding
+            if wrapped_lines:  # Check if wrapped_lines is not empty
+                wrapped_content.extend(wrapped_lines)
+                line_lengths = [self.get_text_length(wl) for wl in wrapped_lines]
+                if line_lengths:  # Additional check before using max()
+                    max_content_width = max(max_content_width, max(line_lengths))
+            else:
+                wrapped_content.append("")  # Add empty string if no wrapped lines
+                
+        # If we still have no content width, set a minimum
+        if max_content_width == 0:
+            max_content_width = 2  # Minimum width for empty content
+
+        # Add padding to content width
+        content_width = max_content_width + 2  # Add 2 for padding (1 space on each side)
+        box_width = content_width + 2  # Add 2 for borders
+
+        # Ensure box width doesn't exceed terminal width
+        box_width = min(box_width, term_width)
+        content_width = box_width - 2
+
         lines = []
         if style != 'none':
-            lines.append(self.format_text(f"{chars['tl']}{chars['h'] * width}{chars['tr']}", color=border_color))
+            # Top border
+            lines.append(self.format_text(
+                f"{chars['tl']}{chars['h'] * content_width}{chars['tr']}", 
+                color=border_color
+            ))
 
-        for row in content:
-            wrapped_row = self.word_wrap(row, width - 2)
-            for line in wrapped_row:
-                lines.append(f"{self.format_text(chars['v'], color=border_color)} {self.format_text(line, theme.get('text_color', '37')):<{width-2}} {self.format_text(chars['v'], color=border_color)}")
+        # Content
+        for line in wrapped_content:
+            # Format the line with proper padding and alignment
+            formatted_line = self.format_text(line, theme.get('text_color', '37'))
+            padding_right = content_width - self.get_text_length(line)
+            lines.append(
+                f"{self.format_text(chars['v'], color=border_color)} "
+                f"{formatted_line}{' ' * padding_right} "
+                f"{self.format_text(chars['v'], color=border_color)}"
+            )
 
         if style != 'none':
-            lines.append(self.format_text(f"{chars['bl']}{chars['h'] * width}{chars['br']}", color=border_color))
+            # Bottom border
+            lines.append(self.format_text(
+                f"{chars['bl']}{chars['h'] * content_width}{chars['br']}", 
+                color=border_color
+            ))
+
         return '\n'.join(lines)
-    
+
     def create_box(self, content, style='single', text_color=None, header_color=None, text_style=None, header_style=None, double_border=False, border_color=None):
-        """Create a box that expands to terminal width with proportionally sized columns."""
-        # Get terminal width and account for borders and spacing
+        """Create a box with multiple columns and proper width calculations."""
         term_width = shutil.get_terminal_size().columns
-        usable_width = term_width - 4  # Account for borders and minimum spacing
-        
-        # Get theme data
         theme = self.get_current_theme()
         
         if not text_color:
@@ -118,82 +165,94 @@ class TextUI(object):
             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
         }[style if style else theme.get("box_style", "single")]
 
-        # Calculate number of columns and get content lengths
+        # Calculate number of columns and column sizes
         num_cols = max(len(row) for row in content)
-        max_lengths = [0] * num_cols
+        col_sizes = [[] for _ in range(num_cols)]
         
-        # Get maximum content length for each column
+        # Collect all content for each column
         for row in content:
-            for i, cell in enumerate(row):
-                if i < num_cols:
-                    max_lengths[i] = max(max_lengths[i], self.get_text_length(str(cell)))
+            for i, cell in enumerate(row[:num_cols]):
+                col_sizes[i].extend(self.word_wrap(str(cell), term_width // num_cols - 4))
         
-        # Calculate available space for content
-        separator_space = 3  # Space for " │ " between columns
-        total_separator_width = separator_space * (num_cols - 1)
-        padding_width = 2  # Space for padding around content " x "
-        available_content_width = usable_width - total_separator_width - padding_width
+        # Calculate maximum width needed for each column
+        max_col_widths = [max(self.get_text_length(line) for line in col) if col else 0 for col in col_sizes]
         
-        # Calculate proportional column widths
-        total_content_length = sum(max_lengths)
+        # Calculate spacing and final column widths
+        separator_width = 3  # Space for " │ "
+        available_width = term_width - (num_cols + 1) * separator_width
+        
+        # Distribute available width proportionally
+        total_content_width = sum(max_col_widths)
         col_widths = []
-        remaining_width = available_content_width
+        remaining_width = available_width
         
-        for i in range(num_cols):
-            if i == num_cols - 1:
-                # Last column gets remaining width
+        for i, max_width in enumerate(max_col_widths):
+            if i == len(max_col_widths) - 1:
                 width = remaining_width
             else:
-                proportion = max_lengths[i] / total_content_length if total_content_length > 0 else 1/num_cols
-                width = max(3, min(
-                    int(available_content_width * proportion),
-                    max_lengths[i] + 2
-                ))
+                proportion = max_width / total_content_width if total_content_width > 0 else 1/num_cols
+                width = max(3, min(int(available_width * proportion), max_width + 2))
                 remaining_width -= width
             col_widths.append(width)
-        
-        # Ensure minimum widths and adjust if necessary
-        for i in range(num_cols):
-            col_widths[i] = max(3, min(col_widths[i], max_lengths[i] + 10))
 
-        # Calculate final horizontal width
-        horizontal_width = sum(col_widths) + total_separator_width + padding_width
-        
-        # Create the box
+        # Calculate total box width
+        horizontal_width = sum(col_widths) + (num_cols + 1) * separator_width
+
         lines = []
-        
-        # Top border
         if style != 'none':
-            border_line = f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}"
+            # Top border
+            border_line = (
+                f"{chars['tl']}"
+                f"{chars['h'] * (horizontal_width - 2)}"
+                f"{chars['tr']}"
+            )
             if double_border:
                 lines.append(self.format_text(border_line, color=border_color))
-                lines.append(self.format_text(f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}", color=border_color))
+                lines.append(self.format_text(border_line, color=border_color))
             else:
                 lines.append(self.format_text(border_line, color=border_color))
 
-        # Content rows
+        # Process content row by row
         for row in content:
-            padded_row = row + [''] * (num_cols - len(row))
-            formatted_cells = []
-            for i, cell in enumerate(padded_row):
-                cell_str = str(cell)
-                if self.get_text_length(cell_str) > col_widths[i]:
-                    cell_str = cell_str[:col_widths[i]-3] + "..."
-                formatted_cells.append(f"{self.format_text(cell_str, text_color, text_style):<{col_widths[i]}}")
+            # Split each cell content into lines
+            row_lines = []
+            max_lines = 1
+            for i, cell in enumerate(row[:num_cols]):
+                wrapped = self.word_wrap(str(cell), col_widths[i])
+                row_lines.append(wrapped)
+                max_lines = max(max_lines, len(wrapped))
             
-            separator_string = (' ' + self.format_text(chars['sep'], color=border_color) + ' ').join(['' for _ in range(num_cols - 1)])
-            row_str = f"{self.format_text(chars['v'], color=border_color)}{separator_string.join(formatted_cells)}{self.format_text(chars['v'], color=border_color)}"
-            lines.append(row_str)
-        
-        # Bottom border
+            # Pad cells with empty lines if needed
+            for lines_list in row_lines:
+                while len(lines_list) < max_lines:
+                    lines_list.append('')
+            
+            # Create each line of the row
+            for line_idx in range(max_lines):
+                line_parts = []
+                for col_idx, lines_list in enumerate(row_lines):
+                    cell_content = lines_list[line_idx] if line_idx < len(lines_list) else ''
+                    formatted_cell = self.format_text(cell_content, text_color, text_style)
+                    padding = col_widths[col_idx] - self.get_text_length(cell_content)
+                    line_parts.append(f"{formatted_cell}{' ' * padding}")
+                
+                separator = self.format_text(f" {chars['sep']} ", color=border_color)
+                line = f"{self.format_text(chars['v'], color=border_color)} {separator.join(line_parts)} {self.format_text(chars['v'], color=border_color)}"
+                lines.append(line)
+
         if style != 'none':
-            border_line = f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}"
+            # Bottom border
+            border_line = (
+                f"{chars['bl']}"
+                f"{chars['h'] * (horizontal_width - 2)}"
+                f"{chars['br']}"
+            )
             if double_border:
                 lines.append(self.format_text(border_line, color=border_color))
-                lines.append(self.format_text(f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}", color=border_color))
+                lines.append(self.format_text(border_line, color=border_color))
             else:
                 lines.append(self.format_text(border_line, color=border_color))
-        
+
         return '\n'.join(lines)
 
     def create_character_box(self, character_content, style='round', text_color=None, header_color=None, text_style=None, header_style=None):
