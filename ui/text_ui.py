@@ -64,7 +64,7 @@ class TextUI(object):
         if isinstance(content, str):
             content = [content]
         if not content:
-            content = [""]  # Provide default empty string if content is empty
+            content = [""]
         
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'},
@@ -84,25 +84,25 @@ class TextUI(object):
         wrapped_content = []
         
         for line in content:
-            # Handle None or empty string cases
             if line is None:
                 line = ""
             wrapped_lines = self.word_wrap(str(line), term_width - 4)  # -4 for borders and minimum padding
-            if wrapped_lines:  # Check if wrapped_lines is not empty
+            if wrapped_lines:
                 wrapped_content.extend(wrapped_lines)
                 line_lengths = [self.get_text_length(wl) for wl in wrapped_lines]
-                if line_lengths:  # Additional check before using max()
+                if line_lengths:
                     max_content_width = max(max_content_width, max(line_lengths))
             else:
-                wrapped_content.append("")  # Add empty string if no wrapped lines
+                wrapped_content.append("")
                 
         # If we still have no content width, set a minimum
         if max_content_width == 0:
-            max_content_width = 2  # Minimum width for empty content
+            max_content_width = 2
 
         # Add padding to content width
-        content_width = max_content_width + 2  # Add 2 for padding (1 space on each side)
-        box_width = content_width + 2  # Add 2 for borders
+        border_space = 1  # Space between border and content
+        content_width = max_content_width + (2 * border_space)  # Add border spaces
+        box_width = content_width + 2  # Add 2 for border characters
 
         # Ensure box width doesn't exceed terminal width
         box_width = min(box_width, term_width)
@@ -120,10 +120,11 @@ class TextUI(object):
         for line in wrapped_content:
             # Format the line with proper padding and alignment
             formatted_line = self.format_text(line, theme.get('text_color', '37'))
-            padding_right = content_width - self.get_text_length(line)
+            padding_right = content_width - border_space - self.get_text_length(line)
             lines.append(
-                f"{self.format_text(chars['v'], color=border_color)} "
-                f"{formatted_line}{' ' * padding_right} "
+                f"{self.format_text(chars['v'], color=border_color)}"
+                f"{' ' * border_space}"
+                f"{formatted_line}{' ' * padding_right}"
                 f"{self.format_text(chars['v'], color=border_color)}"
             )
 
