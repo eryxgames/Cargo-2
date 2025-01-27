@@ -14,7 +14,7 @@ from core.story import StoryManager
 from core.location_manager import LocationManager
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
 from core.uprising import SyntheticEventManager, InfestationManager #Fixed imports
-from core.utils import display_logo, print_centered_text, format_money, word_wrap
+from core.utils import display_logo, print_centered_text, format_money #removed word_wrap
 from ui.text_ui import TextUI
 from ui.theme_manager import ThemeManager
 from core.character import CharacterManager, SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
@@ -30,6 +30,7 @@ from core.location_data import LocationCommands, LocationCapabilities, LocationT
 from core.reputation import PassengerReputationManager #added import here
 from core.captain import Captain #added import here
 from core.cantina import Cantina #added import here
+from ui import UI_Interface #added import here
 
 class Game:
     def __init__(self, settings=None, ui=None):

@@ -16,40 +16,62 @@ class TextUI:
             "box_style": "single"
         }
 
+    def get_current_theme(self):
+        return self.theme_manager.current_theme if self.theme_manager else self.default_theme
 
     def create_simple_box(self, content, style='single'):
         term_width = shutil.get_terminal_size().columns
         width = term_width - 4  # Adjust for padding
-
+        theme = self.get_current_theme()
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║'},
-            'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│'}
-        }[style]
+            'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│'},
+            'bold': {'tl': '▛', 'tr': '▜', 'bl': '▙', 'br': '▟', 'h': '█', 'v': '▌'},
+            'dashed': {'tl': '╌', 'tr': '╌', 'bl': '╌', 'br': '╌', 'h': '╌', 'v': '╎'},
+            'dotted': {'tl': ':', 'tr': ':', 'bl': ':', 'br': ':', 'h': '.', 'v': '.'},
+            'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃'},
+            'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█'},
+            'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|'},
+            'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' '}
+        }[style if style else theme.get("box_style", "single")]
 
         lines = []
-        lines.append(f"{chars['tl']}{chars['h'] * width}{chars['tr']}")
+        if style != 'none':
+             lines.append(f"{chars['tl']}{chars['h'] * width}{chars['tr']}")
 
         for row in content:
             wrapped_row = self.word_wrap(row, width - 2)
             for line in wrapped_row:
-                lines.append(f"{chars['v']} {line:<{width-2}} {chars['v']}")
+                text_color = theme.get("text_color", "37")
+                lines.append(f"{chars['v']} \033[{text_color}m{line:<{width-2}}\033[0m {chars['v']}")
 
-        lines.append(f"{chars['bl']}{chars['h'] * width}{chars['br']}")
+        if style != 'none':
+            lines.append(f"{chars['bl']}{chars['h'] * width}{chars['br']}")
         return '\n'.join(lines)
     
     def create_box(self, content, style='single'):
-        """Create a box that expands to terminal width with proportional columns."""
+        """Create a box that expands to terminal width with proportionally sized columns."""
         # Get terminal width and account for borders and spacing
         term_width = shutil.get_terminal_size().columns
         usable_width = term_width - 4  # Account for borders and minimum spacing
         
+        # Get theme data
+        theme = self.get_current_theme()
+
         # Define box characters
         chars = {
             'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│', 'sep': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║', 'sep': '║'},
-            'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│', 'sep': '│'}
-        }[style]
+            'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│', 'sep': '│'},
+            'bold': {'tl': '▛', 'tr': '▜', 'bl': '▙', 'br': '▟', 'h': '█', 'v': '▌', 'sep': '│'},
+            'dashed': {'tl': '╌', 'tr': '╌', 'bl': '╌', 'br': '╌', 'h': '╌', 'v': '╎', 'sep': '╎'},
+            'dotted': {'tl': ':', 'tr': ':', 'bl': ':', 'br': ':', 'h': '.', 'v': '.', 'sep': '.'},
+            'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃', 'sep': '┃'},
+            'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█', 'sep': '█'},
+            'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|', 'sep': '│'},
+            'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' ', 'sep': ' '}
+        }[style if style else theme.get("box_style", "single")]
 
         # Calculate number of columns and get content lengths
         num_cols = max(len(row) for row in content)
@@ -99,7 +121,8 @@ class TextUI:
         lines = []
         
         # Top border
-        lines.append(f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}")
+        if style != 'none':
+            lines.append(f"{chars['tl']}{chars['h'] * horizontal_width}{chars['tr']}")
         
         # Content rows
         for row in content:
@@ -119,7 +142,8 @@ class TextUI:
             lines.append(row_str)
         
         # Bottom border
-        lines.append(f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}")
+        if style != 'none':
+             lines.append(f"{chars['bl']}{chars['h'] * horizontal_width}{chars['br']}")
         
         return '\n'.join(lines)
     
@@ -129,7 +153,7 @@ class TextUI:
             term_width = os.get_terminal_size().columns
         except OSError:
             term_width = 80  # Default width
-            
+                
         # Adjust width based on terminal size
         if term_width < 60:
             content_width = term_width - 4
@@ -137,34 +161,46 @@ class TextUI:
         else:
             content_width = min(80, term_width - 4)  # Cap at 80 chars
             compact_mode = False
-            
+        theme = self.get_current_theme()    
         chars = {
             'round': {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│'},
             'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║'},
-            'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'}
-        }[style]
-        
+            'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│'},
+            'bold': {'tl': '▛', 'tr': '▜', 'bl': '▙', 'br': '▟', 'h': '█', 'v': '▌'},
+            'dashed': {'tl': '╌', 'tr': '╌', 'bl': '╌', 'br': '╌', 'h': '╌', 'v': '╎'},
+            'dotted': {'tl': ':', 'tr': ':', 'bl': ':', 'br': ':', 'h': '.', 'v': '.'},
+            'thick': {'tl': '┏', 'tr': '┓', 'bl': '┗', 'br': '┛', 'h': '━', 'v': '┃'},
+            'block': {'tl': '█', 'tr': '█', 'bl': '█', 'br': '█', 'h': '█', 'v': '█'},
+            'slant': {'tl': '╱', 'tr': '╲', 'bl': '╲', 'br': '╱', 'h': '—', 'v': '|'},
+             'none': {'tl': '', 'tr': '', 'bl': '', 'br': '', 'h': ' ', 'v': ' '}
+        }[style if style else theme.get("box_style", "single")]
+            
         lines = []
-        lines.append(f"{chars['tl']}{chars['h'] * content_width}{chars['tr']}")
-        
+        if style != 'none':
+            lines.append(f"{chars['tl']}{chars['h'] * content_width}{chars['tr']}")
+            
         # Process title section
         if 'title' in character_content:
             wrapped_title = self.word_wrap(character_content['title'], content_width - 2)
             for line in wrapped_title:
-                lines.append(f"{chars['v']} {line:<{content_width-2}} {chars['v']}")
-            lines.append(f"{chars['v']}{chars['h'] * content_width}{chars['v']}")
-        
+                header_color = theme.get("header_color", "33")
+                lines.append(f"{chars['v']} \033[{header_color}m{line:<{content_width-2}}\033[0m {chars['v']}")
+            if style != 'none':
+                lines.append(f"{chars['v']}{chars['h'] * content_width}{chars['v']}")
+            
         # Process main content with proper sections
         for section in ['introduction', 'description', 'demands', 'options']:
             if section in character_content:
                 if not compact_mode:
                     lines.append(f"{chars['v']}{' ' * content_width}{chars['v']}")
-                
+                    
                 wrapped_content = self.word_wrap(character_content[section], content_width - 2)
                 for line in wrapped_content:
-                    lines.append(f"{chars['v']} {line:<{content_width-2}} {chars['v']}")
+                    text_color = theme.get("text_color", "37")
+                    lines.append(f"{chars['v']} \033[{text_color}m{line:<{content_width-2}}\033[0m {chars['v']}")
         
-        lines.append(f"{chars['bl']}{chars['h'] * content_width}{chars['br']}")
+        if style != 'none':
+             lines.append(f"{chars['bl']}{chars['h'] * content_width}{chars['br']}")
         return '\n'.join(lines)
 
     def word_wrap(self, text, width=None):
@@ -190,3 +226,57 @@ class TextUI:
             lines.append(' '.join(current_line))
 
         return lines
+
+    def display_simple_message(self, message, pause=1, style='round', color=None):
+        if isinstance(message, list):
+            box_content = message
+        else:
+            box_content = [message]
+
+        box = self.create_simple_box(box_content, style)
+        if color:
+            box = f"\033[{color}m{box}\033[0m"
+        print(box)
+        if pause > 0:
+            time.sleep(pause)
+            
+    def display_message(self, message, pause=2, style='round', color=None):
+        if isinstance(message, list):
+            box_content = message
+        else:
+            box_content = [message]
+
+        box = self.create_box(box_content, style)
+        if color:
+            box = f"\033[{color}m{box}\033[0m"
+        print(box)
+        if pause > 0:
+            time.sleep(pause)
+
+    def validate_input(self, prompt, valid_options):
+        """
+        Validate user input against a list of valid options
+        default_prompt: Default prompt text
+        valid_options: List of valid input options
+        prompt: Optional custom prompt to override default
+        """
+        term_width = shutil.get_terminal_size().columns
+
+        while True:
+            wrapped_prompt = self.word_wrap(prompt, term_width - 4)
+            self.display_simple_message(wrapped_prompt, 0)
+
+            try:
+                user_input = input(">>> ").strip().lower()
+                if not user_input:
+                    self.display_simple_message("Command cancelled.")
+                    return None
+                if user_input in valid_options:
+                    return user_input
+                self.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
+            except KeyboardInterrupt:
+                print(f"Do you want to exit? (yes/no):")
+                confirm = input(">>> ").strip().lower()
+                if confirm == 'yes':
+                    self.display_simple_message("Goodbye!", 1)
+                    exit()
