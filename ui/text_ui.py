@@ -196,7 +196,7 @@ class TextUI(object):
                 remaining_width -= width
             col_widths.append(width)
 
-        # Calculate total box width
+        # Calculate total box width - corrected for width with adding - 2
         horizontal_width = sum(col_widths) + (num_cols + 1) * separator_width - 2
 
         lines = []
