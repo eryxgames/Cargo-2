@@ -197,7 +197,7 @@ class TextUI(object):
             col_widths.append(width)
 
         # Calculate total box width
-        horizontal_width = sum(col_widths) + (num_cols + 1) * separator_width
+        horizontal_width = sum(col_widths) + (num_cols + 1) * separator_width - 2
 
         lines = []
         if style != 'none':
@@ -245,7 +245,7 @@ class TextUI(object):
             # Bottom border
             border_line = (
                 f"{chars['bl']}"
-                f"{chars['h'] * (horizontal_width - 2)}"
+                f"{chars['h'] * (horizontal_width - 2)}" #removed (horizontal_width - 2) because of calculation of width
                 f"{chars['br']}"
             )
             if double_border:
