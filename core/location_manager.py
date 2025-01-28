@@ -1,3 +1,4 @@
+# core/location_manager.py
 import random
 from core.utils import format_money
 from core.template import CharacterTemplate
@@ -87,8 +88,8 @@ class LocationManager:
             self.game.discovered_locations.add(location.name)
             
             # Award discovery rewards
-            discovery_reward = 1000 * (self.game.story_manager.current_chapter + 1)
-            research_reward = 20 * (self.game.story_manager.current_chapter + 1)
+            discovery_reward = 1000 * (self.game.story_manager.get_chapter_number() + 1) #modified here
+            research_reward = 20 * (self.game.story_manager.get_chapter_number() + 1) #modified here
             
             self.game.ship.money += discovery_reward
             self.game.ship.research_points += research_reward

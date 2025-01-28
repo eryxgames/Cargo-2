@@ -5,5 +5,6 @@
     "success_color": "96",
     "error_color": "91",
     "warning_color": "93",
+    "border_color": "34",
     "box_style": "double"
 }

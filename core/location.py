@@ -192,10 +192,10 @@ class Location:
             if self.production_cooldown[resource_type] > 0:
                 self.production_cooldown[resource_type] -= 1
     
-    def calculate_tax_rate(self, player_rank, profit):
+    def calculate_tax_rate(self, player_rank, profit, game):
         """Calculate tax rate based on player rank and location type"""
         base_tax = 0.05  # 5% base tax
-        rank_multiplier = self.game.captain.rank_multiplier("tax_multiplier")
+        rank_multiplier = game.captain.rank_multiplier("tax_multiplier") #added game parameter here
         
         # Reduce tax based on number of buildings
         building_discount = len(self.buildings) * 0.02  # 2% reduction per building

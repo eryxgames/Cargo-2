@@ -133,6 +133,12 @@ def play_turn(game):
         quantity = game.validate_quantity_input("Enter quantity to sell (max/m, half/h): ")
         if quantity is None:
             return
+        
+        # Get price *before* checking quantity and making sale
+        price = game.current_location.market[item]
+        if price <= 0:
+            game.ui.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
+            return
 
         if quantity == 'max':
             quantity = game.ship.cargo[item]
@@ -205,10 +211,10 @@ def play_turn(game):
         return    # Return after showing log to avoid counting it as a turn
 
     elif action in ['version', 'v']:
-        display_logo(logo_data, centered=True)
+        display_logo(logo_data, centered=True) #modified here
         print_centered_text("")
         print_centered_text("Created by Dan Sandner")
-        print_centered_text("v0.1.0-a, ©2025")
+        print_centered_text("v1.0.2, ©2025")
 
         time.sleep(3)
         return    

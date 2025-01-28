@@ -1,0 +1,13 @@
+{
+    "background_color": null,
+    "text_color": "38;5;208",
+    "header_color": "38;5;214",
+    "success_color": "38;5;178",
+    "error_color": "38;5;160",
+    "warning_color": "38;5;208",
+    "box_style": "single",
+    "border_color": "38;5;214",
+    "font_face": "default",
+     "header_style": "bold",
+    "text_style": "normal"
+}
