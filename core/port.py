@@ -196,7 +196,7 @@ class Port:
     def handle_port_menu(self):
         """Handle port menu options"""
         self.game.clear_screen()
-        self.game.display_simple_message("Welcome to the Stardock Port!", 0)
+        self.game.ui.display_simple_message("Welcome to the Stardock Port!", 0)
 
         while True:
             options = {
@@ -295,12 +295,12 @@ class Port:
                     
                     self.game.ship.passenger_modules.append(new_module)
                     
-                    self.game.display_simple_message(f"Purchased {module['name']}!")
+                    self.game.ui.display_simple_message(f"Purchased {module['name']}!")
 #                    time.sleep(1)
                     self.game.clear_screen()
                     return
                 else:
-                    self.game.display_simple_message("Not enough money!")
+                    self.game.ui.display_simple_message("Not enough money!")
 #                    time.sleep(1)
                     self.game.clear_screen()
                     return
@@ -311,12 +311,12 @@ class Port:
             location = self.game.current_location.name
             
             if not hasattr(self.game.ship, 'passenger_modules'):
-                self.game.display_simple_message("No passenger modules installed!")
+                self.game.ui.display_simple_message("No passenger modules installed!")
                 self.game.clear_screen()
                 return
                         
             if location not in self.waiting_passengers or not self.waiting_passengers[location]:
-                self.game.display_simple_message("No passengers waiting!")
+                self.game.ui.display_simple_message("No passengers waiting!")
                 self.game.clear_screen()
                 return
                         
@@ -324,7 +324,7 @@ class Port:
                             if len(m.passengers) < m.capacity]
             
             if not available_modules:
-                self.game.display_simple_message("No room for more passengers!")
+                self.game.ui.display_simple_message("No room for more passengers!")
                 self.game.clear_screen()
                 return
 
@@ -335,7 +335,7 @@ class Port:
             self.display_waiting_passengers()
 
             # Get command
-            self.game.display_simple_message(
+            self.game.ui.display_simple_message(
                 "Enter numbers to select passengers, 'refresh/r' to refresh list, 'autoboard/a' for auto boarding, or Enter to cancel:", 0
             )
             
@@ -369,15 +369,15 @@ class Port:
                     if selected_passengers:
                         self.handle_module_assignment(selected_passengers, available_modules)
                 else:
-                    self.game.display_simple_message("Invalid passenger number(s)")
+                    self.game.ui.display_simple_message("Invalid passenger number(s)")
                     
             except ValueError:
-                self.game.display_simple_message("Invalid input. Please enter numbers separated by spaces.")
+                self.game.ui.display_simple_message("Invalid input. Please enter numbers separated by spaces.")
 
     def handle_passenger_unloading(self):
             """Handle passenger unloading with reputation effects and bonuses"""
             if not hasattr(self.game.ship, 'passenger_modules'):
-                self.game.display_simple_message("No passenger modules installed!")
+                self.game.ui.display_simple_message("No passenger modules installed!")
                 return
                     
             current_location = self.game.current_location.name
@@ -473,7 +473,7 @@ class Port:
                 
                 print(self.game.ui.create_box(content, 'double'))
             else:
-                self.game.display_simple_message("No passengers to unload here!")
+                self.game.ui.display_simple_message("No passengers to unload here!")
 #                self.game.clear_screen()
             
 
@@ -508,7 +508,7 @@ class Port:
         print(self.game.ui.create_box(content, 'single'))
         
         # Get destination choice
-        self.game.display_simple_message("Choose destination number:", 0)
+        self.game.ui.display_simple_message("Choose destination number:", 0)
         try:
             choice = int(input(">>> "))
             if 1 <= choice <= len(destinations):
@@ -524,10 +524,10 @@ class Port:
                 if to_board:
                     self.handle_module_assignment(to_board, available_modules)
                 else:
-                    self.game.display_simple_message("No matching passengers to board!")
+                    self.game.ui.display_simple_message("No matching passengers to board!")
                     
         except (ValueError, IndexError):
-            self.game.display_simple_message("Invalid choice!")
+            self.game.ui.display_simple_message("Invalid choice!")
 
     def display_module_status(self):
         """Display current module status"""
@@ -593,7 +593,7 @@ class Port:
             print(self.game.ui.create_box(module_content, 'single'))
             
             # Get module choice with auto option
-            self.game.display_simple_message(
+            self.game.ui.display_simple_message(
                 "Choose module number, 'auto/a' for automatic assignment, or 'back':", 0
             )
             choice = input(">>> ").strip().lower()
@@ -610,21 +610,21 @@ class Port:
                 if 1 <= module_num <= len(available_modules):
                     chosen_module = available_modules[module_num - 1]
                     if len(chosen_module.passengers) >= chosen_module.capacity:
-                        self.game.display_simple_message("Module is full!")
+                        self.game.ui.display_simple_message("Module is full!")
                         continue
                         
                     # Add first remaining passenger
                     passenger = passengers_left.pop(0)
                     chosen_module.passengers.append(passenger)
-                    self.game.display_simple_message(f"Assigned {passenger.name} to {chosen_module.name}")
+                    self.game.ui.display_simple_message(f"Assigned {passenger.name} to {chosen_module.name}")
                     
                     # Remove full modules from available list
                     if len(chosen_module.passengers) >= chosen_module.capacity:
                         available_modules.remove(chosen_module)
                 else:
-                    self.game.display_simple_message("Invalid module number")
+                    self.game.ui.display_simple_message("Invalid module number")
             except ValueError:
-                self.game.display_simple_message("Invalid input")
+                self.game.ui.display_simple_message("Invalid input")
 
     def auto_assign_modules(self, passengers, modules):
         """Automatically assign passengers to modules"""
@@ -644,14 +644,14 @@ class Port:
                     if passenger in self.waiting_passengers[location]:  # Remove from waiting list
                         self.waiting_passengers[location].remove(passenger)
                     assigned += 1
-                    self.game.display_simple_message(
+                    self.game.ui.display_simple_message(
                         f"Auto-assigned {passenger.name} to {module.name}"
                     )
                     break
         
         remaining = len(passengers) - assigned
         if remaining > 0:
-            self.game.display_simple_message(f"Could not assign {remaining} passengers - no space left")
+            self.game.ui.display_simple_message(f"Could not assign {remaining} passengers - no space left")
             
     def update_passenger_satisfaction(self):
         """Update passenger satisfaction during travel"""
