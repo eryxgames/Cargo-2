@@ -31,6 +31,7 @@ from core.reputation import PassengerReputationManager #added import here
 from core.captain import Captain #added import here
 from core.cantina import Cantina #added import here
 from ui import UI_Interface #added import here
+from core.location_data import LocationTerminology
 
 class Game:
     def __init__(self, settings=None, ui=None):
@@ -62,7 +63,7 @@ class Game:
         self.secret_quest_available = False
         self.stellar_portal_available = False
         self.research = Research()
-        self.action = Action()
+        self.action = Action(self) # Modified this line to pass self
         # Add new tracking attributes for story milestones
         self.trades_completed = 0
         self.combat_difficulty = 1.0
@@ -121,6 +122,165 @@ class Game:
         # Initialize cantina
         self.cantina = Cantina(self)
 
+    def handle_actions(self):
+        """Handle actions based on the current location and type"""
+        available_actions = {
+            "scout": ("Scout Area", self.action.scout_area),
+            "geoscan": ("Geoscan Deposits", self.action.geoscan),
+            "revolution": ("Incite Revolution", self.action.incite_revolution),
+             "psychodynamics": ("Manipulate Market", self.action.manipulate_market),
+            "exogeology": ("Research Mining", self.action.research_exogeology),
+            "build_mining_platform": ("Build Mining Platform", self.build_mining_platform)
+        }
+        
+        action_list = []
+        action_names = []
+        for key, (name, func) in available_actions.items():
+            if key in self.current_location.commands.get("special", {}).get("action", {}).get("options", []) or key in ['exogeology', 'build_mining_platform'] :
+              action_list.append(key)
+              action_names.append(name)
+        
+        if not action_list:
+            self.ui.display_simple_message("No actions available here!")
+            return
+            
+        # Display available actions
+        action_content = [["Actions:"]]
+        for i, action_name in enumerate(action_names):
+              action_content.append([f"{i+1}. {action_name}"])
+        print(self.ui.create_box(action_content, 'single'))
+
+        action_choice = self.validate_input(
+            "Choose action: ",
+            [str(i+1) for i in range(len(action_names))] + ['research']
+        )
+        
+        if action_choice is None:
+            return
+                
+        if action_choice == 'research':
+            self.handle_research_options()
+            return
+        
+        try:
+          chosen_index = int(action_choice) -1
+          if chosen_index >=0 and chosen_index < len(action_list):
+             action_key = action_list[chosen_index]
+             name, func = available_actions[action_key]
+
+             # Perform action from action.py file
+             if action_key == "manipulate_market":
+                 commodity = self.validate_input("Choose commodity (tech/agri/salt/fuel):", ['tech', 'agri', 'salt', 'fuel'])
+                 if not commodity:
+                    return
+                 success, price_change, message = func(self.current_location, commodity)
+                 self.ui.display_simple_message(message)
+             elif action_key == 'build_mining_platform':
+                 if not self.current_location.mineral_deposits:
+                     self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
+                     return
+                     
+                 available_deposits = list(self.current_location.mineral_deposits.keys())
+                 deposit_type = self.validate_input(
+                        f"Choose deposit type to mine ({', '.join(available_deposits)}): ",
+                        available_deposits
+                 )
+                 if deposit_type:
+                     success, message = func(self.current_location, deposit_type)
+                     self.ui.display_simple_message(message)
+             else:
+                 result = func(self.current_location)
+                 # Check if returned result was a tuple for more complex data returns
+                 if isinstance(result, tuple):
+                     success, type, value, message = result
+                     self.ui.display_simple_message(message)
+                     if success:
+                        if type == "tech" or type == "agri":
+                             self.ship.cargo[type] += value
+                        elif type == 'item':
+                            self.ship.acquire_item(value)
+                 else:
+                     # Check if returned boolean
+                     if result:
+                         self.ui.display_simple_message(f"Action {name} successful!")
+                     else:
+                         self.ui.display_simple_message(f"Action {name} failed!")
+
+        except (ValueError, KeyError):
+          self.ui.display_simple_message("Invalid action selected!")
+
+    def handle_research_options(self):
+        """Enhanced research options system"""
+        if self.current_location.location_type != "ResearchColony":
+            self.ui.display_simple_message("Research options only available at Research Colonies!")
+            return
+
+        # Show current research points and colony specialization
+        specialization = getattr(self.current_location, 'research_specialization', 
+                            random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
+        self.current_location.research_specialization = specialization
+        
+        research_content = [
+            ["Research Laboratory Options"],
+            [f"Available Research Points: {self.ship.research_points}"],
+            [f"Colony Specialization: {specialization.title()}"],
+            [""],
+            ["1. Analyze (20 RP) - Safe, steady progress"],
+            ["2. Experiment (40 RP) - Risky, higher rewards"],
+            ["3. Breakthrough (100 RP) - Major discovery attempt"]
+        ]
+        
+        # Show available research options
+        available_research = self.research.research_data
+        available_options = []
+        for key, value in available_research.items():
+             requirements = self.research.get_research_requirements(key)
+             if self.current_location.tech_level >= requirements["tech_level"] and self.story_manager.plot_points >= requirements["plot_points"] and key not in self.research.unlocked_options:
+                 available_options.append(f"{key}: {value['name']} ({value['cost']} RP)")
+        
+        for i, item in enumerate(available_options):
+              research_content.append([f"{i + 4}. {item}"])
+        
+        print(self.ui.create_box(research_content, 'double'))
+        
+        valid_options = [str(i) for i in range(1, len(available_options) + 4)] + ['back']
+        choice = self.validate_input(
+            "Choose research action (1-4 or research number, or 'back'): ",
+            valid_options
+        )
+        
+        if choice == 'back':
+            return
+        
+        if choice == '1':
+            self.conduct_analysis(specialization)
+        elif choice == '2':
+            self.conduct_experiment(specialization)
+        elif choice == '3':
+            self.attempt_breakthrough(specialization)
+        elif int(choice) >= 4:
+             chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
+             if chosen_option in self.research.research_data:
+               if self.research.can_unlock(chosen_option, self.ship.research_points):
+                   self.research.unlock(chosen_option)
+                   success, message = self.action.research(self.current_location, chosen_option)
+                   if success:
+                        self.ui.display_simple_message(message)
+               else:
+                    self.ui.display_simple_message(
+                        f"Not enough research points! Required: {self.research.research_costs.get(chosen_option,0)}"
+                    )
+            
+    def display_mining_status(self):
+        self.ui.display_mining_status(self.current_location)
+        
+    def build_mining_platform(self, deposit_type):
+        """Build a new mining platform using Action class"""
+        success, message = self.action.build_mining_platform(self.current_location, deposit_type)
+        if success:
+            self.ui.display_simple_message(message)
+        else:
+            self.ui.display_simple_message(message)
 
     def handle_theme_change(self):
          """Handle changing the theme in the game."""

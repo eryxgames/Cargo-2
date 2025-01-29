@@ -360,3 +360,25 @@ class TextUI(object):
             time.sleep(pause)
         if clear_screen:
             os.system('clear' if os.name == 'posix' else 'cls')
+
+    def display_mining_status(self, location):
+        """Display mining operations status using current theme."""
+        content = [
+            ["Mining Status"],
+            [f"Planet Efficiency: {location.exogeology}%"],
+            ["Active Platforms:"]
+        ]
+        
+        for platform in location.mining_platforms:
+            content.append([
+                f"{platform['type'].capitalize()}: "
+                f"Efficiency {platform['efficiency']}% "
+                f"Capacity {platform['capacity']}"
+            ])
+            
+        if location.mineral_deposits:
+            content.append(["Available Deposits:"])
+            for deposit, amount in location.mineral_deposits.items():
+                content.append([f"{deposit.capitalize()}: {amount} units"])
+        
+        print(self.create_box(content, 'double'))            

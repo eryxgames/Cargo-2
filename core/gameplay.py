@@ -77,7 +77,9 @@ def play_turn(game):
                         f"Not enough money to repair. Cost: {game.format_money(cost)}"
                     )
             else:
-                game.ui.display_simple_message("Ship doesn't need repairs.")            
+                game.ui.display_simple_message("Ship doesn't need repairs.")
+    elif action in ['mine', 'm']:
+        game.display_mining_status()
 
     elif action in ['buy', 'b']:
         item = game.validate_input("Choose item (tech/agri/salt/fuel): ", 
@@ -191,9 +193,6 @@ def play_turn(game):
     elif action in ['action', 'a']:
         game.handle_actions()
 
-    elif action in ['mine', 'm']:
-        game.handle_mining()
-        
     elif action in ['port', 'p']:
         if port_is_available:
             game.port_system.handle_port_menu()

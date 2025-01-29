@@ -1,0 +1,90 @@
+research_options:
+  exogeology:
+    name: "Exogeology"
+    description: "Enhances mining efficiency by analyzing geological formations"
+    cost: 100
+    tech_level: 0
+    plot_points: 0
+    type: "mining"
+    effects: 
+      output_bonus: 0.25
+  telemetry:
+    name: "Telemetry"
+    description: "Improves scouting success and provides better information"
+    cost: 150
+    tech_level: 3
+    plot_points: 5
+    type: "exploration"
+    effects:
+      scout_success: 0.2
+    requires: []
+  geophysics:
+    name: "Geophysics"
+    description: "Improves the rate of discovery of mineral deposits"
+    cost: 200
+    tech_level: 5
+    plot_points: 10
+    type: "mining"
+    effects:
+      exogeology: 0.15
+    requires: ["exogeology"]
+  chronopolitics:
+    name: "Chronopolitics"
+    description: "Increases success rate of revolution attempts"
+    cost: 250
+    tech_level: 7
+    plot_points: 15
+    type: "politics"
+    effects:
+        revolution_success: 0.2
+    requires: []
+  psychodynamics:
+      name: "Psychodynamics"
+      description: "Improves market price control efficiency"
+      cost: 350
+      tech_level: 8
+      plot_points: 20
+      type: "trade"
+      effects:
+        price_control: 0.1
+      requires: ["chronopolitics"]
+  ancient_tech:
+    name: "Ancient Technology"
+    description: "Enables the research of ancient artifacts for technological advancement"
+    cost: 500
+    tech_level: 10
+    plot_points: 30
+    type: "exploration"
+    effects:
+      tech_boost: 0.3
+    requires: ["telemetry", "geophysics"]
+  advanced_shielding:
+    name: "Advanced Shielding"
+    description: "Advanced shielding methods provide better ship defense"
+    cost: 400
+    tech_level: 9
+    plot_points: 25
+    type: "engineering"
+    effects:
+        shield_bonus: 0.25
+    requires: ["geophysics"]
+  weapon_calibration:
+      name: "Weapon Calibration"
+      description: "Advanced weapon systems calibration improve overall attack rating"
+      cost: 300
+      tech_level: 7
+      plot_points: 20
+      type: "engineering"
+      effects:
+          attack_bonus: 0.2
+      requires: []
+  xenoeconomy:
+    name: "Xenoeconomy"
+    description: "Reduces taxes on all trades"
+    cost: 300
+    tech_level: 6
+    plot_points: 10
+    type: "trade"
+    effects:
+      tax_reduction: 0.04
+    requires: []
