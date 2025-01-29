@@ -146,7 +146,13 @@ class Action:
 
     def research_exogeology(self, location):
          """Research exogeology and enhance mining efficiency"""
-         success, message = self.research(location, "exogeology")
-         if success:
-             self.game.display_simple_message(message)
-         return success
+         research_system = self.game.research
+         if self.game.ship.research_points >= research_system.research_costs.get("exogeology", 0):
+            self.game.ship.research_points -= research_system.research_costs.get("exogeology", 0)
+            success, message = self.research(location, "exogeology")
+            if success:
+                 self.game.ui.display_simple_message(message)
+            return success
+         else:
+            self.game.ui.display_simple_message("Not enough research points!")
+            return False
