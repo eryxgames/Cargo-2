@@ -199,9 +199,9 @@ class Game:
                         else:
                             # Check if returned boolean
                             if result:
-                                 self.ui.display_simple_message(f"Action {value['name']} successful!")
+                                 self.ui.display_simple_message(f"Action {available_actions[action_key][0]} successful!")
                             else:
-                                 self.ui.display_simple_message(f"Action {value['name']} failed!")
+                                 self.ui.display_simple_message(f"Action {available_actions[action_key][0]} failed!")
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
 
@@ -248,11 +248,11 @@ class Game:
             return
         
         if choice == '1':
-            self.conduct_analysis(specialization)
+            self.action.conduct_analysis(self.current_location, specialization)
         elif choice == '2':
-            self.conduct_experiment(specialization)
+            self.action.conduct_experiment(self.current_location, specialization)
         elif choice == '3':
-            self.attempt_breakthrough(specialization)
+            self.action.attempt_breakthrough(self.current_location, specialization)
         elif int(choice) >= 4:
              chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
              if chosen_option in self.research.research_data:
