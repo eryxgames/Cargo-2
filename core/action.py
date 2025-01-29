@@ -1,17 +1,30 @@
 # core/action.py
 import random
 
+class ActionResult:
+    def __init__(self, success, type_=None, value=None, message=""):
+        self.success = success
+        self.type = type_
+        self.value = value
+        self.message = message
+
+    def get_message(self):
+        return self.message
+    
+    def is_success(self):
+        return self.success
+
+    def get_type(self):
+         return self.type
+    
+    def get_value(self):
+        return self.value
+    
+
 class Action:
     def __init__(self, game):
         self.game = game
         self.action_data = self.load_action_data() #load from file
-        
-        self.base_success_rates = {
-            'scout': 0.65,
-            'geoscan': 0.70,
-            'revolution': 0.50,
-            'psychodynamics': 0.60
-        }
     
     def load_action_data(self):
          """Load action data from data/actions.yml"""
@@ -93,7 +106,7 @@ class Action:
         """
         research_system = self.game.research
         if option in research_system.unlocked_options:
-            return False, "This research has already been completed."
+           return ActionResult(False, message="This research has already been completed.")
             
         # Apply immediate benefits based on research type
         if option == 'exogeology':
@@ -101,30 +114,29 @@ class Action:
                 int(location.exogeology * (1 + research_system.research_benefits.get(option,{}).get('output_bonus', 0))))
         
         self.game.handle_research_gain(research_system.research_costs.get(option, 0))  # Track research, using get to avoid error if key not found
-        return True, f"Successfully researched {option}!"
+        return ActionResult(True, message=f"Successfully researched {option}!")
 
     def scout_area(self, location):
         """
         Scout the area for resources or items
         Returns: (bool success, str type, any value, str message)
         """
-        research_system = self.game.research
-        # Calculate success chance
+        action = self.action_data.get('scout', {})
         success_chance = self.base_success_rates['scout']
-        if 'telemetry' in research_system.unlocked_options:
-            success_chance += research_system.research_benefits.get('telemetry', {}).get('scout_success', 0)
+        if 'telemetry' in self.game.research.unlocked_options:
+            success_chance += self.game.research.research_benefits.get('telemetry', {}).get('scout_success', 0)
             
         if random.random() < success_chance:
             discovery_type = random.choice(['tech', 'agri', 'item'])
             
             if discovery_type == 'item':
                 item = random.choice(['scanner', 'probe', 'turrets', 'shield'])
-                return True, 'item', item, f"Found a {item}!"
+                return ActionResult(True, 'item', item, f"Found a {item}!")
             else:
                 amount = random.randint(10, 30)
-                return True, discovery_type, amount, f"Found {amount} units of {discovery_type}!"
+                return ActionResult(True, discovery_type, amount, f"Found {amount} units of {discovery_type}!")
         
-        return False, None, None, "Scouting attempt failed!"
+        return ActionResult(False, message="Scouting attempt failed!")
 
     def geoscan(self, location):
         """
@@ -143,13 +155,13 @@ class Action:
             
             if deposit_type not in location.mineral_deposits:
                 location.mineral_deposits[deposit_type] = amount
-                return True, deposit_type, amount, f"Found {amount} units of {deposit_type} deposits!"
+                return ActionResult(True, deposit_type, amount, f"Found {amount} units of {deposit_type} deposits!")
             else:
                 bonus = random.randint(500, 1000)
                 location.mineral_deposits[deposit_type] += bonus
-                return True, deposit_type, bonus, f"Found additional {bonus} units of {deposit_type} deposits!"
+                return ActionResult(True, deposit_type, bonus, f"Found additional {bonus} units of {deposit_type} deposits!")
                 
-        return False, None, None, "Geoscan failed to find any deposits!"
+        return ActionResult(False, message="Geoscan failed to find any deposits!")
 
     def incite_revolution(self, location):
       """
@@ -170,9 +182,9 @@ class Action:
           # Clear trade bans
           location.banned_commodities = []
           location.ban_duration.clear()
-          return True, new_economy, f"Revolution successful! Economy changed to {new_economy} and trade bans removed!"
+          return ActionResult(True, new_economy, message=f"Revolution successful! Economy changed to {new_economy} and trade bans removed!")
       
-      return False, None, "Revolution attempt failed!"
+      return ActionResult(False, message="Revolution attempt failed!")
     
     def manipulate_market(self, location, commodity):
         """
@@ -199,9 +211,9 @@ class Action:
                 
             location.market[commodity] = new_price
             price_change = new_price - current_price
-            return True, price_change, f"Successfully manipulated {commodity} price by {abs(price_change):.1f}!"
+            return ActionResult(True, value=price_change, message=f"Successfully manipulated {commodity} price by {abs(price_change):.1f}!")
             
-        return False, 0, "Market manipulation attempt failed!"
+        return ActionResult(False, message="Market manipulation attempt failed!")
 
     def build_mining_platform(self, location, deposit_type):
          """Build a new mining platform"""
@@ -209,8 +221,8 @@ class Action:
          if self.game.ship.money >= cost:
             if location.build_mining_platform(deposit_type, cost):
                  self.game.ship.money -= cost
-                 return True, f"Mining platform for {deposit_type} built!"
-         return False, "Not enough money to build mining platform"
+                 return ActionResult(True, message=f"Mining platform for {deposit_type} built!")
+         return ActionResult(False, message="Not enough money to build mining platform")
 
     def research_exogeology(self, location):
          """Research exogeology and enhance mining efficiency"""
@@ -218,19 +230,20 @@ class Action:
          if self.game.ship.research_points >= research_system.research_costs.get("exogeology", 0):
             self.game.ship.research_points -= research_system.research_costs.get("exogeology", 0)
             success, message = self.research(location, "exogeology")
-            if success:
-                 self.game.ui.display_simple_message(message)
+            if success.is_success():
+                 self.game.ui.display_simple_message(message.get_message())
             return success
          else:
             self.game.ui.display_simple_message("Not enough research points!")
-            return False
+            return ActionResult(False, message="Not enough research points")
     
     def conduct_analysis(self, location, specialization):
         """Safe research analysis with guaranteed small rewards and chance for items"""
         cost = 20
         if self.game.ship.research_points < cost:
             self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return
+            return ActionResult(False, message="Not enough research points")
+
         self.game.ship.research_points -= cost
         
         # Base rewards
@@ -305,13 +318,14 @@ class Action:
             f"Gained {tech_bonus} research points",
             f"Earned {self.game.format_money(money_bonus)} credits"
         ])
-
+        return ActionResult(True, message="Analysis Completed")
+    
     def conduct_experiment(self, specialization):
         """Risky research with variable outcomes and enhanced rewards"""
         cost = 40
         if self.game.ship.research_points < cost:
             self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return
+            return ActionResult(False, message="Not enough research points!")
 
         self.game.ship.research_points -= cost
         
@@ -401,13 +415,14 @@ class Action:
                 f"Ship took {damage}% damage",
                 f"Lost {lost_points} research points"
             ])
+        return ActionResult(True, message="Experiment finished")
 
     def attempt_breakthrough(self, location, specialization):
         """Attempt a major research breakthrough"""
         cost = 100
         if self.game.ship.research_points < cost:
             self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return
+            return ActionResult(False, message="Not enough research points")
 
         self.game.ship.research_points -= cost
         
@@ -456,6 +471,7 @@ class Action:
                 f"Earned {self.game.format_money(reward['bonus_money'])} credits",
                 "Revolutionary technology acquired!"
             ])
+            return ActionResult(True, message="Breakthrough success!")
             
         else:
             # Minor breakthrough
@@ -470,57 +486,4 @@ class Action:
                 f"Gained {bonus_rp} research points",
                 f"Earned {self.game.format_money(bonus_money)} credits"
             ])
-
-    def collaborate_research(self, location, specialization):
-        """Collaborate with colony scientists"""
-        cost = 30
-        if self.game.ship.research_points < cost:
-            self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return
-
-        self.game.ship.research_points -= cost
-        
-        # Collaboration projects
-        projects = {
-            'quantum': [
-                ("Quantum Encryption", 1.2),
-                ("Entanglement Network", 1.3),
-                ("Quantum Computing", 1.4)
-            ],
-            'xenology': [
-                ("Alien Languages", 1.2),
-                ("Xenobiology", 1.3),
-                ("First Contact Protocols", 1.4)
-            ],
-            'engineering': [
-                ("Power Systems", 1.2),
-                ("Shield Technology", 1.3),
-                ("Propulsion Theory", 1.4)
-            ],
-            'temporal': [
-                ("Time Dilation", 1.2),
-                ("Causality Mechanics", 1.3),
-                ("Temporal Physics", 1.4)
-            ]
-        }
-        
-        project, multiplier = random.choice(projects[specialization])
-        
-        # Calculate rewards
-        research_gain = int(cost * multiplier)
-        money_gain = int(2000 * multiplier)
-        
-        # Colony gains permanent bonus to future research
-        colony_bonus = random.uniform(0.05, 0.15)  # 5-15% bonus
-        current_multiplier = getattr(location, 'research_multiplier', 1.0)
-        location.research_multiplier = current_multiplier + colony_bonus
-        
-        self.game.ship.research_points += research_gain
-        self.game.ship.money += money_gain
-        
-        self.game.ui.display_simple_message([
-            f"Collaboration Project: {project}",
-            f"Gained {research_gain} research points",
-            f"Earned {self.game.format_money(money_gain)} credits",
-            f"Colony research efficiency increased by {int(colony_bonus * 100)}%"
-        ])
+            return ActionResult(False, message="Breakthrough failed, minor discovery achieved")

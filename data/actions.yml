@@ -4,31 +4,21 @@ action_options:
     description: "Scout the area for resources or items."
     cost: 50
     type: "exploration"
-    location_types: []  # Empty list means available at any location
+    location_types: []
     plot_points: 0
     effects:
       scout_success: 0.65
+    success_message: "Scouting successful!"
   geoscan:
     name: "Geoscan Deposits"
     description: "Scan for mineral deposits."
     cost: 75
     type: "mining"
-    location_types: ["Planet", "AsteroidBase"]  # List of valid location types
+    location_types: ["Planet", "AsteroidBase"]
     plot_points: 0
     effects:
         geoscan_success: 0.70
-  destabilize:
-    name: "Destabilize Economy"
-    description: "Attempt to destabilize the planet's economy"
-    cost: 100
-    type: "politics"
-    location_types: ["Planet"]
-    plot_points: 5
-    requires: ["psychodynamics"]
-    location_requirements:
-      economy: ["Stable", "Booming"]  # Can only be used on locations with these economies
-    effects:
-        revolution_success: 0.50
+    success_message: "Geoscan successful, deposits found!"
   revolution:
     name: "Incite Revolution"
     description: "Attempt to change planet's economy and remove trade bans"
@@ -37,7 +27,8 @@ action_options:
     location_types: ["Planet"]
     plot_points: 5
     effects:
-        revolution_success: 0.50        
+        revolution_success: 0.50
+    success_message: "Revolution successful! Economy changed and trade bans removed!"
   market_manipulation:
     name: "Manipulate Market"
     description: "Attempt to manipulate market prices."
@@ -48,6 +39,7 @@ action_options:
     requires: ["psychodynamics"]
     effects:
         manipulation_success: 0.60
+    success_message: "Market successfully manipulated!"
   research_exogeology:
     name: "Research Mining"
     description: "Research exogeology to enhance mining efficiency."
@@ -64,6 +56,7 @@ action_options:
     location_types: ["Planet", "AsteroidBase"]
     plot_points: 0
     requires: ["geoscan"]
+    success_message: "Mining platform built!"
   establish_trade_route:
     name: "Establish Trade Route"
     description: "Establish a profitable trade route with the location"
@@ -77,3 +70,17 @@ action_options:
          min_relation_to_player: 1
     effects:
         trade_bonus: 0.1
+    success_message: "Trade route established!"
+  destabilize:
+    name: "Destabilize Economy"
+    description: "Attempt to destabilize the planet's economy"
+    cost: 100
+    type: "politics"
+    location_types: ["Planet"]
+    plot_points: 5
+    requires: ["psychodynamics"]
+    location_requirements:
+      economy: ["Stable", "Booming"]
+    effects:
+        revolution_success: 0.50
+    success_message: "Destabilization successful!"

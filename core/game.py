@@ -140,12 +140,8 @@ class Game:
         # Add research option to all locations
         action_list.append("research")
         action_names.append("Research new technologies")
-
-        # Display available actions
-        action_content = [["Actions:"]]
-        for i, action_name in enumerate(action_names):
-            action_content.append([f"{i+1}. {action_name}"])
-        print(self.ui.create_box(action_content, 'single'))
+        
+        self.display_available_action_options(action_names)
 
         action_choice = self.validate_input(
             "Choose action: ",
@@ -170,8 +166,8 @@ class Game:
                        commodity = self.validate_input("Choose commodity (tech/agri/salt/fuel):", ['tech', 'agri', 'salt', 'fuel'])
                        if not commodity:
                            return
-                       success, price_change, message = func(self.current_location, commodity)
-                       self.ui.display_simple_message(message)
+                       result = func(self.current_location, commodity)
+                       self.display_action_result(result)
                    elif action_key == 'build_mining_platform':
                        if not self.current_location.mineral_deposits:
                            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
@@ -183,25 +179,11 @@ class Game:
                         available_deposits
                        )
                        if deposit_type:
-                           success, message = func(self.current_location, deposit_type)
-                           self.ui.display_simple_message(message)
+                          result = func(self.current_location, deposit_type)
+                          self.display_action_result(result)
                    else:
                         result = func(self.current_location)
-                        # Check if returned result was a tuple for more complex data returns
-                        if isinstance(result, tuple):
-                           success, type, value, message = result
-                           self.ui.display_simple_message(message)
-                           if success:
-                                if type == "tech" or type == "agri":
-                                   self.ship.cargo[type] += value
-                                elif type == 'item':
-                                   self.ship.acquire_item(value)
-                        else:
-                            # Check if returned boolean
-                            if result:
-                                 self.ui.display_simple_message(f"Action {available_actions[action_key][0]} successful!")
-                            else:
-                                 self.ui.display_simple_message(f"Action {available_actions[action_key][0]} failed!")
+                        self.display_action_result(result)
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
 
@@ -248,19 +230,22 @@ class Game:
             return
         
         if choice == '1':
-            self.action.conduct_analysis(self.current_location, specialization)
+            result = self.action.conduct_analysis(self.current_location, specialization)
+            self.display_action_result(result)
         elif choice == '2':
-            self.action.conduct_experiment(self.current_location, specialization)
+            result = self.action.conduct_experiment(self.current_location, specialization)
+            self.display_action_result(result)
         elif choice == '3':
-            self.action.attempt_breakthrough(self.current_location, specialization)
+            result = self.action.attempt_breakthrough(self.current_location, specialization)
+            self.display_action_result(result)
         elif int(choice) >= 4:
              chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
              if chosen_option in self.research.research_data:
                if self.research.can_unlock(chosen_option, self.ship.research_points):
                    self.research.unlock(chosen_option)
-                   success, message = self.action.research(self.current_location, chosen_option)
-                   if success:
-                        self.ui.display_simple_message(message)
+                   result = self.action.research(self.current_location, chosen_option)
+                   if result.is_success():
+                        self.display_action_result(result)
                else:
                     self.ui.display_simple_message(
                         f"Not enough research points! Required: {self.research.research_costs.get(chosen_option,0)}"
@@ -276,6 +261,22 @@ class Game:
             self.ui.display_simple_message(message)
         else:
             self.ui.display_simple_message(message)
+
+    def display_action_result(self, result):
+        """Display results of an action in a unified way."""
+        if result.is_success():
+            message = result.get_message()
+            if message:
+                self.ui.display_simple_message(message)
+        else:
+            self.ui.display_simple_message(result.get_message())
+
+    def display_available_action_options(self, action_names):
+         """Display actions available on a location"""
+         action_content = [["Actions:"]]
+         for i, action_name in enumerate(action_names):
+             action_content.append([f"{i+1}. {action_name}"])
+         print(self.ui.create_box(action_content, 'single'))
 
     def handle_theme_change(self):
          """Handle changing the theme in the game."""

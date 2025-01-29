@@ -1,6 +1,7 @@
 # core/research.py
 import yaml
 import os
+from core.action import ActionResult
 
 class Research:
     def __init__(self):
@@ -8,7 +9,7 @@ class Research:
         self.research_data = self.load_research_data() #data driven now
 
     def load_research_data(self):
-         """Load research data from data/research.yml"""
+         """Load research data from data/quests.yml"""
          try:
             with open("data/research.yml", 'r') as f:
                 data = yaml.safe_load(f)
