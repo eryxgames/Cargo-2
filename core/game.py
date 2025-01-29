@@ -124,21 +124,18 @@ class Game:
 
     def handle_actions(self):
         """Handle actions based on the current location and type"""
-        available_actions = {
-            "scout": ("Scout Area", self.action.scout_area),
-            "geoscan": ("Geoscan Deposits", self.action.geoscan),
-            "revolution": ("Incite Revolution", self.action.incite_revolution),
-            "psychodynamics": ("Manipulate Market", self.action.manipulate_market),
-            "exogeology": ("Research Mining", self.action.research_exogeology),
-            "build_mining_platform": ("Build Mining Platform", self.build_mining_platform)
-        }
+        available_actions = {}
+        for key, value in self.action.action_data.items():
+            if self.action.check_location_requirements(key, self.current_location) and self.story_manager.plot_points >= self.action.get_action_requirements(key).get('plot_points', 0):
+                requirements = self.action.get_action_requirements(key)
+                if not requirements.get('requires') or all(tech in self.research.unlocked_options for tech in requirements.get('requires')):
+                   available_actions[key] = value
         
         action_list = []
         action_names = []
-        for key, (name, func) in available_actions.items():
-            if key in self.current_location.commands.get("special", {}).get("action", {}).get("options", []) or key in ['exogeology', 'build_mining_platform'] :
+        for key, value in available_actions.items():
               action_list.append(key)
-              action_names.append(name)
+              action_names.append(value["name"])
         
         # Add research option to all locations
         action_list.append("research")
@@ -166,46 +163,45 @@ class Game:
                  self.handle_research_options()
                  return
              else:
-               name, func = available_actions[action_key]
-
                # Perform action from action.py file
-               if action_key == "manipulate_market":
-                   commodity = self.validate_input("Choose commodity (tech/agri/salt/fuel):", ['tech', 'agri', 'salt', 'fuel'])
-                   if not commodity:
-                       return
-                   success, price_change, message = func(self.current_location, commodity)
-                   self.ui.display_simple_message(message)
-               elif action_key == 'build_mining_platform':
-                   if not self.current_location.mineral_deposits:
-                       self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
-                       return
+               func = getattr(self.action, action_key, None)
+               if func:
+                   if action_key == "manipulate_market":
+                       commodity = self.validate_input("Choose commodity (tech/agri/salt/fuel):", ['tech', 'agri', 'salt', 'fuel'])
+                       if not commodity:
+                           return
+                       success, price_change, message = func(self.current_location, commodity)
+                       self.ui.display_simple_message(message)
+                   elif action_key == 'build_mining_platform':
+                       if not self.current_location.mineral_deposits:
+                           self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
+                           return
                      
-                   available_deposits = list(self.current_location.mineral_deposits.keys())
-                   deposit_type = self.validate_input(
+                       available_deposits = list(self.current_location.mineral_deposits.keys())
+                       deposit_type = self.validate_input(
                         f"Choose deposit type to mine ({', '.join(available_deposits)}): ",
                         available_deposits
-                   )
-                   if deposit_type:
-                     success, message = func(self.current_location, deposit_type)
-                     self.ui.display_simple_message(message)
-               else:
-                    result = func(self.current_location)
-                    # Check if returned result was a tuple for more complex data returns
-                    if isinstance(result, tuple):
-                       success, type, value, message = result
-                       self.ui.display_simple_message(message)
-                       if success:
-                            if type == "tech" or type == "agri":
-                                 self.ship.cargo[type] += value
-                            elif type == 'item':
-                                self.ship.acquire_item(value)
-                    else:
-                        # Check if returned boolean
-                        if result:
-                             self.ui.display_simple_message(f"Action {name} successful!")
+                       )
+                       if deposit_type:
+                           success, message = func(self.current_location, deposit_type)
+                           self.ui.display_simple_message(message)
+                   else:
+                        result = func(self.current_location)
+                        # Check if returned result was a tuple for more complex data returns
+                        if isinstance(result, tuple):
+                           success, type, value, message = result
+                           self.ui.display_simple_message(message)
+                           if success:
+                                if type == "tech" or type == "agri":
+                                   self.ship.cargo[type] += value
+                                elif type == 'item':
+                                   self.ship.acquire_item(value)
                         else:
-                             self.ui.display_simple_message(f"Action {name} failed!")
-
+                            # Check if returned boolean
+                            if result:
+                                 self.ui.display_simple_message(f"Action {value['name']} successful!")
+                            else:
+                                 self.ui.display_simple_message(f"Action {value['name']} failed!")
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
 

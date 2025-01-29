@@ -1,0 +1,79 @@
+action_options:
+  scout:
+    name: "Scout Area"
+    description: "Scout the area for resources or items."
+    cost: 50
+    type: "exploration"
+    location_types: []  # Empty list means available at any location
+    plot_points: 0
+    effects:
+      scout_success: 0.65
+  geoscan:
+    name: "Geoscan Deposits"
+    description: "Scan for mineral deposits."
+    cost: 75
+    type: "mining"
+    location_types: ["Planet", "AsteroidBase"]  # List of valid location types
+    plot_points: 0
+    effects:
+        geoscan_success: 0.70
+  destabilize:
+    name: "Destabilize Economy"
+    description: "Attempt to destabilize the planet's economy"
+    cost: 100
+    type: "politics"
+    location_types: ["Planet"]
+    plot_points: 5
+    requires: ["psychodynamics"]
+    location_requirements:
+      economy: ["Stable", "Booming"]  # Can only be used on locations with these economies
+    effects:
+        revolution_success: 0.50
+  revolution:
+    name: "Incite Revolution"
+    description: "Attempt to change planet's economy and remove trade bans"
+    cost: 120
+    type: "politics"
+    location_types: ["Planet"]
+    plot_points: 5
+    effects:
+        revolution_success: 0.50        
+  market_manipulation:
+    name: "Manipulate Market"
+    description: "Attempt to manipulate market prices."
+    cost: 60
+    type: "trade"
+    location_types: ["Planet", "DeepSpaceOutpost"]
+    plot_points: 10
+    requires: ["psychodynamics"]
+    effects:
+        manipulation_success: 0.60
+  research_exogeology:
+    name: "Research Mining"
+    description: "Research exogeology to enhance mining efficiency."
+    cost: 0  # Cost is handled in research
+    type: "research"
+    location_types: ["Planet", "AsteroidBase", "DeepSpaceOutpost"]
+    plot_points: 0
+    requires: ["exogeology"]
+  build_mining_platform:
+    name: "Build Mining Platform"
+    description: "Build a new mining platform on this location"
+    cost: 0 # Cost is handled in action method
+    type: "mining"
+    location_types: ["Planet", "AsteroidBase"]
+    plot_points: 0
+    requires: ["geoscan"]
+  establish_trade_route:
+    name: "Establish Trade Route"
+    description: "Establish a profitable trade route with the location"
+    cost: 200
+    type: "trade"
+    location_types: ["Planet", "DeepSpaceOutpost", "AsteroidBase"]
+    plot_points: 15
+    requires: ["xenoeconomy"]
+    location_requirements:
+         affiliation: ["Independent", "Cooperators"]
+         min_relation_to_player: 1
+    effects:
+        trade_bonus: 0.1
