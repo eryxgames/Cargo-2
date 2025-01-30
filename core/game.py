@@ -13,8 +13,8 @@ from core.contract import ContractManager
 from core.story import StoryManager
 from core.location_manager import LocationManager
 from core.dynamic_character_system import DynamicCharacterSystem, SpecialCharacterEncounters
-from core.uprising import SyntheticEventManager, InfestationManager #Fixed imports
-from core.utils import display_logo, logo_data, print_centered_text, format_money #removed word_wrap
+from core.uprising import SyntheticEventManager, InfestationManager
+from core.utils import display_logo, logo_data, print_centered_text, format_money
 from ui.text_ui import TextUI
 from ui.theme_manager import ThemeManager
 from core.character import CharacterManager, SpecialCharacterGenerator, SyntheticCharacterGenerator, AlienCharacterGenerator
@@ -25,12 +25,12 @@ from core.audio import AudioManager
 from core.game_events import GameEvents
 from core.quest import QuestSystem, ResourceTransportQuest
 from math import floor
-from core.shop import Shop # Import here
+from core.shop import Shop
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
-from core.reputation import PassengerReputationManager #added import here
-from core.captain import Captain #added import here
-from core.cantina import Cantina #added import here
-from ui import UI_Interface #added import here
+from core.reputation import PassengerReputationManager
+from core.captain import Captain
+from core.cantina import Cantina
+from ui import UI_Interface
 from core.location_data import LocationTerminology
 
 class Game:
@@ -48,7 +48,7 @@ class Game:
             raise ValueError("No planets available! Check your locations.csv data and ensure that there is at least one location with location type as Planet.")
 
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
-        self.shop = Shop(self) #Modified here
+        self.shop = Shop(self)
         self.ship = Ship(self)
         self.turn = 0
         self.known_locations = [self.current_location.name]
@@ -115,7 +115,7 @@ class Game:
         self.story_manager.start_game()
         self.music_data = self.load_music_data()
         self.sound_data = self.load_sound_data()
-        self.audio_manager = AudioManager(self, settings=self.settings) # Modified here to pass self
+        self.audio_manager = AudioManager(self, settings=self.settings)
         self.play_music(self.settings.get("menu_theme", "menu_theme"))
         self.display_starting_info()
 
@@ -188,69 +188,80 @@ class Game:
            self.ui.display_simple_message("Invalid action selected!")
 
     def handle_research_options(self):
-        """Enhanced research options system"""
-        if self.current_location.location_type != "ResearchColony":
-            self.ui.display_simple_message("Basic research options available on this location:")
-           
-        # Show current research points and colony specialization
-        specialization = getattr(self.current_location, 'research_specialization', 
-                            random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
-        self.current_location.research_specialization = specialization
-        
-        research_content = [
-            ["Research Laboratory Options"],
-            [f"Available Research Points: {self.ship.research_points}"],
-            [f"Colony Specialization: {specialization.title()}"],
-            [""],
-            ["1. Analyze (20 RP) - Safe, steady progress"],
-            ["2. Experiment (40 RP) - Risky, higher rewards"],
-            ["3. Breakthrough (100 RP) - Major discovery attempt"]
-        ]
-        
-        # Show available research options
-        available_research = self.research.research_data
-        available_options = []
-        for key, value in available_research.items():
-             requirements = self.research.get_research_requirements(key)
-             if self.current_location.tech_level >= requirements["tech_level"] and self.story_manager.plot_points >= requirements["plot_points"] and key not in self.research.unlocked_options:
-                  available_options.append(f"{key}: {value['name']} ({value['cost']} RP)")
-        
-        for i, item in enumerate(available_options):
-              research_content.append([f"{i + 4}. {item}"])
-        
-        print(self.ui.create_box(research_content, 'double'))
-        
-        valid_options = [str(i) for i in range(1, len(available_options) + 4)] + ['back']
-        choice = self.validate_input(
-            "Choose research action (1-4 or research number, or 'back'): ",
-            valid_options
-        )
-        
-        if choice == 'back':
-            return
-        
-        if choice == '1':
-            result = self.action.conduct_analysis(self.current_location, specialization)
-            self.display_action_result(result)
-        elif choice == '2':
-            result = self.action.conduct_experiment(self.current_location, specialization)
-            self.display_action_result(result)
-        elif choice == '3':
-            result = self.action.attempt_breakthrough(self.current_location, specialization)
-            self.display_action_result(result)
-        elif int(choice) >= 4:
-             chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
-             if chosen_option in self.research.research_data:
-               if self.research.can_unlock(chosen_option, self.ship.research_points):
-                   self.research.unlock(chosen_option)
-                   result = self.action.research(self.current_location, chosen_option)
-                   if result.is_success():
-                        self.display_action_result(result)
-               else:
-                    self.ui.display_simple_message(
-                        f"Not enough research points! Required: {self.research.research_costs.get(chosen_option,0)}"
-                    )
+            """Enhanced research options system"""
+            if self.current_location.location_type != "ResearchColony":
+                self.ui.display_simple_message("Basic research options available on this location:")
+
+            # Show current research points and colony specialization
+            specialization = getattr(self.current_location, 'research_specialization', 
+                                random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
+            self.current_location.research_specialization = specialization
+                
+            research_content = [
+                ["Research Laboratory Options"],
+                [f"Available Research Points: {self.ship.research_points}"],
+                [f"Colony Specialization: {specialization.title()}"],
+                [""],
+                ["1. Analysis (Low Cost) - Small effect on research progress"],
+                ["2. Experiment (Medium Cost) - Higher bonus with chance for random outcome"],
+                ["3. Breakthrough (High Cost) - Attempt to unlock the research"]
+            ]
+
+            # Show available research options
+            available_research = self.research.research_data
+            available_options = []
+            for key, value in available_research.items():
+                 requirements = self.research.get_research_requirements(key)
+                 if self.current_location.tech_level >= requirements["tech_level"] and self.story_manager.plot_points >= requirements["plot_points"] and key not in self.research.unlocked_options and value["type"] == "tech":
+                      available_options.append(f"{key}: {value['name']} ({value['cost']} RP)")
             
+            for i, item in enumerate(available_options):
+                  research_content.append([f"{i + 4}. {item}"])
+            
+            print(self.ui.create_box(research_content, 'double'))
+            
+            valid_options = [str(i) for i in range(1, len(available_options) + 4)] + ['back']
+            choice = self.validate_input(
+                "Choose research action (1-3 or research number, or 'back'): ",
+                valid_options
+            )
+            
+            if choice == 'back':
+                return
+                
+            if choice == '1':
+                #perform analysis on active research track
+                 if not self.research.active_research:
+                      self.ui.display_simple_message("No research track selected. Please select research to start analyzing.")
+                      return
+                 result = self.research.perform_analysis(self, self.research.active_research)
+                 self.display_action_result(result)
+            elif choice == '2':
+                #perform experiment on active research track
+                 if not self.research.active_research:
+                     self.ui.display_simple_message("No research track selected. Please select research to start experimenting.")
+                     return
+                 result = self.research.perform_experiment(self, self.research.active_research)
+                 self.display_action_result(result)
+            elif choice == '3':
+                #perform breakthrough on active research track
+                 if not self.research.active_research:
+                     self.ui.display_simple_message("No research track selected. Please select research to start breakthrough.")
+                     return
+                 result = self.research.attempt_breakthrough(self, self.research.active_research)
+                 if result.is_success():
+                    self.research.apply_research_effects(self, self.research.active_research)
+                 self.display_action_result(result)
+            elif int(choice) >= 4:
+                 chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
+                 if chosen_option in self.research.research_data:
+                    # start new research track
+                     if self.research.start_research(chosen_option):
+                        self.ui.display_simple_message(f"Started new research track: {self.research.research_data[chosen_option].get('name', 'Unknown')}")
+                     else:
+                        self.ui.display_simple_message(f"Research already completed.")
+        
+    
     def display_mining_status(self):
         self.ui.display_mining_status(self.current_location)
         
@@ -318,7 +329,7 @@ class Game:
                 "amount": quantity,
             }
           )
-    
+      
     def handle_travel(self):
         """Handle travelling to a new location"""
         

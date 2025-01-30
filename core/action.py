@@ -99,23 +99,6 @@ class Action:
             
         return True
 
-    def research(self, location, option):
-        """
-        Attempt to research a new technology
-        Returns: (bool success, str message)
-        """
-        research_system = self.game.research
-        if option in research_system.unlocked_options:
-           return ActionResult(False, message="This research has already been completed.")
-            
-        # Apply immediate benefits based on research type
-        if option == 'exogeology':
-            location.exogeology = min(100, 
-                int(location.exogeology * (1 + research_system.research_benefits.get(option,{}).get('output_bonus', 0))))
-        
-        self.game.handle_research_gain(research_system.research_costs.get(option, 0))  # Track research, using get to avoid error if key not found
-        return ActionResult(True, message=f"Successfully researched {option}!")
-
     def scout_area(self, location):
         """
         Scout the area for resources or items
@@ -227,266 +210,25 @@ class Action:
                  return ActionResult(True, message=f"Mining platform for {deposit_type} built!")
          return ActionResult(False, message="Not enough money to build mining platform")
 
-    def research_exogeology(self, location):
-         """Research exogeology and enhance mining efficiency"""
-         research_system = self.game.research
-         if self.game.ship.research_points >= research_system.research_costs.get("exogeology", 0):
-            self.game.ship.research_points -= research_system.research_costs.get("exogeology", 0)
-            success, message = self.research(location, "exogeology")
-            if success.is_success():
-                 self.game.ui.display_simple_message(message.get_message())
-            return success
-         else:
-            self.game.ui.display_simple_message("Not enough research points!")
-            return ActionResult(False, message="Not enough research points")
+    def establish_trade_route(self, location):
+         """Establish a new trade route on location"""
+         action = self.action_data.get('establish_trade_route', {})
+         bonus = action.get("effects",{}).get('trade_bonus', 0.1)
+
+         location.trade_bonus = bonus
+         return ActionResult(True, message=f"Trade route established at {location.name} - trade bonus {bonus}!")
     
-    def conduct_analysis(self, location, specialization):
-        """Safe research analysis with guaranteed small rewards and chance for items"""
-        cost = 20
-        if self.game.ship.research_points < cost:
-            self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return ActionResult(False, message="Not enough research points")
-
-        self.game.ship.research_points -= cost
+    def destabilize_economy(self, location):
+        """Attempt to destabilize economy, which lowers tax revenue"""
+        action = self.action_data.get('destabilize', {})
+        success_chance = action.get("effects",{}).get('revolution_success', 0.50)
         
-        # Base rewards
-        tech_bonus = random.randint(5, 15)
-        money_bonus = random.randint(500, 1500)
-        
-        # Specialization bonuses
-        if specialization == 'quantum':
-            tech_bonus *= 1.5
-        elif specialization == 'engineering':
-            money_bonus *= 1.5
-        
-        # Chance for bonus item or ship stat
-        if random.random() < 0.2:  # 20% chance for bonus
-            bonus_type = random.choice(['item', 'stat'])
-            if bonus_type == 'item':
-                research_items = {
-                    'quantum': ['quantum_analyzer', 'entanglement_core', 'quantum_shield'],
-                    'xenology': ['xeno_scanner', 'translation_matrix', 'alien_artifact'],
-                    'engineering': ['efficiency_module', 'repair_nanites', 'power_core'],
-                    'temporal': ['time_dilator', 'causality_shield', 'temporal_lens']
-                }
-                item = random.choice(research_items[specialization])
-                self.game.ship.acquire_item(item)
-                self.game.ui.display_simple_message(f"Bonus research item acquired: {item}!")
-            else:
-                stat = random.choice(['attack', 'defense', 'speed'])
-                bonus = 1
-                if stat == 'attack':
-                    self.game.ship.attack += bonus
-                elif stat == 'defense':
-                    self.game.ship.defense += bonus
-                else:
-                    self.game.ship.speed += bonus
-                self.game.ui.display_simple_message(f"Ship {stat} improved by {bonus}!")
-
-        # Generate research findings
-        findings = {
-            'quantum': [
-                "Quantum field fluctuations mapped",
-                "Superposition states stabilized",
-                "Entanglement patterns documented",
-                "Wave function variations recorded"
-            ],
-            'xenology': [
-                "Alien artifact patterns analyzed",
-                "Bio-signatures catalogued",
-                "Cultural markers identified",
-                "Xenotechnology principles documented"
-            ],
-            'engineering': [
-                "Efficiency algorithms optimized",
-                "Material stress patterns mapped",
-                "Power distribution improved",
-                "Systems integration enhanced"
-            ],
-            'temporal': [
-                "Temporal anomalies measured",
-                "Causality patterns documented",
-                "Time dilation effects mapped",
-                "Chronological variations recorded"
-            ]
-        }
-        
-        result = random.choice(findings[specialization])
-        
-        self.game.ship.money += money_bonus
-        self.game.ship.research_points += tech_bonus
-        
-        self.game.ui.display_simple_message([
-            f"Analysis Complete: {result}",
-            f"Gained {tech_bonus} research points",
-            f"Earned {self.game.format_money(money_bonus)} credits"
-        ])
-        return ActionResult(True, message="Analysis Completed")
-    
-    def conduct_experiment(self, specialization):
-        """Risky research with variable outcomes and enhanced rewards"""
-        cost = 40
-        if self.game.ship.research_points < cost:
-            self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return ActionResult(False, message="Not enough research points!")
-
-        self.game.ship.research_points -= cost
-        
-        # Success chance based on specialization
-        base_chance = 0.7
-        if specialization == 'engineering':
-            base_chance += 0.1
-        
-        if random.random() < base_chance:
-            # Successful experiment
-            reward_mult = random.uniform(1.5, 3.0)
-            tech_bonus = int(cost * reward_mult)
-            money_bonus = int(1000 * reward_mult)
+        if random.random() < success_chance:
+            current_economy = location.economy
+            possible_economies = ['Booming', 'Stable', 'Declining', 'Formative']
+            possible_economies.remove(current_economy)
+            new_economy = random.choice(possible_economies)
+            location.economy = new_economy
             
-            # Enhanced rewards
-            if random.random() < 0.4:  # 40% chance for significant bonus
-                advanced_items = {
-                    'quantum': {
-                        'items': ['quantum_core_v2', 'phase_shifter', 'quantum_capacitor'],
-                        'stat_bonus': {'attack': 2, 'defense': 1, 'speed': 2}
-                    },
-                    'xenology': {
-                        'items': ['alien_reactor', 'xeno_shield', 'biotech_enhancer'],
-                        'stat_bonus': {'attack': 1, 'defense': 2, 'speed': 1}
-                    },
-                    'engineering': {
-                        'items': ['fusion_drive', 'nanotech_armor', 'power_amplifier'],
-                        'stat_bonus': {'attack': 2, 'defense': 2, 'speed': 1}
-                    },
-                    'temporal': {
-                        'items': ['time_dilation_core', 'temporal_shield', 'causality_engine'],
-                        'stat_bonus': {'attack': 1, 'defense': 1, 'speed': 3}
-                    }
-                }
-                
-                # Either get an advanced item or stat bonus
-                if random.random() < 0.5:
-                    item = random.choice(advanced_items[specialization]['items'])
-                    self.game.ship.acquire_item(item)
-                    self.game.ui.display_simple_message(f"Advanced research item acquired: {item}!")
-                else:
-                    stat_bonuses = advanced_items[specialization]['stat_bonus']
-                    for stat, bonus in stat_bonuses.items():
-                        if random.random() < 0.5:  # 50% chance for each stat
-                            if stat == 'attack':
-                                self.game.ship.attack += bonus
-                            elif stat == 'defense':
-                                self.game.ship.defense += bonus
-                            else:
-                                self.game.ship.speed += bonus
-                            self.game.ui.display_simple_message(f"Ship {stat} improved by {bonus}!")
-
-            # Special bonuses based on specialization
-            special_outcomes = {
-                'quantum': ["Quantum Computing Breakthrough", 
-                        lambda: setattr(self.game.ship, 'quantum_bonus', True)],
-                'xenology': ["Alien Technology Integration", 
-                            lambda: setattr(self.game.ship, 'alien_tech', True)],
-                'engineering': ["Advanced Engineering Insights", 
-                            lambda: setattr(self.game.ship, 'engineering_bonus', True)],
-                'temporal': ["Temporal Mechanics Discovery", 
-                            lambda: setattr(self.game.ship, 'temporal_bonus', True)]
-            }
-            
-            outcome, effect = special_outcomes[specialization]
-            effect()  # Apply the special effect
-            
-            self.game.ui.display_simple_message([
-                f"Experiment Success: {outcome}!",
-                f"Gained {tech_bonus} research points",
-                f"Earned {self.game.format_money(money_bonus)} credits",
-                "Special ability unlocked!"
-            ])
-            
-            self.game.ship.money += money_bonus
-            self.game.ship.research_points += tech_bonus
-            return ActionResult(True, message="Experiment completed")
-        else:
-            # Failed experiment
-            damage = random.randint(5, 15)
-            self.game.ship.damage = min(99, self.game.ship.damage + damage)
-            lost_points = random.randint(5, 15)
-            self.game.ship.research_points = max(0, self.game.ship.research_points - lost_points)
-            
-            self.game.ui.display_simple_message([
-                "Experiment Failed!",
-                f"Ship took {damage}% damage",
-                f"Lost {lost_points} research points"
-            ])
-            return ActionResult(False, message="Experiment Failed!")
-
-    def attempt_breakthrough(self, location, specialization):
-        """Attempt a major research breakthrough"""
-        cost = 100
-        if self.game.ship.research_points < cost:
-            self.game.ui.display_simple_message(f"Not enough research points! Need: {cost}")
-            return ActionResult(False, message="Not enough research points")
-
-        self.game.ship.research_points -= cost
-        
-        # Breakthrough chance increases with more research points spent
-        breakthrough_chance = min(0.8, 0.3 + (self.game.ship.research_points / 1000))
-        
-        if random.random() < breakthrough_chance:
-            # Major breakthrough
-            breakthrough_rewards = {
-                'quantum': {
-                    'name': "Quantum Tunneling Drive",
-                    'effect': lambda: setattr(self.game.ship, 'speed', self.game.ship.speed + 2),
-                    'bonus_rp': 300,
-                    'bonus_money': 50000
-                },
-                'xenology': {
-                    'name': "Xenomorph Shield Matrix",
-                    'effect': lambda: setattr(self.game.ship, 'defense', self.game.ship.defense + 2),
-                    'bonus_rp': 250,
-                    'bonus_money': 40000
-                },
-                'engineering': {
-                    'name': "Nano-fabrication System",
-                    'effect': lambda: setattr(self.game.ship, 'engineering_level', 
-                                            getattr(self.game.ship, 'engineering_level', 0) + 1),
-                    'bonus_rp': 200,
-                    'bonus_money': 60000
-                },
-                'temporal': {
-                    'name': "Temporal Compression Field",
-                    'effect': lambda: setattr(self.game.ship, 'temporal_compression', True),
-                    'bonus_rp': 400,
-                    'bonus_money': 45000
-                }
-            }
-            
-            reward = breakthrough_rewards[specialization]
-            reward['effect']()  # Apply the special effect
-            
-            self.game.ship.research_points += reward['bonus_rp']
-            self.game.ship.money += reward['bonus_money']
-            
-            self.game.ui.display_simple_message([
-                f"Major Breakthrough: {reward['name']}!",
-                f"Gained {reward['bonus_rp']} research points",
-                f"Earned {self.game.format_money(reward['bonus_money'])} credits",
-                "Revolutionary technology acquired!"
-            ])
-            return ActionResult(True, message="Major breakthrough achieved")
-            
-        else:
-            # Minor breakthrough
-            bonus_rp = random.randint(50, 150)
-            bonus_money = random.randint(5000, 15000)
-            
-            self.game.ship.research_points += bonus_rp
-            self.game.ship.money += bonus_money
-            
-            self.game.ui.display_simple_message([
-                "Minor Breakthrough Achieved",
-                f"Gained {bonus_rp} research points",
-                f"Earned {self.game.format_money(bonus_money)} credits"
-            ])
-            return ActionResult(False, message="Minor breakthrough achieved")
+            return ActionResult(True, new_economy, message=f"Destabilization successful! Economy changed to {new_economy}!")
+        return ActionResult(False, message="Destabilization attempt failed!")
