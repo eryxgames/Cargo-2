@@ -122,7 +122,7 @@ class Action:
         Returns: (bool success, str type, any value, str message)
         """
         action = self.action_data.get('scout', {})
-        success_chance = self.base_success_rates['scout']
+        success_chance = action.get("effects",{}).get('scout_success', 0.65)
         if 'telemetry' in self.game.research.unlocked_options:
             success_chance += self.game.research.research_benefits.get('telemetry', {}).get('scout_success', 0)
             
@@ -143,11 +143,11 @@ class Action:
         Scan for mineral deposits
         Returns: (bool success, str deposit_type, int amount, str message)
         """
-        research_system = self.game.research
-        # Calculate success chance
-        success_chance = self.base_success_rates['geoscan']
-        if 'geophysics' in research_system.unlocked_options:
-            success_chance += research_system.research_benefits.get('geophysics', {}).get('exogeology', 0)
+        action = self.action_data.get('geoscan', {})
+        success_chance = action.get("effects",{}).get('geoscan_success', 0.70)
+        
+        if 'geophysics' in self.game.research.unlocked_options:
+            success_chance += self.game.research.research_benefits.get('geophysics', {}).get('exogeology', 0)
             
         if random.random() < success_chance:
             deposit_type = random.choice(['salt', 'fuel'])
@@ -168,10 +168,10 @@ class Action:
       Attempt to change planet's economy and remove trade bans.
       Returns: (bool success, str new_economy, str message)
       """
-      research_system = self.game.research
-      success_chance = self.base_success_rates['revolution']
-      if 'chronopolitics' in research_system.unlocked_options:
-            success_chance += research_system.research_benefits.get('chronopolitics', {}).get('revolution_success', 0)
+      action = self.action_data.get('revolution', {})
+      success_chance = action.get("effects",{}).get('revolution_success', 0.50)
+      if 'chronopolitics' in self.game.research.unlocked_options:
+            success_chance += self.game.research.research_benefits.get('chronopolitics', {}).get('revolution_success', 0)
             
       if random.random() < success_chance:
           current_economy = location.economy
@@ -191,8 +191,11 @@ class Action:
         Attempt to manipulate market prices
         Returns: (bool success, float price_change, str message)
         """
+        action = self.action_data.get('market_manipulation', {})
+        success_chance = action.get("effects",{}).get('manipulation_success', 0.60)
+        
         research_system = self.game.research
-        if random.random() < self.base_success_rates['psychodynamics']:
+        if random.random() < success_chance:
             manipulation_power = research_system.research_benefits.get('psychodynamics', {}).get('price_control',0)
             current_price = location.market[commodity]
             
@@ -402,7 +405,7 @@ class Action:
             
             self.game.ship.money += money_bonus
             self.game.ship.research_points += tech_bonus
-            
+            return ActionResult(True, message="Experiment completed")
         else:
             # Failed experiment
             damage = random.randint(5, 15)
@@ -415,7 +418,7 @@ class Action:
                 f"Ship took {damage}% damage",
                 f"Lost {lost_points} research points"
             ])
-        return ActionResult(True, message="Experiment finished")
+            return ActionResult(False, message="Experiment Failed!")
 
     def attempt_breakthrough(self, location, specialization):
         """Attempt a major research breakthrough"""
@@ -471,7 +474,7 @@ class Action:
                 f"Earned {self.game.format_money(reward['bonus_money'])} credits",
                 "Revolutionary technology acquired!"
             ])
-            return ActionResult(True, message="Breakthrough success!")
+            return ActionResult(True, message="Major breakthrough achieved")
             
         else:
             # Minor breakthrough
@@ -486,4 +489,4 @@ class Action:
                 f"Gained {bonus_rp} research points",
                 f"Earned {self.game.format_money(bonus_money)} credits"
             ])
-            return ActionResult(False, message="Breakthrough failed, minor discovery achieved")
+            return ActionResult(False, message="Minor breakthrough achieved")
