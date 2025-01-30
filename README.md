@@ -57,6 +57,8 @@ cargo-2/
 │   ├── quests.yml
 │   ├── contracts.yml
 │   ├── story.yml
+│   ├── actions.yml
+│   ├── research.yml
 │   ├── infestations.json
 │   ├── ranks.json
 │   ├── reputation.json
