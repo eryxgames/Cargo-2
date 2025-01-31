@@ -87,8 +87,8 @@ research_options:
         name: "Advanced Shielding"
         description: "Advanced shielding methods provide better ship defense"
         cost: 400
-        tech_level: 9
-        plot_points: 25
+        tech_level: 8
+        plot_points: 0
         type: "tech"
         base_breakthrough_chance: 0.60
         breakthrough_cost_mult: 0.2

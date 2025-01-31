@@ -291,9 +291,9 @@ class Game:
                      [f"Breakthrough Bonus: {progress['breakthrough_bonus']:.2f}"],
                      [f"RP Reduction: {progress['rp_reduction']:.2f}"],
                     [""],
-                    ["1. Analysis (Low Cost) - Small effect on research progress"],
-                    ["2. Experiment (Medium Cost) - Higher bonus with chance for random outcome"],
-                    ["3. Breakthrough (High Cost) - Attempt to unlock the research"]
+                    [f"1. Analysis (20 RP) - Small effect on research progress"],
+                    [f"2. Experiment (40 RP) - Higher bonus with chance for random outcome"],
+                    [f"3. Breakthrough ({int(research_info.get('cost', 0) * (1 - progress['rp_reduction'])  * (1 + research_info.get('breakthrough_cost_mult', 0)))} RP) - Attempt to unlock the research"]
                 ]
                 print(self.ui.create_box(track_content, 'double'))
 
@@ -315,7 +315,7 @@ class Game:
                      result = self.research.attempt_breakthrough(self, track_id)
                      if result.is_success():
                         self.research.apply_research_effects(self, track_id)
-                     self.display_action_result(result)  
+                     self.display_action_result(result)
     
     def display_mining_status(self):
         self.ui.display_mining_status(self.current_location)
