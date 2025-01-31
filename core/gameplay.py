@@ -239,12 +239,12 @@ def play_turn(game):
         return
     
     elif action in ['use', 'us']:
-       item = game.validate_input(
-            "Choose item to use: ",
-            list(game.ship.items.keys())
-        )
-       if item is not None:
-          game.handle_use_item(item)
+        # item = game.validate_input(
+        #     "Choose item to use: ",
+        #     list(game.ship.items.keys())
+        # )
+        # if item is not None:
+        game.handle_use_item()
           
         
     else:
