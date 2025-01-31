@@ -188,79 +188,134 @@ class Game:
            self.ui.display_simple_message("Invalid action selected!")
 
     def handle_research_options(self):
-            """Enhanced research options system"""
-            if self.current_location.location_type != "ResearchColony":
-                self.ui.display_simple_message("Basic research options available on this location:")
-
-            # Show current research points and colony specialization
-            specialization = getattr(self.current_location, 'research_specialization', 
-                                random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
-            self.current_location.research_specialization = specialization
-                
+        """Enhanced research options system with track selection"""
+        if self.current_location.location_type != "ResearchColony":
+            self.ui.display_simple_message("Basic research options available on this location:")
+           
+        # Show current research points and colony specialization
+        specialization = getattr(self.current_location, 'research_specialization', 
+                            random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
+        self.current_location.research_specialization = specialization
+        
+        while True:
+            self.clear_screen()
             research_content = [
-                ["Research Laboratory Options"],
+                [f"Research Laboratory ({self.current_location.name}) Options"],
                 [f"Available Research Points: {self.ship.research_points}"],
                 [f"Colony Specialization: {specialization.title()}"],
-                [""],
-                ["1. Analysis (Low Cost) - Small effect on research progress"],
-                ["2. Experiment (Medium Cost) - Higher bonus with chance for random outcome"],
-                ["3. Breakthrough (High Cost) - Attempt to unlock the research"]
+                [""]
             ]
-
-            # Show available research options
-            available_research = self.research.research_data
-            available_options = []
-            for key, value in available_research.items():
+            
+            # List available research tracks
+            available_tracks = []
+            for key, value in self.research.research_data.items():
                  requirements = self.research.get_research_requirements(key)
-                 if self.current_location.tech_level >= requirements["tech_level"] and self.story_manager.plot_points >= requirements["plot_points"] and key not in self.research.unlocked_options and value["type"] == "tech":
-                      available_options.append(f"{key}: {value['name']} ({value['cost']} RP)")
+                 if (self.current_location.tech_level >= requirements["tech_level"] and
+                     self.story_manager.plot_points >= requirements["plot_points"] and
+                     value["type"] == "tech"
+                    ):
+                       
+                    status = "Not Started"
+                    if key in self.research.unlocked_options:
+                         status = "Completed"
+                    elif key == self.research.active_research:
+                         status = "In Progress"
+                    
+                     #check for prereqs
+                    if "requires" in value:
+                        if not all(tech in self.research.unlocked_options for tech in value.get("requires", [])):
+                            status = "Req. Not Met"
+
+                    track_info = f"{key}: {value['name']}"
+                    if value.get("unlocks"):
+                        upgrade_types = [unlock for unlock in value["unlocks"] if self.research.research_data.get(unlock, {}).get("type") == "ship_upgrade"]
+                        if upgrade_types:
+                            track_info += " + Ship Upgrade"
+                    available_tracks.append((key, track_info, status))
             
-            for i, item in enumerate(available_options):
-                  research_content.append([f"{i + 4}. {item}"])
-            
+            # Display tracks
+            if available_tracks:
+               for i, (track_id, track_info, track_status) in enumerate(available_tracks):
+                  research_content.append([f"{i+1}. {track_info} - {track_status}"])
+            else:
+                research_content.append(["No research tracks available!"])
+            research_content.append([""])
+            research_content.append(["Type a number to select track, or back to main menu"])
             print(self.ui.create_box(research_content, 'double'))
             
-            valid_options = [str(i) for i in range(1, len(available_options) + 4)] + ['back']
+            valid_options = [str(i) for i in range(1, len(available_tracks) + 1)] + ['back', 'b']
             choice = self.validate_input(
-                "Choose research action (1-3 or research number, or 'back'): ",
+                "Choose track or 'back': ",
                 valid_options
             )
-            
-            if choice == 'back':
+
+            if choice in ['back', 'b', None]:
                 return
-                
-            if choice == '1':
-                #perform analysis on active research track
-                 if not self.research.active_research:
-                      self.ui.display_simple_message("No research track selected. Please select research to start analyzing.")
-                      return
-                 result = self.research.perform_analysis(self, self.research.active_research)
-                 self.display_action_result(result)
-            elif choice == '2':
-                #perform experiment on active research track
-                 if not self.research.active_research:
-                     self.ui.display_simple_message("No research track selected. Please select research to start experimenting.")
-                     return
-                 result = self.research.perform_experiment(self, self.research.active_research)
-                 self.display_action_result(result)
-            elif choice == '3':
-                #perform breakthrough on active research track
-                 if not self.research.active_research:
-                     self.ui.display_simple_message("No research track selected. Please select research to start breakthrough.")
-                     return
-                 result = self.research.attempt_breakthrough(self, self.research.active_research)
-                 if result.is_success():
-                    self.research.apply_research_effects(self, self.research.active_research)
-                 self.display_action_result(result)
-            elif int(choice) >= 4:
-                 chosen_option = available_options[int(choice)-4].split(':')[0] # Get key from string
-                 if chosen_option in self.research.research_data:
-                    # start new research track
-                     if self.research.start_research(chosen_option):
+            
+            try:
+               chosen_index = int(choice) - 1
+               if chosen_index >= 0 and chosen_index < len(available_tracks):
+                    chosen_option = available_tracks[chosen_index][0]  # Get track key
+                    # start new research track, this is needed!
+                    if self.research.start_research(chosen_option):
                         self.ui.display_simple_message(f"Started new research track: {self.research.research_data[chosen_option].get('name', 'Unknown')}")
-                     else:
-                        self.ui.display_simple_message(f"Research already completed.")
-        
+                    self.handle_research_track_menu(chosen_option)
+            except ValueError:
+              self.ui.display_simple_message("Invalid input!")
+
+    def handle_research_track_menu(self, track_id):
+            """Handle specific research track and actions"""
+            while True:
+                self.clear_screen()
+                research_info = self.research.get_research_data(track_id)
+                
+                progress = self.research.research_progress.get(track_id, {
+                    "analysis_count": 0,
+                    "experiment_count": 0,
+                    "breakthrough_bonus": 0,
+                    "rp_reduction": 0
+                  })
+                
+                status = "Not Started"
+                if track_id in self.research.unlocked_options:
+                     status = "Completed"
+                elif track_id == self.research.active_research:
+                     status = "In Progress"
+
+                track_content = [
+                    [f"Researching: {research_info.get('name', 'Unknown')}"],
+                     [f"Available Research Points: {self.ship.research_points}"],
+                    [f"Colony Specialization: {self.current_location.research_specialization.title()}"],
+                    [f"Description: {research_info.get('description', 'No description')}"],
+                     [f"Current Status: {status}"],
+                     [f"Breakthrough Bonus: {progress['breakthrough_bonus']:.2f}"],
+                     [f"RP Reduction: {progress['rp_reduction']:.2f}"],
+                    [""],
+                    ["1. Analysis (Low Cost) - Small effect on research progress"],
+                    ["2. Experiment (Medium Cost) - Higher bonus with chance for random outcome"],
+                    ["3. Breakthrough (High Cost) - Attempt to unlock the research"]
+                ]
+                print(self.ui.create_box(track_content, 'double'))
+
+                valid_options = ['1', '2', '3', 'back', 'b']
+                choice = self.validate_input(
+                    "Choose action (1/2/3 or 'back'): ",
+                    valid_options
+                )
+                if choice in ['back', 'b', None]:
+                    return
+                    
+                if choice == '1':
+                     result = self.research.perform_analysis(self, track_id)
+                     self.display_action_result(result)
+                elif choice == '2':
+                    result = self.research.perform_experiment(self, track_id)
+                    self.display_action_result(result)
+                elif choice == '3':
+                     result = self.research.attempt_breakthrough(self, track_id)
+                     if result.is_success():
+                        self.research.apply_research_effects(self, track_id)
+                     self.display_action_result(result)  
     
     def display_mining_status(self):
         self.ui.display_mining_status(self.current_location)

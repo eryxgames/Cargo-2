@@ -92,6 +92,12 @@ class Research:
         progress = self.research_progress[option]
         analysis_bonus = research_info.get("analysis_bonus", 0)
         
+        # Deduct research points
+        cost = 20
+        if game.ship.research_points < cost:
+              return ActionResult(False, message=f"Not enough research points! Required: {cost}")
+        game.ship.research_points -= cost
+        
         # Apply diminishing returns
         bonus = analysis_bonus - (progress["analysis_count"] * analysis_bonus / 3)
         bonus = max(bonus, 0)
@@ -104,6 +110,7 @@ class Research:
         reduction = research_info.get("cost", 0) * (0.05)  # 5% reduction each time
         if progress["rp_reduction"] < 0.2:
             progress["rp_reduction"] = min(0.2, progress["rp_reduction"] + reduction)
+            
 
         message = [
            f"Analysis performed for {research_info.get('name', 'Unknown')}!",
@@ -125,6 +132,12 @@ class Research:
         progress = self.research_progress[option]
         experiment_bonus = research_info.get("experiment_bonus", 0)
         
+        # Deduct research points
+        cost = 40
+        if game.ship.research_points < cost:
+            return ActionResult(False, message=f"Not enough research points! Required: {cost}")
+        game.ship.research_points -= cost
+
         # Apply diminishing returns
         bonus = experiment_bonus - (progress["experiment_count"] * experiment_bonus / 3)
         bonus = max(bonus, 0)
@@ -146,7 +159,7 @@ class Research:
              else:
                 message = f"Experiment unstable! Lost {abs(rp_change)} research points."
         elif random.random() < 0.3:
-            self.game.ship.damage = min(99, self.game.ship.damage + random.randint(5, 10))
+            game.ship.damage = min(99, game.ship.damage + random.randint(5, 10))
             message = f"Experiment failed! Ship took damage."
         else:
             message = "Experiment successful! No new effects."
@@ -159,7 +172,6 @@ class Research:
         ]
         game.ui.display_simple_message(message)
         return ActionResult(True, message="Experiment complete")
-
 
     def attempt_breakthrough(self, game, option):
         """Attempt a research breakthrough"""
@@ -223,7 +235,7 @@ class Research:
                        game.ship.research_points = max(0, game.ship.research_points - lost)
                        self.game.ui.display_simple_message(f"Breakthrough failed! Lost {lost} research points")
             
-            return ActionResult(False, message="Research breakthrough failed!")
+            return ActionResult(False, message="Research breakthrough failed!")        
     
     def apply_research_effects(self, game, option):
       """Apply the research effect from the data"""
