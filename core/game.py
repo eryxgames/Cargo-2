@@ -62,7 +62,7 @@ class Game:
         
         self.secret_quest_available = False
         self.stellar_portal_available = False
-        self.research = Research()
+        self.research = Research(self) # Modified to pass self
         self.action = Action(self) # Modified this line to pass self
         # Add new tracking attributes for story milestones
         self.trades_completed = 0
@@ -121,9 +121,17 @@ class Game:
 
         # Initialize cantina
         self.cantina = Cantina(self)
-
          # NEW: initialize research effects list
         self._new_research_effects = None
+        
+        #Add starting items for test
+        self.ship.add_starting_items({
+             "distress_beacon_a": 2,
+             "distress_beacon_b": 1,
+             "distress_beacon_c": 1,
+             "nav_beacon_a": 3,
+             "mcguffin_beacon": 1
+        })
 
     def handle_actions(self):
         """Handle actions based on the current location and type"""

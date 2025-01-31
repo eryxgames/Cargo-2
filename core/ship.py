@@ -146,6 +146,14 @@ class Ship:
                          
          return effects
 
+    def add_starting_items(self, starting_items):
+        """Add starting items to the player inventory"""
+        for item, quantity in starting_items.items():
+            if item in self.items:
+              self.items[item] += quantity
+            else:
+              self.items[item] = quantity
+
     def acquire_item(self, item_name):
         if item_name in self.items:
             self.items[item_name] += 1
@@ -254,18 +262,18 @@ class Ship:
         return False
 
     def record_combat_victory(self, enemy_type=None):
-        """Record a combat victory with proper type tracking"""
-        self.combat_victories['total'] += 1
-        if enemy_type:
-            if enemy_type in self.combat_victories:
-                self.combat_victories[enemy_type] += 1
+            """Record a combat victory with proper type tracking"""
+            self.combat_victories['total'] += 1
+            if enemy_type:
+                if enemy_type in self.combat_victories:
+                    self.combat_victories[enemy_type] += 1
 
     def record_combat_defeat(self, enemy_type=None):
-        """Record a combat defeat with proper type tracking"""
-        self.combat_defeats['total'] += 1
-        if enemy_type:
-            if enemy_type in self.combat_defeats:
-                self.combat_defeats[enemy_type] += 1
+         """Record a combat defeat with proper type tracking"""
+         self.combat_defeats['total'] += 1
+         if enemy_type:
+             if enemy_type in self.combat_defeats:
+                 self.combat_defeats[enemy_type] += 1
     
     # Existing methods for buying and selling items
 
