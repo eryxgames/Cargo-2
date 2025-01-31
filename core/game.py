@@ -191,64 +191,73 @@ class Game:
            self.ui.display_simple_message("Invalid action selected!")
 
     def handle_upgrade(self):
-         """Handle ship upgrade selection from available unlocks"""
-         
-         available_upgrades = []
-         for research_id in self.research.unlocked_options:
-            research_data = self.research.get_research_data(research_id)
-            if "unlocks" in research_data:
-                for unlock_id in research_data["unlocks"]:
-                    unlock_data = self.research.get_research_data(unlock_id)
-                    if unlock_data and unlock_data["type"] == "ship_upgrade" and unlock_id not in self.ship.upgrades:
-                       available_upgrades.append((unlock_id, unlock_data))
+            """Handle ship upgrade selection from available unlocks"""
+            
+            available_upgrades = []
+            for research_id in self.research.unlocked_options:
+                research_data = self.research.get_research_data(research_id)
+                if "unlocks" in research_data:
+                    for unlock_id in research_data["unlocks"]:
+                        unlock_data = self.research.get_research_data(unlock_id)
+                        if unlock_data and unlock_data["type"] == "ship_upgrade" and unlock_data["name"] not in self.ship.upgrades:
+                            available_upgrades.append((unlock_id, unlock_data))
 
-         if not available_upgrades:
-             self.ui.display_simple_message("No ship upgrades available.")
-             return
-         
-         # Display options
-         upgrade_content = [["Available Ship Upgrades"]]
-         for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
-              upgrade_content.append([f"{i + 1}. {upgrade_data['name']}"])
-              upgrade_content.append([f"   Cost: {self.format_money(upgrade_data.get('cost', 0))}"])
+            if not available_upgrades:
+                self.ui.display_simple_message("No ship upgrades available.")
+                return
+
+            # Display options
+            upgrade_content = [["Available Ship Upgrades"]]
+            for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
+                upgrade_content.append([f"{i + 1}. {upgrade_data['name']}"])
+                upgrade_content.append([f"   Cost: {self.format_money(upgrade_data.get('cost', 0))}"])
                 
-              # Prepare stats display
-              stats = []
-              for stat in ["attack", "defense", "speed"]:
-                  if stat in upgrade_data.get("effects", {}):
-                      value = upgrade_data["effects"][stat]
-                      sign = "+" if value >= 0 else "" # Add + or - sign
-                      stats.append(f"{stat.upper()}: {sign}{value}")
-              if stats:
-                 upgrade_content.append([f"  Stats: {', '.join(stats)}"])
-              
-              # Prepare description
-              description = upgrade_data.get("description", "No description available")
-              wrapped_description = self.word_wrap(description, self.term_width - 10) # Wrap description
-              for line in wrapped_description:
-                   upgrade_content.append([f"  {line}"])
-              
-              upgrade_content.append([""]) # Add spacing between items
+                # Prepare stats display
+                stats = []
+                for stat in ["attack", "defense", "speed"]:
+                    if stat in upgrade_data.get("effects", {}):
+                        value = upgrade_data["effects"][stat]
+                        sign = "+" if value >= 0 else "" # Add + or - sign
+                        stats.append(f"{stat.upper()}: {sign}{value}")
+                if stats:
+                    upgrade_content.append([f"  Stats: {', '.join(stats)}"])
+                
+                # Prepare description
+                description = upgrade_data.get("description", "No description available")
+                wrapped_description = self.word_wrap(description, self.term_width - 10) # Wrap description
+                for line in wrapped_description:
+                    upgrade_content.append([f"  {line}"])
+                
+                upgrade_content.append([""]) # Add spacing between items
+            print(self.ui.create_box(upgrade_content, 'double'))
 
-         print(self.ui.create_box(upgrade_content, 'double'))
+            # Display installed upgrades
+            if self.ship.upgrades:
+                    installed_upgrades = [f"- {upgrade}" for upgrade in self.ship.upgrades]
+                    installed_text = [["Installed Upgrades:"]]
+                    for upgrade_line in installed_upgrades:
+                        installed_text.append([upgrade_line])
+                    print(self.ui.create_box(installed_text, "round"))
 
-         valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
-         choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
-         
-         if choice in ["back", None]:
-            return
+            valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
+            choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
+            
+            if choice in ["back", None]:
+                return
 
-         try:
-             selected_upgrade_index = int(choice) - 1
-             upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
-             if self.ship.money >= upgrade_data.get("cost",0):
-                 self.ship.money -= upgrade_data["cost"]
-                 if self.ship.apply_upgrade(upgrade_data):
-                    self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
-                 else:
-                    self.ui.display_simple_message("Upgrade failed!")
-         except (ValueError, IndexError):
-            self.ui.display_simple_message("Invalid input!")
+            try:
+                selected_upgrade_index = int(choice) - 1
+                upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
+                if self.ship.money >= upgrade_data.get("cost",0):
+                    self.ship.money -= upgrade_data["cost"]
+                    if self.ship.apply_upgrade(upgrade_data):
+                        self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
+                        # Remove the *item* after it is applied, not just id
+                        available_upgrades.pop(selected_upgrade_index)
+                    else:
+                        self.ui.display_simple_message("Upgrade failed!")
+            except (ValueError, IndexError):
+                self.ui.display_simple_message("Invalid input!")
 
     def handle_research_track_menu(self, track_id):
             """Handle specific research track and actions"""

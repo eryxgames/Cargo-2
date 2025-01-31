@@ -232,6 +232,8 @@ class Ship:
     def apply_upgrade(self, upgrade_data):
         """Apply ship upgrades using data structure"""
         if upgrade_data["type"] == "ship_upgrade":
+            if upgrade_data["name"] in self.upgrades:
+                return False  # Return false, if upgrade already purchased.
             if "effects" in upgrade_data:
                for stat, value in upgrade_data["effects"].items():
                    if stat in ['attack', 'defense', 'speed']:
