@@ -324,84 +324,85 @@ class Game:
     
 # core/game.py
     def handle_travel(self):
-        """Handle travelling to a new location"""
-        
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and 
-                               loc.location_type in self.unlocked_location_types]
+            """Handle travelling to a new location"""
+            
+            available_planets = [loc for loc in self.locations
+                                if loc.name != self.current_location.name and 
+                                loc.location_type in self.unlocked_location_types]
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
-        
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input(
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
+            if not available_planets:
+                self.ui.display_simple_message("No other locations available to travel!", 1)
+                return False
+            
+            available_names = [loc.name.lower() for loc in available_planets]
+            location_choice = self.validate_input(
+                f"Choose location to travel to: ",
+                available_names
+            )
+            if not location_choice:
+                return False
 
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel') #record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            # Clear the research message
-            if hasattr(self, "_new_research_effects"):
-               delattr(self, "_new_research_effects")
-           
-            if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
-                # Start boss battle if activated
-                self.game.game_events.trigger_boss_battle()
-                self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
-                if self.ship.items[self.active_mcguffin_beacon] <= 0:
-                     del self.ship.items[self.active_mcguffin_beacon]
-                delattr(self, 'active_mcguffin_beacon')
-            # Check for activated beacon
-            if hasattr(self, 'active_beacon'):
-                beacon_item = getattr(self, 'active_beacon')
-                beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
-                if beacon_type:
-                    if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
-                        if self.active_beacon_encounter == True:
-                            character = self.game.character_system.character_encounters.generate_character("merchant")
-                            if character:
-                                self.game.character_system.character_encounters.handle_merchant_encounter(character)
-                            self.ship.items[self.active_beacon] -= 1
-                            if self.ship.items[self.active_beacon] <= 0:
-                                del self.ship.items[self.active_beacon]
-                            delattr(self, 'active_beacon_encounter')
-                            delattr(self, 'active_beacon')
+            # Find actual Location object with chosen name
+            chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+            if chosen_location:
+                self.current_location = chosen_location
+                self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+                self.record_activity('travel') #record travel activity
+                self.location_manager.handle_location_discovery(self.current_location)
+                # Clear the research message
+                if hasattr(self, "_new_research_effects"):
+                    delattr(self, "_new_research_effects")
+            
+                if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
+                    # Start boss battle if activated
+                    self.game.game_events.trigger_boss_battle()
+                    self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
+                    if self.ship.items[self.active_mcguffin_beacon] <= 0:
+                        del self.ship.items[self.active_mcguffin_beacon]
+                    delattr(self, 'active_mcguffin_beacon')
+                # Check for activated beacon
+                if hasattr(self, 'active_beacon'):
+                    beacon_item = getattr(self, 'active_beacon')
+                    beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+                    if beacon_type:
+                        if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
+                            if self.active_beacon_encounter == True:
+                                character = self.game.character_system.character_encounters.generate_character("merchant")
+                                if character:
+                                    self.game.character_system.character_encounters.handle_merchant_encounter(character)
+                                self.ship.items[self.active_beacon] -= 1
+                                if self.ship.items[self.active_beacon] <= 0:
+                                    del self.ship.items[self.active_beacon]
+                                delattr(self, 'active_beacon_encounter')
+                                delattr(self, 'active_beacon')
+                            else:
+                            
+                                enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
+                                if enemy_id:
+                                    # Start the combat using combat class instead of resolve
+                                    combat_result = self.game.combat.resolve_combat(enemy_id)
+                                    if combat_result.is_victory():
+                                        self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
+                                    elif combat_result.is_defeat():
+                                            self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
+                                    
+                                    self.ship.items[self.active_beacon] -= 1
+                                    if self.ship.items[self.active_beacon] <= 0:
+                                        del self.ship.items[self.active_beacon]
+                                    delattr(self, 'active_beacon_encounter')
+                                    delattr(self, 'active_beacon')
+                                else:
+                                    print("Error: Enemy ID not defined for beacon type:" + beacon_type )
                         else:
-                           
-                           enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
-                           if enemy_id:
-                               # Start the combat using combat class instead of resolve
-                               combat_result = self.game.combat.resolve_combat(enemy_id)
-                               if combat_result.is_victory():
-                                   self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
-                               elif combat_result.is_defeat():
-                                    self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
-                               
-                               self.ship.items[self.active_beacon] -= 1
-                               if self.ship.items[self.active_beacon] <= 0:
-                                   del self.ship.items[self.active_beacon]
-                               delattr(self, 'active_beacon_encounter')
-                               delattr(self, 'active_beacon')
-                           else:
-                               print("Error: Enemy ID not defined for beacon type:" + beacon_type )
-                    else:
-                         # Clear if beacon used and no encounter
-                         delattr(self, 'active_beacon')
+                            # Clear if beacon used and no encounter
+                            delattr(self, 'active_beacon')
 
-            # No longer incrementing turn here
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
+                # Perform turn ending logic here - IMPORTANT CALL
+                self.end_turn_actions()
+                return True
+            else:
+                self.ui.display_simple_message("Invalid location selected!")
+                return False
             
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
