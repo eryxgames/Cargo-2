@@ -48,9 +48,9 @@ class Ship:
             'salt': 0,
             'fuel': 0
         }
-        self.money = 1000000
+        self.money = 1000
         self.damage = 0
-        self.research_points = 10000
+        self.research_points = 0
 
         # Ship stats
         self.attack = 1
@@ -240,14 +240,14 @@ class Ship:
                 return False  # Return false, if upgrade already purchased.
             if "effects" in upgrade_data:
                for stat, value in upgrade_data["effects"].items():
-                   if stat in ['attack', 'defense', 'speed']:
-                       setattr(self, stat, max(1, int(getattr(self, stat, 0) + value))) # Prevent it to go below 1, and cast to int.
-                       if stat == 'attack':
-                           self.total_attack_modifier += value
-                       if stat == 'defense':
+                    if stat in ['attack', 'defense', 'speed']:
+                        setattr(self, stat, max(1, int(getattr(self, stat, 0) + value))) # Prevent it to go below 1, and cast to int.
+                        if stat == 'attack':
+                            self.total_attack_modifier += value
+                        if stat == 'defense':
                             self.total_defense_modifier += value
-                       if stat == 'speed':
-                           self.total_speed_modifier += value
+                        if stat == 'speed':
+                            self.total_speed_modifier += value
 
             self.upgrades.append(upgrade_data['name'])
             return True
@@ -266,6 +266,8 @@ class Ship:
         if enemy_type:
             if enemy_type in self.combat_defeats:
                 self.combat_defeats[enemy_type] += 1
+    
+    # Existing methods for buying and selling items
 
     def buy(self, item, quantity, price, planet, player_rank):
         if not planet.can_trade(item):
