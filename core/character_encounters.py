@@ -182,6 +182,11 @@ class SpecialCharacterEncounters:
                 return False
         else:
             self.game.ui.display_simple_message("Preparing for combat with rogue captain...")
+            
+            # Start combat using Combat class
+            enemy_id = 'pirate_scout'
+            self.combat.resolve_combat(enemy_id)
+            
             return False
 
     def trigger_random_encounter(self, location_type="Space"):

@@ -6,7 +6,8 @@ from core.action import ActionResult
 
 
 class Research:
-    def __init__(self):
+    def __init__(self, game=None):
+        self.game = game
         self.unlocked_options = set()
         self.active_research = None # Track active research
         self.research_data = self.load_research_data()

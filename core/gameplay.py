@@ -7,21 +7,28 @@ from core.utils import display_logo, logo_data, print_centered_text
 from core.ship import Ship
 from ui.text_ui import TextUI
 
+# core/gameplay.py
+
 def play_turn(game):
     game.display_turn_info()
-    game.check_story_requirements() # check if any new story beats, quests and chapters have been triggered
+    game.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
     game.check_location_events("turn_end")
-    game.location_manager.check_location_unlocks() #check for unlocks, moved from game to location manager
-    game.story_manager.check_milestone_progress() # re-added milestone checks here
+    game.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
+    game.story_manager.check_milestone_progress()  # re-added milestone checks here
     game.character_system.check_character_triggers()
     game.story_manager.check_chapter_progress()
-    game.force_check_chapter_progression()
+    
+    #check quests and contracts and update before turn is incremented
     game.quest_system.check_active_quests()
-    # Get location commands
-    location_commands = game.current_location.commands
+    game.contract_manager.update_contract_progress({
+            "action": "",
+            "commodity": "",
+            "amount": 0,
+            "location": game.current_location.name,
+            "turn": game.turn
+        })
 
     game.character_manager.update()
-
     game.infestation_manager.check_global_infestations()
     if hasattr(game.ship, 'active_infestations'):
         game.infestation_manager.update_ship_infestations()
@@ -42,11 +49,32 @@ def play_turn(game):
     
     # Update port system if port command is available
     port_is_available = False
+    
+    # Get location commands - IMPORTANT fix here
+    location_commands = game.current_location.commands
     for cmd, shortcut in location_commands["available"]:
         if cmd == 'port' or shortcut == 'p':
             port_is_available = True
             game.port_system.update_passengers(game.current_location.name)
+
+    # Check if beacon activated
+    if hasattr(game, 'active_beacon'):
+        # if game.handle_use_item(): # old code
+        #    delattr(game, 'active_beacon')
+        beacon_type = game.ship.item_data[game.active_beacon].get("beacon_type")
+        if beacon_type:
+            if beacon_type == "mcguffin":
+               game.handle_use_item()
+            else:
+                # Trigger combat from beacon, but don't remove it, it is removed during travel
+                enemy_id = game.game_events.handle_beacon_encounter(beacon_type)
+                if enemy_id:
+                    # Set the attribute for the game to handle in travel
+                    setattr(game, 'active_beacon_encounter', enemy_id)
     
+    # Call random event before the player makes an action
+    game.random_event()
+
     # Create list of valid actions
     valid_actions = []
     for cmd, shortcut in location_commands["available"]:
@@ -56,13 +84,14 @@ def play_turn(game):
     valid_actions.extend(['quit', 'q', 'resign', 'rs', 'version', 'v'])
     valid_actions.extend(['log', 'l'])  # Add but don't show in command hints
     valid_actions.extend(['theme', '/'])  # Add theme switch
-
+    valid_actions.extend(['use', 'us']) # Add use item command
+    
     action = game.validate_input("Choose action: ", valid_actions)
-
-    # Handle cancelled command
+    
+     # Handle cancelled command
     if action is None:
-        return
-                    
+       return
+    
     # Handle research/repair based on location type
     elif action in ['research', 'r']:
         if game.current_location.location_type == "ResearchColony":
@@ -154,7 +183,7 @@ def play_turn(game):
             game.handle_trade('sell', item, quantity, price)
 
     elif action in ['upgrade', 'u']:
-         game.handle_upgrade() #call handle_upgrade here
+        game.handle_upgrade()
 
     elif action in ['travel', 't']:
         game.handle_travel()
@@ -163,16 +192,8 @@ def play_turn(game):
         game.display_location_info()
 
     elif action in ['build', 'bl']:
-        
-        building_name = game.validate_input(
-            "Choose building type: ",
-            game.valid_building_options
-        )
-        
-        if building_name is None:
-            return
-
-        game.handle_building_construction(building_name, game.building_costs)
+        if not game.handle_building_construction():
+           return #skip if canceled.
 
     elif action in ['cantina', 'c']:
          game.cantina.handle_cantina_menu()
@@ -224,18 +245,17 @@ def play_turn(game):
             exit()
         return    
 
+
     elif action in ['end', 'e']:
         # Update passenger satisfaction at end of turn if port is available
         if port_is_available:
             game.port_system.update_passenger_satisfaction()
-        game.turn += 1
-        game.random_event()
-        game.shop.reset_turn()  # Reset shop state at end of each turn
-        game.captain.update_rank()
-        # Clean up old activity logs
-        game.activity_log = [activity for activity in game.activity_log 
-                         if game.turn - activity["turn"] < game.rank_check_interval]
-        return
 
+        # Call turn end methods from game.py
+        game.end_turn_actions()
+        return # Exit play_turn() and start new loop
+    
+    elif action in ['use', 'us']:
+        game.handle_use_item()
     else:
         game.ui.display_simple_message("Invalid action.")

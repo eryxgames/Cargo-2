@@ -62,7 +62,7 @@ class Game:
         
         self.secret_quest_available = False
         self.stellar_portal_available = False
-        self.research = Research()
+        self.research = Research(self) # Modified to pass self
         self.action = Action(self) # Modified this line to pass self
         # Add new tracking attributes for story milestones
         self.trades_completed = 0
@@ -121,9 +121,53 @@ class Game:
 
         # Initialize cantina
         self.cantina = Cantina(self)
-
          # NEW: initialize research effects list
         self._new_research_effects = None
+        
+        #Add starting items for test
+        self.ship.add_starting_items({
+             "distress_beacon_a": 2,
+             "distress_beacon_b": 1,
+             "distress_beacon_c": 1,
+             "nav_beacon_a": 3,
+             "mcguffin_beacon": 1
+        })
+
+# endofturn
+
+    def end_turn_actions(self):
+        """Handles all turn-ending actions"""
+         # Update passenger satisfaction at end of turn if port is available
+        if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
+            self.port_system.update_passenger_satisfaction()
+
+        # Increment turn after processing everything
+        self.turn += 1
+        self.shop.reset_turn()  # Reset shop state at end of each turn
+        self.captain.update_rank()
+
+         # Check story and events
+        self.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
+        self.check_location_events("turn_end")
+        self.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
+        self.story_manager.check_milestone_progress()  # re-added milestone checks here
+        self.character_system.check_character_triggers()
+        self.story_manager.check_chapter_progress()
+    
+    #check quests and contracts and update before turn is incremented
+        self.quest_system.check_active_quests()
+        self.contract_manager.update_contract_progress({
+            "action": "",
+            "commodity": "",
+            "amount": 0,
+            "location": self.current_location.name,
+            "turn": self.turn
+        })
+        
+        
+        # Clean up old activity logs
+        self.captain.activity_log = [activity for activity in self.captain.activity_log 
+                         if self.turn - activity["turn"] < self.captain.rank_check_interval]
 
     def handle_actions(self):
         """Handle actions based on the current location and type"""
@@ -189,7 +233,177 @@ class Game:
                         self.display_action_result(result)
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
+           
+    def handle_use_item(self):
+        """Handle usage of consumable items, including beacons."""
+        
+        # Get available usable items
+        usable_items = [
+            item for item in self.ship.items.keys() 
+            if self.ship.item_data.get(item, {}).get("type") == "beacon" or 
+            self.ship.item_data.get(item, {}).get("type") == "consumable"
+            ]
 
+        if not usable_items:
+            self.ui.display_simple_message("No usable items available.")
+            return False
+        
+        # Create menu
+        item_content = [["Select Item to Use"]]
+        
+        # Create the content for multiple columns if terminal has space
+        try:
+            term_width = os.get_terminal_size().columns
+        except OSError:
+            term_width = 80  # Default if not in a terminal
+        
+        if term_width >= 80:
+            items_per_col = (len(usable_items) + 1) // 2
+            for i in range(items_per_col):
+                item_id1 = usable_items[i] if i < len(usable_items) else None
+                item_id2 = usable_items[i + items_per_col] if i + items_per_col < len(usable_items) else None
+
+                item1 = f"{i+1}. {self.ship.item_data.get(item_id1, {}).get('name', item_id1).title()} - {self.ship.item_data.get(item_id1, {}).get('description','')}" if item_id1 else ""
+                item2 = f"{i+1+items_per_col}. {self.ship.item_data.get(item_id2, {}).get('name', item_id2).title()} - {self.ship.item_data.get(item_id2, {}).get('description','')}" if item_id2 else ""
+                item_content.append([item1, item2])
+        else:
+           for i, item_id in enumerate(usable_items, 1):
+                item = self.ship.item_data.get(item_id, {})
+                item_name = item.get('name', item_id).title()
+                item_description = item.get('description', '')
+                item_content.append([f"{i}. {item_name} - {item_description}"])
+        
+        print(self.ui.create_box(item_content, 'single'))
+        
+        # Get item choice
+        valid_choices = [str(i) for i in range(1, len(usable_items) + 1)] + ['back']
+        choice = self.validate_input("Choose item or 'back': ", valid_choices)
+        
+        if choice in ["back", None]:
+            return False
+        
+        try:
+            chosen_item = usable_items[int(choice) - 1]
+        except (ValueError, IndexError):
+            self.ui.display_simple_message("Invalid item selection!")
+            return False
+        
+        item_data = self.ship.item_data.get(chosen_item, {})
+        
+        if item_data.get("type") == "beacon":
+            beacon_type = item_data.get("beacon_type")
+            if beacon_type == "mcguffin":
+               if self.handle_travel():
+                   # Start boss fight
+                  success = self.game_events.trigger_boss_battle()
+                  if success:
+                      self.ship.items[chosen_item] -= 1  # Remove consumable after use
+                      if self.ship.items[chosen_item] <= 0:
+                        del self.ship.items[chosen_item]
+                      return True
+                  else:
+                      return False
+            elif beacon_type:
+                # store beacon to be triggered later
+                setattr(self, 'active_beacon', chosen_item)
+                self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
+                return True
+            else:
+               self.ui.display_simple_message("Not a valid beacon!")
+               return False
+        elif item_data.get("type") == "consumable":
+            # Remove item
+             self.ship.items[chosen_item] -= 1
+             if self.ship.items[chosen_item] <= 0:
+                 del self.ship.items[chosen_item]
+             self.ui.display_simple_message(f"Used item: {item_data.get('name').title()}!")
+             return True
+        
+        self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
+        return False
+    
+# core/game.py
+    def handle_travel(self):
+        """Handle travelling to a new location"""
+        
+        available_planets = [loc for loc in self.locations
+                            if loc.name != self.current_location.name and 
+                               loc.location_type in self.unlocked_location_types]
+
+        if not available_planets:
+            self.ui.display_simple_message("No other locations available to travel!", 1)
+            return False
+        
+        available_names = [loc.name.lower() for loc in available_planets]
+        location_choice = self.validate_input(
+            f"Choose location to travel to: ",
+            available_names
+        )
+        if not location_choice:
+            return False
+
+        # Find actual Location object with chosen name
+        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+        if chosen_location:
+            self.current_location = chosen_location
+            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+            self.record_activity('travel') #record travel activity
+            self.location_manager.handle_location_discovery(self.current_location)
+            # Clear the research message
+            if hasattr(self, "_new_research_effects"):
+               delattr(self, "_new_research_effects")
+           
+            if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
+                # Start boss battle if activated
+                self.game.game_events.trigger_boss_battle()
+                self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
+                if self.ship.items[self.active_mcguffin_beacon] <= 0:
+                     del self.ship.items[self.active_mcguffin_beacon]
+                delattr(self, 'active_mcguffin_beacon')
+            # Check for activated beacon
+            if hasattr(self, 'active_beacon'):
+                beacon_item = getattr(self, 'active_beacon')
+                beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+                if beacon_type:
+                    if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
+                        if self.active_beacon_encounter == True:
+                            character = self.game.character_system.character_encounters.generate_character("merchant")
+                            if character:
+                                self.game.character_system.character_encounters.handle_merchant_encounter(character)
+                            self.ship.items[self.active_beacon] -= 1
+                            if self.ship.items[self.active_beacon] <= 0:
+                                del self.ship.items[self.active_beacon]
+                            delattr(self, 'active_beacon_encounter')
+                            delattr(self, 'active_beacon')
+                        else:
+                           
+                           enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
+                           if enemy_id:
+                               # Start the combat using combat class instead of resolve
+                               combat_result = self.game.combat.resolve_combat(enemy_id)
+                               if combat_result.is_victory():
+                                   self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
+                               elif combat_result.is_defeat():
+                                    self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
+                               
+                               self.ship.items[self.active_beacon] -= 1
+                               if self.ship.items[self.active_beacon] <= 0:
+                                   del self.ship.items[self.active_beacon]
+                               delattr(self, 'active_beacon_encounter')
+                               delattr(self, 'active_beacon')
+                           else:
+                               print("Error: Enemy ID not defined for beacon type:" + beacon_type )
+                    else:
+                         # Clear if beacon used and no encounter
+                         delattr(self, 'active_beacon')
+
+            # Perform turn ending logic here - IMPORTANT CALL
+            self.end_turn_actions()
+            return True
+        else:
+            self.ui.display_simple_message("Invalid location selected!")
+            return False
+            
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
          
@@ -202,20 +416,11 @@ class Game:
                     if unlock_data and unlock_data["type"] == "ship_upgrade" and unlock_data["name"] not in self.ship.upgrades:
                        available_upgrades.append((unlock_id, unlock_data))
 
-         # Display installed upgrades first
-         if self.ship.upgrades:
-            installed_upgrades = [f"- {upgrade}" for upgrade in self.ship.upgrades]
-            installed_text = [["Installed Upgrades:"]]
-            for upgrade_line in installed_upgrades:
-                installed_text.append([upgrade_line])
-            print(self.ui.create_box(installed_text, "round"))
+         if not available_upgrades and not self.ship.upgrades:
+             self.ui.display_simple_message("No ship upgrades available.")
+             input("Press Enter to continue...")
+             return
          
-         # No available upgrades case
-         if not available_upgrades:
-            self.ui.display_simple_message("No ship upgrades available.")
-            input("Press Enter to continue...")
-            return
-        
          # Display available upgrades
          upgrade_content = [["Available Ship Upgrades"]]
          for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
@@ -241,25 +446,74 @@ class Game:
               upgrade_content.append([""]) # Add spacing between items
          print(self.ui.create_box(upgrade_content, 'double'))
 
-         valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
-         choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
-         
-         if choice in ["back", None]:
-            return
+         # Display installed upgrades
+         if self.ship.upgrades:
+                installed_upgrades = [f"- {upgrade}" for upgrade in self.ship.upgrades]
+                installed_text = [["Installed Upgrades:"]]
+                for upgrade_line in installed_upgrades:
+                   installed_text.append([upgrade_line])
+                print(self.ui.create_box(installed_text, "round"))
 
-         try:
-             selected_upgrade_index = int(choice) - 1
-             upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
-             if self.ship.money >= upgrade_data.get("cost",0):
-                 self.ship.money -= upgrade_data["cost"]
-                 if self.ship.apply_upgrade(upgrade_data):
-                    self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
-                    # Remove the *item* after it is applied, not just id
-                    available_upgrades.pop(selected_upgrade_index)
-                 else:
-                    self.ui.display_simple_message("Upgrade failed!")
-         except (ValueError, IndexError):
-            self.ui.display_simple_message("Invalid input!")
+         if available_upgrades:
+            valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
+            choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
+             
+            if choice in ["back", None]:
+                return
+
+            try:
+                selected_upgrade_index = int(choice) - 1
+                upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
+                if self.ship.money >= upgrade_data.get("cost",0):
+                   # Check if applying this upgrade results in negative values
+                   temp_attack = self.ship.attack
+                   temp_defense = self.ship.defense
+                   temp_speed = self.ship.speed
+                   
+                   negative_stats = []
+                   
+                   for stat, value in upgrade_data["effects"].items():
+                      if stat == 'attack':
+                          if temp_attack + value < 1:
+                            negative_stats.append("ATK")
+                          temp_attack = max(1, int(getattr(self.ship, stat, 0) + value))
+                      if stat == 'defense':
+                         if temp_defense + value < 1:
+                           negative_stats.append("DEF")
+                         temp_defense = max(1, int(getattr(self.ship, stat, 0) + value))
+                      if stat == 'speed':
+                          if temp_speed + value < 1:
+                              negative_stats.append("SPD")
+                          temp_speed = max(1, int(getattr(self.ship, stat, 0) + value))
+                   
+                   # Handle the messages to player
+                   if negative_stats:
+                       if len(negative_stats) > 1:
+                           self.ui.display_simple_message(
+                                "This upgrade is incompatible with your ship's current configuration, increase ship stats first " +
+                                f"({', '.join(negative_stats)})"
+                             )
+                       else:
+                           stat = negative_stats[0]
+                           messages = {
+                                "ATK": "This technology would impair your ship's security systems below critical levels (increase ATK first)",
+                                "DEF": "This technology would weaken your ship's structural integrity below critical limits (increase DEF first)",
+                                "SPD": "This upgrade would drain your propulsion power systems below the recommended level (increase SPD first)"
+                            }
+                           self.ui.display_simple_message(messages.get(stat, "Upgrade not allowed."))
+                       input("Press Enter to continue...") #Added Input here
+                   else: #If no negative stats, apply upgrade
+                     self.ship.money -= upgrade_data["cost"]
+                     if self.ship.apply_upgrade(upgrade_data):
+                        self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
+                        # Remove the *item* after it is applied, not just id
+                        available_upgrades.pop(selected_upgrade_index)
+                     else:
+                       self.ui.display_simple_message("Upgrade failed!")
+
+            except (ValueError, IndexError):
+                 self.ui.display_simple_message("Invalid input!")
+
 
     def handle_research_track_menu(self, track_id):
             """Handle specific research track and actions"""
@@ -373,6 +627,7 @@ class Game:
               self.ui.theme_manager.load_theme(selected_theme)
               self.ui.display_simple_message(f"Theme switched to {selected_theme}")
     
+# core/game.py
     def handle_trade(self, action, item, quantity, price):
           """Handle trade actions with update and contract tracking"""
           if hasattr(self, 'contract_manager'):
@@ -392,45 +647,89 @@ class Game:
                 "amount": quantity,
             }
           )
+          
+          # Record trade only when a successful trade action (buy/sell) is performed
+          if action == "buy" or action == "sell":
+            if hasattr(self, 'current_location'): # check if location data is loaded
+              if self.current_location: # make sure that it is not null
+                if item in self.current_location.market: #check if commodity exists in market
+                 self.record_trade(self.current_location, quantity * price)  #Record trade using method, including quantity and price
       
 
         
-    def handle_building_construction(self, building_name, building_costs):
-        """Handle building construction with proper capability checking and building process"""
-        # Map short commands to full building names and their base types
-        building_mapping = {}
-        for key, value in self.building_data.items():
-            building_mapping[value['name'].lower()] = value
-            building_mapping[value['short_name'].lower()] = value
+    def handle_building_construction(self):
+            """Handle building construction with proper capability checking and building process"""
+            # Map short commands to full building names and their base types
+            building_mapping = {}
+            for key, value in self.building_data.items():
+                building_mapping[value['name'].lower()] = value
+                building_mapping[value['short_name'].lower()] = value
+                
+            # Show available building options
+            building_options = [
+                (key, value) 
+                    for key, value in self.building_data.items() 
+                    if self.current_location.can_build(key.lower())
+                    
+            ]
+            
+            # Create numbered list with full names and descriptions
+            building_content = [["Choose Building"]]
+            for i, (name, data) in enumerate(building_options, 1):
+                description = data.get('description', "No description available")
+                wrapped_description = self.word_wrap(description, self.term_width - 10)
+                
+                formatted_desc = " " + ", ".join(wrapped_description) if wrapped_description else ""
+                building_content.append([f"{i}. {data['name']}", f"{formatted_desc}"])
 
-        if building_name.lower() not in building_mapping:
-            self.ui.display_simple_message("Invalid building type.")
-            return False
-        
-        building_data = building_mapping[building_name.lower()]
-        full_building_name = building_data['name']
-        base_type = building_data['building_id']
-        
-        # Get base cost and calculate final cost
-        base_cost = int(building_data.get('cost', 3000))
-        cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
-        final_cost = base_cost * cost_multiplier
+            print(self.ui.create_box(building_content, 'single'))
 
-        # Check if we can afford it
-        if self.ship.money < final_cost:
-            self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
-            return False
+            # Get user's building choice
+            valid_choices = [str(i) for i in range(1, len(building_options) + 1)] + ['back']
+            choice = self.validate_input("Choose building or 'back': ", valid_choices)
 
-        # Deduct money first (will be refunded if build fails)
-        self.ship.money -= final_cost
+            if choice == 'back' or choice is None:
+                return False
+            
+            try:
+                chosen_index = int(choice) - 1
+                if 0 <= chosen_index < len(building_options):
+                    building_name = building_options[chosen_index][0]  # Get full building name
+                else:
+                    self.ui.display_simple_message("Invalid building selection!")
+                    return False
+            except (ValueError, IndexError):
+                self.ui.display_simple_message("Invalid selection!")
+                return False
+            
+            if building_name.lower() not in building_mapping:
+                self.ui.display_simple_message("Invalid building type.")
+                return False
+            
+            building_data = building_mapping[building_name.lower()]
+            full_building_name = building_data['name']
+            base_type = building_data['building_id']
+            
+            # Get base cost and calculate final cost
+            base_cost = int(building_data.get('cost', 3000))
+            cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
+            final_cost = base_cost * cost_multiplier
 
-        # Add building directly to location's building list
-        self.current_location.buildings.append(full_building_name)
-        # Apply building effects, by calling building methods from location class
-        self.current_location.build_building(full_building_name) #modified this line
-        
-        self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
-        return True
+            # Check if we can afford it
+            if self.ship.money < final_cost:
+                self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
+                return False
+
+            # Deduct money first (will be refunded if build fails)
+            self.ship.money -= final_cost
+
+            # Add building directly to location's building list
+            self.current_location.buildings.append(full_building_name)
+            # Apply building effects, by calling building methods from location class
+            self.current_location.build_building(full_building_name) #modified this line
+            
+            self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
+            return True
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
@@ -444,8 +743,7 @@ class Game:
                     building_id = row['building_id']
                     building_data[row['name']] = row
                     building_costs[row['name']] = int(row['cost'])
-                    valid_options.append(row['name'].lower())
-                    valid_options.append(building_id)
+                    valid_options.append(row['short_name'].lower())  # Only add short_name
             return building_data, building_costs, valid_options
         except FileNotFoundError:
             print("Error: buildings.csv not found. Using default buildings.")
@@ -555,32 +853,32 @@ class Game:
         return str(floor(amount))
 
     def validate_input(self, prompt, valid_options):
-        """
-        Validate user input against a list of valid options
-        default_prompt: Default prompt text
-        valid_options: List of valid input options
-        prompt: Optional custom prompt to override default
-        """
-        term_width = shutil.get_terminal_size().columns
+            """
+            Validate user input against a list of valid options
+            default_prompt: Default prompt text
+            valid_options: List of valid input options
+            prompt: Optional custom prompt to override default
+            """
+            term_width = shutil.get_terminal_size().columns
 
-        while True:
-            wrapped_prompt = self.word_wrap(prompt, term_width - 4)
-            self.ui.display_simple_message(wrapped_prompt, 0)
+            while True:
+                wrapped_prompt = self.word_wrap(prompt, term_width - 4)
+                self.ui.display_simple_message(wrapped_prompt, 0)
 
-            try:
-                user_input = input(">>> ").strip().lower()
-                if not user_input:
-                    self.ui.display_simple_message("Command cancelled.")
-                    return None
-                if user_input in [opt.lower() for opt in valid_options]: #modified here
-                    return user_input
-                self.ui.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
-            except KeyboardInterrupt:
-                print(f"Do you want to exit? (yes/no):")
-                confirm = input(">>> ").strip().lower()
-                if confirm == 'yes':
-                    self.ui.display_simple_message("Goodbye!", 1)
-                    exit()
+                try:
+                    user_input = input(">>> ").strip().lower()
+                    if not user_input:
+                        self.ui.display_simple_message("Command cancelled.")
+                        return None
+                    if user_input in [opt.lower() for opt in valid_options]: #modified here
+                        return user_input
+                    self.ui.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
+                except KeyboardInterrupt:
+                    print(f"Do you want to exit? (yes/no):")
+                    confirm = input(">>> ").strip().lower()
+                    if confirm == 'yes':
+                        self.ui.display_simple_message("Goodbye!", 1)
+                        exit()
 
     def validate_quantity_input(self, prompt):
         while True:
@@ -745,9 +1043,9 @@ class Game:
 
         status_content = [
             ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
-            [f"Turn: {self.turn}", f"ATK: {self.ship.attack}", f"Name: {self.current_location.name}"],
-            [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense}", f"Tech LVL: {self.current_location.tech_level}"],
-            [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed}", f"Agri LVL: {self.current_location.agri_level}"],
+            [f"Turn: {self.turn}", f"ATK: {self.ship.attack} {f'({self.ship.attack - 1})' if (self.ship.attack - 1) < 0 else ''}", f"Name: {self.current_location.name}"],
+            [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if (self.ship.defense - 1) < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
+            [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if (self.ship.speed - 1) < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
             [f"Agri: {self.format_money(self.ship.cargo['agri'])}", f"DMG: {self.ship.damage}%", f"ECO: {self.current_location.economy}"],
             [f"Salt: {self.format_money(self.ship.cargo['salt'])}", f"RP: {self.ship.research_points}", f"EFF: {self.current_location.exogeology}%"],
             [f"Fuel: {self.format_money(self.ship.cargo['fuel'])}", f"★ {self.rank}", f"NET: {len(self.current_location.buildings)}"],
@@ -803,168 +1101,134 @@ class Game:
                 effects.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
             print(self.ui.create_box(effects, 'round'))
 
-    def handle_travel(self):
-        """Handle travelling to a new location"""
-        
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and 
-                               loc.location_type in self.unlocked_location_types]
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
-        
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input(
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
-
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel') #record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            # Clear the research message
-            if hasattr(self, "_new_research_effects"):
-               delattr(self, "_new_research_effects")
-
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
 
     def display_location_info(self):
-            # Ship section
-            # Get total locations
-            total_locations = len(self.locations) if hasattr(self, 'locations') else 0
-            # Add 1 to discovered count for starting location if not already included
-            discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
-
-            ship_info = [
-                ["Ship Information"],
-                [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
-                [f"Locations Discovered: {discovered + 1}/{total_locations}"],
-                [f"Trades Completed: {self.trades_completed}"],
-                [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
-    #            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
-    #            [f"Hull Damage: {self.ship.damage}%"],
-                [f"Money: {self.format_money(self.ship.money)}"],
-                [f"Research Points: {self.ship.research_points}"],
-        #        ["Cargo:"],
-        #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
-        #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
-        #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
-        #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
-                ["Items:"]
-            ]
-
+        # Ship section
+        # Get total locations
+        total_locations = len(self.locations) if hasattr(self, 'locations') else 0
+        # Add 1 to discovered count for starting location if not already included
+        discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
         
-                    
-            # Add items if any exist
-            if self.ship.items:
-                for item, count in self.ship.items.items():
-                    ship_info.append([f"  {item.capitalize()}: {count}"])
-            else:
-                ship_info.append(["  No items"])
+        ship_info = [
+            ["Ship Information"],
+            [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
+            [f"Locations Discovered: {discovered + 1}/{total_locations}"],
+            [f"Trades Completed: {self.trades_completed}"],
+            [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
+#            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
+#            [f"Hull Damage: {self.ship.damage}%"],
+            [f"Money: {self.format_money(self.ship.money)}"],
+            [f"Research Points: {self.ship.research_points}"],
+    #        ["Cargo:"],
+    #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
+    #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
+    #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
+    #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
+            ["Items:"]
+        ]
 
-            # Add combat statistics if they exist
-            if hasattr(self.ship, 'combat_victories'):
-                        ship_info.append(["Combat Record:"])
-                        # Format victories
-                        ship_info.extend([
-                            [f"Victories/Defeats Summary"],
-                            [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
-                            [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
-                            [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
-                            [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
-                            [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
-                        ])
-
-            if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
-                content.append(["Active Infestations:"])
-                for name, infestation in self.ship.active_infestations.items():
-                    content.append([
-                        f"{infestation['name']} - Turn {infestation['turns_active']}"
-                    ])
-
-            # Location section
-            location_info = [
-                ["Location"],
-                [f"Name: {self.current_location.name}"],
-                [f"Type: {self.current_location.location_type}"],
-                [f"Tech Level: {self.current_location.tech_level}"],
-                [f"Agri Level: {self.current_location.agri_level}"],
-                [f"Research Points: {self.current_location.research_points}"],
-                [f"Economy: {self.current_location.economy}"],
-                [f"Mining Efficiency: {self.current_location.exogeology}%"],
-                ["Current Market:"],
-                [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
-                [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
-                [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
-                [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
-            ]
-
-            # Add banned commodities if any
-            if self.current_location.banned_commodities:
-                location_info.append(["Banned Commodities:"])
-                for commodity in self.current_location.banned_commodities:
-                    duration = self.current_location.ban_duration.get(commodity, "Permanent")
-                    location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
-
-            # Add buildings
-            location_info.append(["Networks (Built):"])
-            if self.current_location.buildings:
-                building_counts = {}
-                for building in self.current_location.buildings:
-                    building_counts[building] = building_counts.get(building, 0) + 1
-                for building, count in building_counts.items():
-                    location_info.append([f"  {building} x{count}"])
-            else:
-                location_info.append(["  No buildings"])
-
-            # Add mining information
-            location_info.append(["Mining Operations:"])
-            if self.current_location.mining_platforms:
-                for platform in self.current_location.mining_platforms:
-                    location_info.append([
-                        f"  {platform['type'].capitalize()} Platform",
-                        f"  (Efficiency: {platform['efficiency']}%",
-                        f"  Capacity: {platform['capacity']})"
-                    ])
-            else:
-                location_info.append(["  No mining platforms"])
-
-            # Add mineral deposits if any
-            if self.current_location.mineral_deposits:
-                location_info.append(["Mineral Deposits:"])
-                for deposit_type, amount in self.current_location.mineral_deposits.items():
-                    location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
-            
-            # Create content by combining ship and location info
-            content = []
-            max_length = max(len(ship_info), len(location_info))
-            
-            for i in range(max_length):
-                ship_line = ship_info[i] if i < len(ship_info) else [""]
-                location_line = location_info[i] if i < len(location_info) else [""]
-                content.append([str(ship_line[0]), str(location_line[0])])
-            
-            # Add active research effects
-            if self.research.unlocked_options:
-                active_research_content = [["Active Research Effects"]]
-                active_research_list = []
-                for research_id in self.research.unlocked_options:
-                    research_data = self.research.get_research_data(research_id)
-                    active_research_list.append([f"{research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
-                print(self.ui.create_box(active_research_list, 'round'))
+      
                 
-            print(self.ui.create_box(content, 'double'))
-            input("Press Enter to continue...")
+        # Add items if any exist
+        if self.ship.items:
+            for item, count in self.ship.items.items():
+                item_name = self.ship.item_data.get(item, {}).get('name', item)
+                ship_info.append([f"  {item_name.title()}: {count}"])
+        else:
+            ship_info.append(["  No items"])
+
+        # Add combat statistics if they exist
+        if hasattr(self.ship, 'combat_victories'):
+                    ship_info.append(["Combat Record:"])
+                    # Format victories
+                    ship_info.extend([
+                        [f"Victories/Defeats Summary"],
+                        [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
+                        [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
+                        [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
+                        [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
+                        [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
+                    ])
+
+        if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
+            content.append(["Active Infestations:"])
+            for name, infestation in self.ship.active_infestations.items():
+                content.append([
+                    f"{infestation['name']} - Turn {infestation['turns_active']}"
+                ])
+
+        # Location section
+        location_info = [
+            ["Location"],
+            [f"Name: {self.current_location.name}"],
+            [f"Type: {self.current_location.location_type}"],
+            [f"Tech Level: {self.current_location.tech_level}"],
+            [f"Agri Level: {self.current_location.agri_level}"],
+            [f"Research Points: {self.current_location.research_points}"],
+            [f"Economy: {self.current_location.economy}"],
+            [f"Mining Efficiency: {self.current_location.exogeology}%"],
+            ["Current Market:"],
+            [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
+            [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
+            [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
+            [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
+        ]
+
+        # Add banned commodities if any
+        if self.current_location.banned_commodities:
+            location_info.append(["Banned Commodities:"])
+            for commodity in self.current_location.banned_commodities:
+                duration = self.current_location.ban_duration.get(commodity, "Permanent")
+                location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
+
+        # Add buildings
+        location_info.append(["Networks (Built):"])
+        if self.current_location.buildings:
+            building_counts = {}
+            for building in self.current_location.buildings:
+                building_counts[building] = building_counts.get(building, 0) + 1
+            for building, count in building_counts.items():
+                location_info.append([f"  {building} x{count}"])
+        else:
+            location_info.append(["  No buildings"])
+
+        # Add mining information
+        location_info.append(["Mining Operations:"])
+        if self.current_location.mining_platforms:
+            for platform in self.current_location.mining_platforms:
+                location_info.append([
+                    f"  {platform['type'].capitalize()} Platform",
+                    f"  (Efficiency: {platform['efficiency']}%",
+                    f"  Capacity: {platform['capacity']})"
+                ])
+        else:
+            location_info.append(["  No mining platforms"])
+
+        # Add mineral deposits if any
+        if self.current_location.mineral_deposits:
+            location_info.append(["Mineral Deposits:"])
+            for deposit_type, amount in self.current_location.mineral_deposits.items():
+                location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
+        
+        # Create content by combining ship and location info
+        content = []
+        max_length = max(len(ship_info), len(location_info))
+        
+        for i in range(max_length):
+            ship_line = ship_info[i] if i < len(ship_info) else [""]
+            location_line = location_info[i] if i < len(location_info) else [""]
+            content.append([str(ship_line[0]), str(location_line[0])])
+
+        # Add active research effects
+        if self.research.unlocked_options:
+            active_research_content = [["Active Research Effects"]]
+            for research_id in self.research.unlocked_options:
+                 research_data = self.research.get_research_data(research_id)
+                 active_research_content.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
+            content.extend(active_research_content)
+        print(self.ui.create_box(content, 'double'))
+        input("Press Enter to continue...")
 
     def build_mining_platform(self):
         """Build a new mining platform on the current planet"""
@@ -1353,7 +1617,62 @@ class Game:
                     self.play()
                 break
 
-#    def generate_new_locations(self):
+#    events
+
+    def random_event(self):
+            """Handles random game events"""
+            if random.random() < self.event_probability:
+                # Select a random event type
+                event_type = random.choice(
+                    ["combat", "trade", "exploration", "disaster", "passenger"]
+                )
+                
+                # Filter events by type
+                events_of_type = [
+                    event_id for event_id, event_data in self.game_events.event_data.items()
+                    if event_data.get("type") == event_type
+                ]
+                
+                # Try to select a random event of this type
+                if events_of_type:
+                    event_id = random.choice(events_of_type)
+                    event_data = self.game_events.event_data[event_id]
+                    
+                    # If any event has requirements, check those first
+                    if not self.game_events.check_event_conditions(event_data):
+                        return #If conditions are not met, cancel
+
+                    # Handle different event types
+                    if event_type == "combat":
+                        self.game_events.handle_combat_event(event_id)
+                    elif event_type == "trade":
+                        self.game_events.handle_trade_event(event_id)
+                    elif event_type == "exploration":
+                        self.game_events.handle_exploration_event(event_id)
+                    elif event_type == "disaster":
+                        self.game_events.handle_disaster_event(event_id)
+                    elif event_type == "passenger":
+                        self.handle_passenger_event(event_id)
+
+                    # Check for story events
+                    self.story_manager.check_event_trigger(event_id, self)
+
+    def handle_passenger_event(self, event_id):
+        """Handle specific passenger related events."""
+        event = self.game_events.event_data.get(event_id, {})
+        if not self.game_events.check_event_conditions(event):
+            return
+        
+        if event_id == "passenger_celebration":
+             self.handle_passenger_celebration()
+        elif event_id == "passenger_complaint":
+            self.handle_passenger_complaint()
+        elif event_id == "medical_emergency":
+             self.handle_medical_emergency()
+        elif event_id == "vip_request":
+            self.handle_vip_request()
+        elif event_id == "passenger_trade_info":
+            self.handle_passenger_trade_info()                    
 
     
 # missing methods

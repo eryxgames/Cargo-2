@@ -56,6 +56,10 @@ class Ship:
         self.attack = 1
         self.defense = 1
         self.speed = 1
+         # Tracking total modifiers
+        self.total_attack_modifier = 0
+        self.total_defense_modifier = 0
+        self.total_speed_modifier = 0
         
         # Equipment and upgrades
         self.upgrades = [] # Track applied upgrades
@@ -141,6 +145,14 @@ class Ship:
                          effects[effect_name] = effect_value  # Allow strings if parsing fails
                          
          return effects
+
+    def add_starting_items(self, starting_items):
+        """Add starting items to the player inventory"""
+        for item, quantity in starting_items.items():
+            if item in self.items:
+              self.items[item] += quantity
+            else:
+              self.items[item] = quantity
 
     def acquire_item(self, item_name):
         if item_name in self.items:
@@ -236,25 +248,34 @@ class Ship:
                 return False  # Return false, if upgrade already purchased.
             if "effects" in upgrade_data:
                for stat, value in upgrade_data["effects"].items():
-                   if stat in ['attack', 'defense', 'speed']:
-                       setattr(self, stat, getattr(self, stat, 0) + value)
+                    if stat in ['attack', 'defense', 'speed']:
+                        setattr(self, stat, max(1, int(getattr(self, stat, 0) + value))) # Prevent it to go below 1, and cast to int.
+                        if stat == 'attack':
+                            self.total_attack_modifier += value
+                        if stat == 'defense':
+                            self.total_defense_modifier += value
+                        if stat == 'speed':
+                            self.total_speed_modifier += value
+
             self.upgrades.append(upgrade_data['name'])
             return True
         return False
 
     def record_combat_victory(self, enemy_type=None):
-        """Record a combat victory with proper type tracking"""
-        self.combat_victories['total'] += 1
-        if enemy_type:
-            if enemy_type in self.combat_victories:
-                self.combat_victories[enemy_type] += 1
+            """Record a combat victory with proper type tracking"""
+            self.combat_victories['total'] += 1
+            if enemy_type:
+                if enemy_type in self.combat_victories:
+                    self.combat_victories[enemy_type] += 1
 
     def record_combat_defeat(self, enemy_type=None):
-        """Record a combat defeat with proper type tracking"""
-        self.combat_defeats['total'] += 1
-        if enemy_type:
-            if enemy_type in self.combat_defeats:
-                self.combat_defeats[enemy_type] += 1
+         """Record a combat defeat with proper type tracking"""
+         self.combat_defeats['total'] += 1
+         if enemy_type:
+             if enemy_type in self.combat_defeats:
+                 self.combat_defeats[enemy_type] += 1
+    
+    # Existing methods for buying and selling items
 
     def buy(self, item, quantity, price, planet, player_rank):
         if not planet.can_trade(item):

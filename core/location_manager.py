@@ -55,7 +55,7 @@ class LocationManager:
                         location_data = {k: row[k] for k in valid_keys if k in row}
 
                         # Correct instantiation of location objects using the dictionary
-                        location = Location(**location_data, requirements={}) #empty requirements object, for now
+                        location = Location(self.game, **location_data, requirements={}) # Now we pass game instance here
 
                         # Check if it's a starting location and if it needs to be unlocked
                         for start_loc in self.game.settings.get("starting_locations", []):

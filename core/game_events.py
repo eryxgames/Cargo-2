@@ -1,14 +1,17 @@
 # core/game_events.py
 import random
 from core.utils import format_money
-#from core.location import Location, ResearchColony # Removed this line
+from core.combat import Combat, CombatResult  # Import the new module
+from core.template import CharacterTemplate
+
 
 class GameEvents:
     def __init__(self, game):
         self.game = game
         self.event_data = self.load_event_data()
-        self.enemy_data = self.load_enemy_data()
-    
+        self.combat = Combat(game) # Use the new Combat class
+        self.templates = CharacterTemplate.load_character_templates("data/characters.yml")
+
     def load_event_data(self):
         """Load event data from data/events.yml"""
         try:
@@ -21,212 +24,173 @@ class GameEvents:
         except yaml.YAMLError as e:
             print(f"Error loading events from YAML: {e}")
             return {}
-         
-    def load_enemy_data(self):
-        """Load enemy data from data/enemies.yml"""
-        try:
-            with open("data/enemies.yml", 'r') as f:
-                import yaml
-                return yaml.safe_load(f)
-        except FileNotFoundError:
-            print("Error: enemies.yml not found. Using default enemy data.")
-            return {}
-        except yaml.YAMLError as e:
-            print(f"Error loading enemies from YAML: {e}")
-            return {}
-    
+
+# core/game_events.py
+
     def check_event_conditions(self, event):
         """Check if an event's conditions are met"""
         conditions = event.get("conditions", {})
         
         if "location_type" in conditions:
-            if self.game.current_location.location_type not in conditions["location_type"]:
-                return False
+            location_types = conditions["location_type"]
+            if isinstance(location_types, list):
+                if self.game.current_location.location_type not in location_types:
+                    print(f"Condition failed: location_type, Current: {self.game.current_location.location_type} Required: {location_types}")
+                    return False
+            elif self.game.current_location.location_type != location_types:
+                 print(f"Condition failed: location_type, Current: {self.game.current_location.location_type} Required: {location_types}")
+                 return False
         if "min_turn" in conditions and self.game.turn < conditions["min_turn"]:
+            print(f"Condition failed: min_turn, Current: {self.game.turn} Required: {conditions['min_turn']}")
             return False
         if "max_turn" in conditions and self.game.turn > conditions["max_turn"]:
+            print(f"Condition failed: max_turn, Current: {self.game.turn} Required: {conditions['max_turn']}")
             return False
         if "min_reputation" in conditions and self.game.ship.passenger_reputation < conditions["min_reputation"]:
+            print(f"Condition failed: min_reputation, Current: {self.game.ship.passenger_reputation} Required: {conditions['min_reputation']}")
             return False
         if "max_reputation" in conditions and self.game.ship.passenger_reputation > conditions["max_reputation"]:
+            print(f"Condition failed: max_reputation, Current: {self.game.ship.passenger_reputation} Required: {conditions['max_reputation']}")
             return False
         if "min_combat_victories" in conditions and self.game.ship.combat_victories['total'] < conditions["min_combat_victories"]:
-             return False
+            print(f"Condition failed: min_combat_victories, Current: {self.game.ship.combat_victories['total']} Required: {conditions['min_combat_victories']}")
+            return False
         if "min_trades_completed" in conditions and self.game.trades_completed < conditions["min_trades_completed"]:
+            print(f"Condition failed: min_trades_completed, Current: {self.game.trades_completed} Required: {conditions['min_trades_completed']}")
             return False
         if "max_trades_completed" in conditions and self.game.trades_completed > conditions["max_trades_completed"]:
+            print(f"Condition failed: max_trades_completed, Current: {self.game.trades_completed} Required: {conditions['max_trades_completed']}")
             return False
         if "min_plot_points" in conditions and self.game.story_manager.plot_points < conditions["min_plot_points"]:
-            return False
+             print(f"Condition failed: min_plot_points, Current: {self.game.story_manager.plot_points} Required: {conditions['min_plot_points']}")
+             return False
         if "max_plot_points" in conditions and self.game.story_manager.plot_points > conditions["max_plot_points"]:
+            print(f"Condition failed: max_plot_points, Current: {self.game.story_manager.plot_points} Required: {conditions['max_plot_points']}")
             return False
         if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
+            print(f"Condition failed: min_ship_speed, Current: {self.game.ship.speed} Required: {conditions['min_ship_speed']}")
             return False
         if "min_trade_profit" in conditions:
             total_profit = sum(self.game.ship.trade_profits.values())
             if total_profit < conditions["min_trade_profit"]:
+                 print(f"Condition failed: min_trade_profit, Current: {total_profit} Required: {conditions['min_trade_profit']}")
                  return False
         if "min_cargo_amount" in conditions:
              if not hasattr(self.game.ship, 'cargo'):
+                print(f"Condition failed: min_cargo_amount, Ship has no cargo object defined")
                 return False
              for cargo, amount in conditions["min_cargo_amount"].items():
                 if self.game.ship.cargo.get(cargo, 0) < amount:
+                    print(f"Condition failed: min_cargo_amount, Current: {self.game.ship.cargo.get(cargo, 0)} Required: {amount}")
                     return False
         if "min_passengers_transported" in conditions:
             if self.game.reputation_manager.total_passengers < conditions["min_passengers_transported"]:
+                print(f"Condition failed: min_passengers_transported, Current: {self.game.reputation_manager.total_passengers} Required: {conditions['min_passengers_transported']}")
                 return False
         if "items_required" in conditions:
              if not all(item in self.game.ship.items for item in conditions["items_required"]):
+                 print(f"Condition failed: items_required, Required: {conditions['items_required']}, Available: {self.game.ship.items.keys()}")
                  return False
         return True
 
-    def handle_combat_event(self, event_name):
-        """Handle combat event with proper victory/defeat recording and reputation gains"""
+    def handle_combat_event(self, event_name, beacon_type=None):
+        """Handle combat event using Combat class"""
         event = self.event_data.get(event_name.lower().replace(" ", "_"), self.event_data["pirate_attack"])
-    
-        if not self.check_event_conditions(event):
+        if not self.check_event_conditions(event) and not beacon_type:
             return False
-            
+        
+        if beacon_type:
+            return self.handle_beacon_encounter(beacon_type)
+        
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
-        enemy = self.enemy_data.get(enemy_id)
-        enemy_type = enemy.get("type", "pirate")
+
+        # Start combat using Combat class
+        result = self.combat.resolve_combat(enemy_id)
         
-        # Check for automatic defense
-        if "turrets" in self.game.ship.items and random.random() < 0.4:
-            self.game.ui.display_simple_message(f"Event! {event['message']} repelled by defense systems!", 3, color='32')
-            # Count automatic defense as a victory and add reputation
-            self.game.ship.record_combat_victory(enemy_type)
-            if enemy_type == "pirate":
-                rep_gain = random.randint(1, 3)  # Smaller gain for automated defense
-                self.game.reputation += rep_gain
-                self.game.ship.passenger_reputation += rep_gain
-                self.game.ui.display_simple_message(f"Gained {rep_gain} reputation for automated pirate defense!")
-            # Gain some experience even when automatically defending
-            self.game.ship.research_points += int(5 * enemy.get("reward_mult", 1))
-            return True
-        
-        # Calculate base damage
-        damage = random.randint(10, 25) * enemy.get("attack", 2) / self.game.ship.defense
-        damage *= (1 + self.game.difficulty)
-        
-        # Apply defensive equipment effects
-        if "shield" in self.game.ship.items:
-            damage *= 0.7  # 30% damage reduction
-        if "armor" in self.game.ship.items:
-            damage *= 0.8  # 20% damage reduction
-        
-        # Ensure damage doesn't exceed 99%
-        final_damage = min(99, int(self.game.ship.damage + damage))
-        damage_dealt = final_damage - self.game.ship.damage
-        self.game.ship.damage = final_damage
-        
-        # Handle cargo/money loss
-        losses = []
-        
-        if self.game.ship.money > 0:
-            stolen = random.randint(1, max(1, int(self.game.ship.money // 2)))
-            self.game.ship.money -= stolen
-            losses.append(f"{self.game.format_money(stolen)} credits")
-        
-        # Only steal cargo that exists
-        for cargo_type in ['tech', 'agri', 'salt', 'fuel']:
-            if self.game.ship.cargo[cargo_type] > 0:
-                stolen_cargo = random.randint(1, max(1, int(self.game.ship.cargo[cargo_type] // 3)))
-                self.game.ship.cargo[cargo_type] -= stolen_cargo
-                if stolen_cargo > 0:
-                    losses.append(f"{stolen_cargo} {cargo_type}")
-        
-        # Check for counter-attack opportunity
-        if self.game.ship.attack > enemy.get("defense", 1):
-            # Counter-attack successful - record victory
-            self.game.ship.record_combat_victory(enemy_type)
-            
-            reward_mult = enemy.get("reward_mult", 1)
-            rewards = {
-                "money": int(random.randint(100, 500) * reward_mult),
-                "research": int(random.randint(10, 25) * reward_mult)
-            }
-            
-            self.game.ship.money += rewards["money"]
-            self.game.ship.research_points += rewards["research"]
-            
-            # Add reputation gains for pirate victories
-            if enemy_type == "pirate":
-                rep_gain = random.randint(2, 5)
-                self.game.reputation += rep_gain
-                self.game.ship.passenger_reputation += rep_gain
-                rep_message = f"\nReputation increased by {rep_gain} for defeating pirates!"
-            else:
-                rep_message = ""
-            
-            if losses:
-                loss_text = ", ".join(losses)
-                self.game.ui.display_simple_message(
-                    f"Event! {event['message']} caused {damage_dealt}% damage and stole {loss_text}!\n" +
-                    f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" +
-                    rep_message,
-                    3, color='32'
-                )
-            else:
-                self.game.ui.display_simple_message(
-                    f"Event! {event['message']} caused {damage_dealt}% damage!\n" +
-                    f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" +
-                    rep_message,
-                    3, color='32'
-                )
-        else:
-            # Combat defeat - record defeat with enemy type
-            self.game.ship.record_combat_defeat(enemy_type)
-            
-            # Lose reputation on pirate defeats
-            if enemy_type == "pirate":
-                rep_loss = random.randint(1, 3)
-                self.game.reputation = max(0, self.game.reputation - rep_loss)
-                self.game.ship.passenger_reputation = max(0, self.game.ship.passenger_reputation - rep_loss)
-                rep_message = f"\nLost {rep_loss} reputation from pirate defeat!"
-            else:
-                rep_message = ""
-            
-            if losses:
-                loss_text = ", ".join(losses)
-                self.game.ui.display_simple_message(
-                    f"Event! {event['message']} caused {damage_dealt}% damage and stole {loss_text}!" +
-                    rep_message,
-                    3, color='31'
-                )
-            else:
-                self.game.ui.display_simple_message(
-                    f"Event! {event['message']} caused {damage_dealt}% damage!" +
-                    rep_message,
-                    3, color='31'
-                )
+        # Process outcome of combat
+        if result.is_victory():
+            self.game.ui.display_simple_message(result.get_message(), 3, color='32')
+            if result.get_rewards():
+                 rewards = result.get_rewards()
+                 self.game.handle_research_gain(rewards.get("research", 0))
+
+        elif result.is_defeat():
+            self.game.ui.display_simple_message(result.get_message(), 3, color='31')
         return True
 
+    def handle_beacon_encounter(self, beacon_type):
+        """Handle a beacon-triggered combat event"""
+        
+        if beacon_type == "distress_a":
+            enemy_pool = ["pirate_scout", "pirate_raider"]  # Set the enemy type from distress signal
+        elif beacon_type == "distress_b":
+           enemy_pool = ["pirate_marauder", "pirate_raider"]
+        elif beacon_type == "distress_c":
+            enemy_pool = ["rogue_corsair", "pirate_mothership"]
+        elif beacon_type == "nav_a":
+            # store the event type and do not activate anything here
+             return "nav_a"
+        else:
+            self.game.ui.display_simple_message(f"Unknown beacon type: {beacon_type}", 3, color='31')
+            return False
+        
+        enemy_id = random.choice(enemy_pool)
+        return enemy_id
+        
+
+    def trigger_boss_battle(self):
+        """Trigger boss battle using CharacterTemplate with ship, instead of defined stats"""
+        boss_id = 'grand_commander_voxx'  # using a template id, for test, later we can randomize
+        boss_template = self.templates.get(boss_id)
+        if not boss_template:
+            print(f"Warning: Boss {boss_id} not defined. Using default boss data.")
+            return False
+        
+        # Get ship stats from character data, and if it has not, just a default stats
+        ship_stats = boss_template.content.get('ship', 
+            {'attack': 3, 'defense': 3, 'speed': 2}
+        )
+
+        # Start combat using Combat class and pass boss stats directly
+        result = self.combat.handle_boss_battle(boss_id)
+        
+        if result.is_victory():
+            self.game.ui.display_simple_message(result.get_message(), 3, color='32')
+            if result.get_rewards():
+                 rewards = result.get_rewards()
+                 self.game.handle_research_gain(rewards.get("research", 0))
+        elif result.is_defeat():
+            self.game.ui.display_simple_message(result.get_message(), 3, color='31')
+            
+        # Check for unlock based on victory
+        return result.is_victory()
+
+
     def handle_exploration_event(self, event_name):
-        """Handle exploration events with full outcome processing"""
-        event = self.event_data.get(event_name.lower().replace(" ", "_"))
-        if not self.check_event_conditions(event):
+         """Handle exploration events with full outcome processing"""
+         event = self.event_data.get(event_name.lower().replace(" ", "_"))
+         if not self.check_event_conditions(event):
             return False
             
-        success_chance = event.get("success_chance", 0.7)
+         success_chance = event.get("success_chance", 0.7)
         
-        # Modify success chance based on equipment
-        if "scanner" in self.game.ship.items:
+         # Modify success chance based on equipment
+         if "scanner" in self.game.ship.items:
             success_chance += 0.1
-        if "probe" in self.game.ship.items:
+         if "probe" in self.game.ship.items:
             success_chance += 0.1
             
-        # Location type modifiers
-        location_modifiers = {
+         # Location type modifiers
+         location_modifiers = {
             "Planet": 0,
             "AsteroidBase": 0.05,
             "DeepSpaceOutpost": 0.1,
             "ResearchColony": 0.15
-        }
-        success_chance += location_modifiers.get(self.game.current_location.location_type, 0)
+         }
+         success_chance += location_modifiers.get(self.game.current_location.location_type, 0)
         
-        if random.random() < success_chance:
+         if random.random() < success_chance:
             # Determine discovery type and rewards
             discovery_types = event.get("reward_type",
                 "valuable minerals,ancient artifacts,scientific data,advanced technology"
@@ -277,7 +241,7 @@ class GameEvents:
                 f"Gained {rp_reward} research points"
             ], color='32')
         
-        else:
+         else:
             # Handle exploration failure
             damage = random.randint(5, 15)
             self.game.ship.damage = min(99, self.game.ship.damage + damage)
@@ -402,78 +366,3 @@ class GameEvents:
                 2, color='32'
             )
         return True
-
-    def gravitational_anomaly_event(self):
-        print("You have encountered a gravitational anomaly!")
-        outcome = random.choice(["rare elements", "scientific samples"])
-        if outcome == "rare elements":
-            tech_goods = random.randint(5, 15)
-            self.ship.cargo['tech'] += tech_goods
-            self.game.ui.display_simple_message(f"You found {self.game.format_money(tech_goods)} tech goods.", 3, color='32')
-        elif outcome == "scientific samples":
-            research_points = random.randint(5, 15)
-            self.ship.research_points+= research_points
-            self.game.ui.display_simple_message(f"You gained {self.game.format_money(research_points)} research points.", 3, color='32')
-
-    def battle_event(self, enemy_attack, enemy_defense, enemy_speed):
-        print(f"An enemy is attacking! Enemy stats: ATK {enemy_attack}, DEF {enemy_defense}, SPD {enemy_speed}")
-
-        player_damage = max(0, enemy_attack - self.ship.defense)
-        enemy_damage = max(0, self.ship.attack - enemy_defense)
-
-        if self.ship.speed > enemy_speed:
-            print("You have the speed advantage!")
-            enemy_damage += 5
-        elif self.ship.speed < enemy_speed:
-            print("Enemy has the speed advantage!")
-            player_damage += 5
-
-        # Introduce randomness based on stats
-        if random.random() < 0.5:
-            player_damage = max(0, player_damage - random.randint(0, self.ship.defense))
-        if random.random() < 0.5:
-            enemy_damage = max(0, enemy_damage - random.randint(0, enemy_defense))
-
-        print(f"You deal {enemy_damage} damage to the enemy.")
-        print(f"The enemy deals {player_damage} damage to you.")
-
-        if enemy_damage > player_damage:
-            print("You won the battle!")
-            reward = random.choice([
-                ("money", random.randint(100, 500)),
-                ("tech", random.randint(5, 15)),
-                ("agri", random.randint(5, 15)),
-                ("item", random.choice(["navcomp", "shield", "turrets", "scanner"]))
-            ])
-            if reward[0] == "money":
-                self.ship.money += reward[1]
-                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} money", 3, color='32')
-            elif reward[0] == "tech":
-                self.ship.cargo['tech'] += reward[1]
-                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} tech goods", 3, color='32')
-            elif reward[0] == "agri":
-                self.ship.cargo['agri'] += reward[1]
-                self.game.ui.display_simple_message(f"Reward: {self.format_money(reward[1])} agri goods", 3, color='32')
-            elif reward[0] == "item":
-                self.ship.acquire_item(reward[1])
-                self.game.ui.display_simple_message(f"Reward: {reward[1]} item", 3, color='32')
-        else:
-            print("You lost the battle!")
-            penalty = random.choice([
-                ("money", random.randint(50, 200)),
-                ("tech", random.randint(2, 10)),
-                ("agri", random.randint(2, 10)),
-                ("damage", random.randint(10, 30))
-            ])
-            if penalty[0] == "money":
-                self.ship.money = max(0, self.ship.money - penalty[1])
-                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} money", 3, color='31')
-            elif penalty[0] == "tech":
-                self.ship.cargo['tech'] = max(0, self.ship.cargo['tech'] - penalty[1])
-                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} tech goods", 3, color='31')
-            elif penalty[0] == "agri":
-                self.ship.cargo['agri'] = max(0, self.ship.cargo['agri'] - penalty[1])
-                self.game.ui.display_simple_message(f"Penalty: Lost {self.format_money(penalty[1])} agri goods", 3, color='31')
-            elif penalty[0] == "damage":
-                self.ship.damage += penalty[1]
-                self.game.ui.display_simple_message(f"Penalty: {penalty[1]}% additional damage", 3, color='31')
