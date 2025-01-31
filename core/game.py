@@ -122,6 +122,9 @@ class Game:
         # Initialize cantina
         self.cantina = Cantina(self)
 
+         # NEW: initialize research effects list
+        self._new_research_effects = None
+
     def handle_actions(self):
         """Handle actions based on the current location and type"""
         available_actions = {}
@@ -187,7 +190,50 @@ class Game:
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
 
+    def handle_upgrade(self):
+         """Handle ship upgrade selection from available unlocks"""
+         
+         available_upgrades = []
+         for research_id in self.research.unlocked_options:
+            research_data = self.research.get_research_data(research_id)
+            if "unlocks" in research_data:
+                for unlock_id in research_data["unlocks"]:
+                    unlock_data = self.research.get_research_data(unlock_id)
+                    if unlock_data and unlock_data["type"] == "ship_upgrade" and unlock_id not in self.ship.upgrades:
+                       available_upgrades.append((unlock_id, unlock_data))
 
+         if not available_upgrades:
+             self.ui.display_simple_message("No ship upgrades available.")
+             return
+         
+         # Display options
+         upgrade_content = [["Available Ship Upgrades"]]
+         for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
+            upgrade_content.append([f"{i + 1}. {upgrade_data['name']}"])
+            upgrade_content.append([f"    Cost: {self.format_money(upgrade_data.get('cost', 0))}"])
+            if "effects" in upgrade_data:
+                effects = [f"    {key}: {value}" for key, value in upgrade_data['effects'].items()]
+                upgrade_content.append(effects)
+            upgrade_content.append([""])  # Add spacing
+         print(self.ui.create_box(upgrade_content, 'double'))
+
+         valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
+         choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
+         
+         if choice in ["back", None]:
+            return
+
+         try:
+             selected_upgrade_index = int(choice) - 1
+             upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
+             if self.ship.money >= upgrade_data.get("cost",0):
+                 self.ship.money -= upgrade_data["cost"]
+                 if self.ship.apply_upgrade(upgrade_data):
+                    self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
+                 else:
+                    self.ui.display_simple_message("Upgrade failed!")
+         except (ValueError, IndexError):
+            self.ui.display_simple_message("Invalid input!")
 
     def handle_research_track_menu(self, track_id):
             """Handle specific research track and actions"""
