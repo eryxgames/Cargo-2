@@ -198,13 +198,55 @@ class Game:
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
            
-    def handle_use_item(self, item_name):
+    def handle_use_item(self):
         """Handle usage of consumable items, including beacons."""
-        if item_name not in self.ship.items or self.ship.items[item_name] <= 0:
-            self.ui.display_simple_message("You do not have this item!")
+        
+        # Get available usable items
+        usable_items = [
+            item for item in self.ship.items.keys() 
+            if self.ship.item_data.get(item, {}).get("type") == "beacon" or 
+            self.ship.item_data.get(item, {}).get("type") == "consumable"
+            ]
+
+        if not usable_items:
+            self.ui.display_simple_message("No usable items available.")
             return False
         
-        item_data = self.ship.item_data.get(item_name, {})
+        # Create menu
+        item_content = [["Select Item to Use"]]
+        
+        # Create the content for multiple columns if terminal has space
+        try:
+            term_width = os.get_terminal_size().columns
+        except OSError:
+            term_width = 80  # Default if not in a terminal
+        
+        if term_width >= 80:
+            items_per_col = (len(usable_items) + 1) // 2
+            for i in range(items_per_col):
+                item1 = f"{i+1}. {usable_items[i].title()}" if i < len(usable_items) else ""
+                item2 = f"{i+1+items_per_col}. {usable_items[i+items_per_col].title()}" if i + items_per_col < len(usable_items) else ""
+                item_content.append([item1, item2])
+        else:
+           for i, item in enumerate(usable_items, 1):
+                 item_content.append([f"{i}. {item.title()}"])
+        
+        print(self.ui.create_box(item_content, 'single'))
+        
+        # Get item choice
+        valid_choices = [str(i) for i in range(1, len(usable_items) + 1)] + ['back']
+        choice = self.validate_input("Choose item or 'back': ", valid_choices)
+        
+        if choice in ["back", None]:
+            return False
+        
+        try:
+            chosen_item = usable_items[int(choice) - 1]
+        except (ValueError, IndexError):
+            self.ui.display_simple_message("Invalid item selection!")
+            return False
+        
+        item_data = self.ship.item_data.get(chosen_item, {})
         
         if item_data.get("type") == "beacon":
             beacon_type = item_data.get("beacon_type")
@@ -213,33 +255,74 @@ class Game:
                    # Start boss fight
                   success = self.game_events.trigger_boss_battle()
                   if success:
-                      self.ship.items[item_name] -= 1  # Remove consumable after use
-                      if self.ship.items[item_name] <= 0:
-                        del self.ship.items[item_name]
+                      self.ship.items[chosen_item] -= 1  # Remove consumable after use
+                      if self.ship.items[chosen_item] <= 0:
+                        del self.ship.items[chosen_item]
                       return True
                   else:
                       return False
             elif beacon_type:
                  # Trigger normal combat event with that beacon type
                  self.game_events.handle_combat_event("beacon_encounter", beacon_type)
-                 self.ship.items[item_name] -= 1
-                 if self.ship.items[item_name] <= 0:
-                     del self.ship.items[item_name]
+                 self.ship.items[chosen_item] -= 1
+                 if self.ship.items[chosen_item] <= 0:
+                     del self.ship.items[chosen_item]
                  return True
             else:
                self.ui.display_simple_message("Not a valid beacon!")
                return False
         elif item_data.get("type") == "consumable":
             # Remove item
-             self.ship.items[item_name] -= 1
-             if self.ship.items[item_name] <= 0:
-                 del self.ship.items[item_name]
-             self.ui.display_simple_message(f"Used item: {item_name.title()}!")
+             self.ship.items[chosen_item] -= 1
+             if self.ship.items[chosen_item] <= 0:
+                 del self.ship.items[chosen_item]
+             self.ui.display_simple_message(f"Used item: {chosen_item.title()}!")
              return True
+        
+        self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
+        return False
+    
+    def handle_travel(self):
+        """Handle travelling to a new location"""
+        
+        available_planets = [loc for loc in self.locations
+                            if loc.name != self.current_location.name and 
+                               loc.location_type in self.unlocked_location_types]
+
+        if not available_planets:
+            self.ui.display_simple_message("No other locations available to travel!", 1)
+            return False
+        
+        available_names = [loc.name.lower() for loc in available_planets]
+        location_choice = self.validate_input(
+            f"Choose location to travel to: ",
+            available_names
+        )
+        if not location_choice:
+            return False
+
+        # Find actual Location object with chosen name
+        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+        if chosen_location:
+            self.current_location = chosen_location
+            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+            self.record_activity('travel') #record travel activity
+            self.location_manager.handle_location_discovery(self.current_location)
+            # Clear the research message
+            if hasattr(self, "_new_research_effects"):
+               delattr(self, "_new_research_effects")
+           
+            if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
+                # Start boss battle if activated
+                self.game.game_events.trigger_boss_battle()
+                self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
+                if self.ship.items[self.active_mcguffin_beacon] <= 0:
+                     del self.ship.items[self.active_mcguffin_beacon]
+                delattr(self, 'active_mcguffin_beacon')
+            return True
         else:
-           self.ui.display_simple_message("Not a usable item")
-           return False
-        return True
+            self.ui.display_simple_message("Invalid location selected!")
+            return False
 
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
@@ -894,40 +977,7 @@ class Game:
                 effects.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
             print(self.ui.create_box(effects, 'round'))
 
-    def handle_travel(self):
-        """Handle travelling to a new location"""
-        
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and 
-                               loc.location_type in self.unlocked_location_types]
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
-        
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input(
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
-
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel') #record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            # Clear the research message
-            if hasattr(self, "_new_research_effects"):
-               delattr(self, "_new_research_effects")
-
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
 
     def display_location_info(self):
         # Ship section
