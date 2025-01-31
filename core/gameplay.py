@@ -29,17 +29,17 @@ def play_turn(game):
     # Update synthetic events (if they exist)
     if hasattr(game, 'synthetic_events'):
         game.synthetic_events.update()
-
+    
     # For each location, check building counts
     for location in game.locations:
         neuroguild_count = location.buildings.count("Neuroengineering Guild")
         agrobot_count = location.buildings.count("Agrobot Assembly Line")
-
+        
         if neuroguild_count >= 4 and random.random() < 0.2:
             game.synthetic_events.start_uprising("Neurodroid", location)
         if agrobot_count >= 4 and random.random() < 0.2:
             game.synthetic_events.start_uprising("Agrobot", location)
-
+    
     # Update port system if port command is available
     port_is_available = False
     for cmd, shortcut in location_commands["available"]:
@@ -65,12 +65,11 @@ def play_turn(game):
     # Call random event before the player makes an action
     game.random_event()
 
-
     # Create list of valid actions
     valid_actions = []
     for cmd, shortcut in location_commands["available"]:
         valid_actions.extend([cmd, shortcut])
-
+    
     # Add global commands
     valid_actions.extend(['quit', 'q', 'resign', 'rs', 'version', 'v'])
     valid_actions.extend(['log', 'l'])  # Add but don't show in command hints
@@ -259,6 +258,5 @@ def play_turn(game):
     
     elif action in ['use', 'us']:
         game.handle_use_item()
-
     else:
         game.ui.display_simple_message("Invalid action.")

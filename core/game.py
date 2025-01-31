@@ -328,29 +328,35 @@ class Game:
                 beacon_item = getattr(self, 'active_beacon')
                 beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
                 if beacon_type:
-                  if beacon_type == 'nav_a':
-                      encounter = self.game_events.handle_beacon_encounter(beacon_type)
-                      if encounter:
-                            # Call for special encounter
+                    if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
+                        if self.active_beacon_encounter == True:
+                            character = self.game.character_system.character_encounters.generate_character("merchant")
+                            if character:
+                                self.game.character_system.character_encounters.handle_merchant_encounter(character)
                             self.ship.items[self.active_beacon] -= 1
                             if self.ship.items[self.active_beacon] <= 0:
                                 del self.ship.items[self.active_beacon]
+                            delattr(self, 'active_beacon_encounter')
                             delattr(self, 'active_beacon')
-                  else:
-                        enemy_id = self.game_events.handle_beacon_encounter(beacon_type)
-                        if enemy_id:
+                        else:
                             self.game.game_events.handle_combat_event("beacon_encounter", beacon_type)
                             self.ship.items[self.active_beacon] -= 1
                             if self.ship.items[self.active_beacon] <= 0:
                                 del self.ship.items[self.active_beacon]
+                            delattr(self, 'active_beacon_encounter')
                             delattr(self, 'active_beacon')
-                  return True
+                    else:
+                         # Clear if beacon used and no encounter
+                         delattr(self, 'active_beacon')
+
+
+                return True
             
             return True
         else:
             self.ui.display_simple_message("Invalid location selected!")
             return False
-
+        
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
          
