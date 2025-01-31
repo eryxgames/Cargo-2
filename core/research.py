@@ -202,23 +202,19 @@ class Research:
             self.unlock(option)
             del self.research_progress[option] # clean the record for new research
             self.active_research = None # remove active research
-            
-            # Unlock ship upgrade if defined
+
+            # Get unlocks to be returned to Game for processing
+            unlocks = []
             if research_info.get("unlocks", []):
                  for unlock in research_info["unlocks"]:
                      unlock_data = self.get_research_data(unlock)
-                     if unlock_data.get("type") == "ship_upgrade":
-                           self.game.ui.display_simple_message(f"New upgrade {unlock_data['name']} available!")
-                     if unlock_data.get("type") == "tech":
-                         self.unlock(unlock)
-                         self.game.ui.display_simple_message(f"Technology {unlock_data['name']} unlocked!")
-                     if unlock_data.get("type") == "item_unlock":
-                         self.unlock(unlock)
-                         self.game.ship.acquire_item(unlock)
-                         self.game.ui.display_simple_message(f"New item {unlock_data['name']} unlocked!")
-
-            # Display research complete message
-            return ActionResult(True, message=f"Successfully researched {research_info.get('name', 'Unknown')}! ")
+                     unlocks.append({
+                       "type": unlock_data.get("type"),
+                       "id": unlock,
+                       "name": unlock_data.get("name")
+                    })
+            # Return that the research was completed successfully, and with the unlocks
+            return ActionResult(True, message=f"Successfully researched {research_info.get('name', 'Unknown')}! ", value=unlocks)
         else:
             # Failure result with potential side effects from data file
             failure_effects = research_info.get("failure_effects", [])
@@ -235,8 +231,8 @@ class Research:
                        game.ship.research_points = max(0, game.ship.research_points - lost)
                        self.game.ui.display_simple_message(f"Breakthrough failed! Lost {lost} research points")
             
-            return ActionResult(False, message="Research breakthrough failed!")        
-    
+            return ActionResult(False, message="Research breakthrough failed!")
+
     def apply_research_effects(self, game, option):
       """Apply the research effect from the data"""
       research = self.research_data.get(option, {})

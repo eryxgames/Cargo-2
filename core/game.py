@@ -226,7 +226,7 @@ class Game:
                         if not all(tech in self.research.unlocked_options for tech in value.get("requires", [])):
                             status = "Req. Not Met"
 
-                    track_info = f"{key}: {value['name']}"
+                    track_info = f"{value['name']}"
                     if value.get("unlocks"):
                         upgrade_types = [unlock for unlock in value["unlocks"] if self.research.research_data.get(unlock, {}).get("type") == "ship_upgrade"]
                         if upgrade_types:
@@ -314,9 +314,19 @@ class Game:
                 elif choice == '3':
                      result = self.research.attempt_breakthrough(self, track_id)
                      if result.is_success():
+                        # Handle unlocks after a successful research
+                        if result.get_value():
+                           for unlock in result.get_value():
+                                if unlock["type"] == "ship_upgrade":
+                                    self.ui.display_simple_message(f"New upgrade {unlock['name']} available!")
+                                elif unlock["type"] == "tech":
+                                    self.ui.display_simple_message(f"Technology {unlock['name']} unlocked!")
+                                elif unlock["type"] == "item_unlock":
+                                    self.ship.acquire_item(unlock["id"])
+                                    self.ui.display_simple_message(f"New item {unlock['name']} unlocked!")
                         self.research.apply_research_effects(self, track_id)
                      self.display_action_result(result)
-    
+
     def display_mining_status(self):
         self.ui.display_mining_status(self.current_location)
         
