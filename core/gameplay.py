@@ -182,16 +182,8 @@ def play_turn(game):
         game.display_location_info()
 
     elif action in ['build', 'bl']:
-        
-        building_name = game.validate_input(
-            "Choose building type: ",
-            game.valid_building_options
-        )
-        
-        if building_name is None:
-            return
-
-        game.handle_building_construction(building_name, game.building_costs)
+        if not game.handle_building_construction(game.building_costs):
+           return #skip if canceled.
 
     elif action in ['cantina', 'c']:
          game.cantina.handle_cantina_menu()

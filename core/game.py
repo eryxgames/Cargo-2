@@ -602,14 +602,51 @@ class Game:
       
 
         
-    def handle_building_construction(self, building_name, building_costs):
+    def handle_building_construction(self, building_name):
             """Handle building construction with proper capability checking and building process"""
             # Map short commands to full building names and their base types
             building_mapping = {}
             for key, value in self.building_data.items():
                 building_mapping[value['name'].lower()] = value
                 building_mapping[value['short_name'].lower()] = value
+                
+            # Show available building options
+            building_options = [
+                (key, value) 
+                    for key, value in self.building_data.items() 
+                    if self.current_location.can_build(key.lower())
+                    
+            ]
+            
+            # Create numbered list with full names and descriptions
+            building_content = [["Choose Building"]]
+            for i, (name, data) in enumerate(building_options, 1):
+                description = data.get('description', "No description available")
+                wrapped_description = self.word_wrap(description, self.term_width - 10)
+                
+                formatted_desc = " " + ", ".join(wrapped_description) if wrapped_description else ""
+                building_content.append([f"{i}. {data['name']}", f"{formatted_desc}"])
 
+            print(self.ui.create_box(building_content, 'single'))
+
+            # Get user's building choice
+            valid_choices = [str(i) for i in range(1, len(building_options) + 1)] + ['back']
+            choice = self.validate_input("Choose building or 'back': ", valid_choices)
+
+            if choice == 'back' or choice is None:
+                return False
+            
+            try:
+                chosen_index = int(choice) - 1
+                if 0 <= chosen_index < len(building_options):
+                    building_name = building_options[chosen_index][0]  # Get full building name
+                else:
+                    self.ui.display_simple_message("Invalid building selection!")
+                    return False
+            except (ValueError, IndexError):
+                self.ui.display_simple_message("Invalid selection!")
+                return False
+            
             if building_name.lower() not in building_mapping:
                 self.ui.display_simple_message("Invalid building type.")
                 return False
@@ -1041,7 +1078,8 @@ class Game:
         # Add items if any exist
         if self.ship.items:
             for item, count in self.ship.items.items():
-                ship_info.append([f"  {item.capitalize()}: {count}"])
+                item_name = self.ship.item_data.get(item, {}).get('name', item)
+                ship_info.append([f"  {item_name.title()}: {count}"])
         else:
             ship_info.append(["  No items"])
 
@@ -1126,7 +1164,7 @@ class Game:
             ship_line = ship_info[i] if i < len(ship_info) else [""]
             location_line = location_info[i] if i < len(location_info) else [""]
             content.append([str(ship_line[0]), str(location_line[0])])
-        
+
         # Add active research effects
         if self.research.unlocked_options:
             active_research_content = [["Active Research Effects"]]
@@ -1134,7 +1172,6 @@ class Game:
                  research_data = self.research.get_research_data(research_id)
                  active_research_content.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
             content.extend(active_research_content)
-
         print(self.ui.create_box(content, 'double'))
         input("Press Enter to continue...")
 
