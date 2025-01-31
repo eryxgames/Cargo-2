@@ -230,17 +230,17 @@ class Ship:
         return False
 
     def apply_upgrade(self, upgrade_data):
-        """Apply ship upgrades using data structure"""
-        if upgrade_data["type"] == "ship_upgrade":
-            if upgrade_data["name"] in self.upgrades:
-                return False  # Return false, if upgrade already purchased.
-            if "effects" in upgrade_data:
-               for stat, value in upgrade_data["effects"].items():
-                   if stat in ['attack', 'defense', 'speed']:
-                       setattr(self, stat, getattr(self, stat, 0) + value)
-            self.upgrades.append(upgrade_data['name'])
-            return True
-        return False
+            """Apply ship upgrades using data structure"""
+            if upgrade_data["type"] == "ship_upgrade":
+                if upgrade_data["name"] in self.upgrades:
+                    return False  # Return false, if upgrade already purchased.
+                if "effects" in upgrade_data:
+                    for stat, value in upgrade_data["effects"].items():
+                        if stat in ['attack', 'defense', 'speed']:
+                            setattr(self, stat, max(1, int(getattr(self, stat, 0) + value))) # Prevent it to go below 1, and cast to int.
+                self.upgrades.append(upgrade_data['name'])
+                return True
+            return False
 
     def record_combat_victory(self, enemy_type=None):
         """Record a combat victory with proper type tracking"""

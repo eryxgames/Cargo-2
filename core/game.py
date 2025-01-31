@@ -745,7 +745,7 @@ class Game:
 
         status_content = [
             ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
-            [f"Turn: {self.turn}", f"ATK: {self.ship.attack} {f'({self.ship.attack - 1})' if self.ship.attack - 1 < 0 else ''}", f"Name: {self.current_location.name}"],
+            [f"Turn: {self.turn}", f"ATK: {self.ship.attack} { '(' + str(self.ship.attack - 1) + ')' if self.ship.attack - 1 < 0 else ''}", f"Name: {self.current_location.name}"],
             [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if self.ship.defense - 1 < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
             [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if self.ship.speed - 1 < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
             [f"Agri: {self.format_money(self.ship.cargo['agri'])}", f"DMG: {self.ship.damage}%", f"ECO: {self.current_location.economy}"],
