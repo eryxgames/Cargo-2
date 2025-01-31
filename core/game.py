@@ -187,81 +187,7 @@ class Game:
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
 
-    def handle_research_options(self):
-        """Enhanced research options system with track selection"""
-        if self.current_location.location_type != "ResearchColony":
-            self.ui.display_simple_message("Basic research options available on this location:")
-           
-        # Show current research points and colony specialization
-        specialization = getattr(self.current_location, 'research_specialization', 
-                            random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
-        self.current_location.research_specialization = specialization
-        
-        while True:
-            self.clear_screen()
-            research_content = [
-                [f"Research Laboratory ({self.current_location.name}) Options"],
-                [f"Available Research Points: {self.ship.research_points}"],
-                [f"Colony Specialization: {specialization.title()}"],
-                [""]
-            ]
-            
-            # List available research tracks
-            available_tracks = []
-            for key, value in self.research.research_data.items():
-                 requirements = self.research.get_research_requirements(key)
-                 if (self.current_location.tech_level >= requirements["tech_level"] and
-                     self.story_manager.plot_points >= requirements["plot_points"] and
-                     value["type"] == "tech"
-                    ):
-                       
-                    status = "Not Started"
-                    if key in self.research.unlocked_options:
-                         status = "Completed"
-                    elif key == self.research.active_research:
-                         status = "In Progress"
-                    
-                     #check for prereqs
-                    if "requires" in value:
-                        if not all(tech in self.research.unlocked_options for tech in value.get("requires", [])):
-                            status = "Req. Not Met"
 
-                    track_info = f"{value['name']}"
-                    if value.get("unlocks"):
-                        upgrade_types = [unlock for unlock in value["unlocks"] if self.research.research_data.get(unlock, {}).get("type") == "ship_upgrade"]
-                        if upgrade_types:
-                            track_info += " + Ship Upgrade"
-                    available_tracks.append((key, track_info, status))
-            
-            # Display tracks
-            if available_tracks:
-               for i, (track_id, track_info, track_status) in enumerate(available_tracks):
-                  research_content.append([f"{i+1}. {track_info} - {track_status}"])
-            else:
-                research_content.append(["No research tracks available!"])
-            research_content.append([""])
-            research_content.append(["Type a number to select track, or back to main menu"])
-            print(self.ui.create_box(research_content, 'double'))
-            
-            valid_options = [str(i) for i in range(1, len(available_tracks) + 1)] + ['back', 'b']
-            choice = self.validate_input(
-                "Choose track or 'back': ",
-                valid_options
-            )
-
-            if choice in ['back', 'b', None]:
-                return
-            
-            try:
-               chosen_index = int(choice) - 1
-               if chosen_index >= 0 and chosen_index < len(available_tracks):
-                    chosen_option = available_tracks[chosen_index][0]  # Get track key
-                    # start new research track, this is needed!
-                    if self.research.start_research(chosen_option):
-                        self.ui.display_simple_message(f"Started new research track: {self.research.research_data[chosen_option].get('name', 'Unknown')}")
-                    self.handle_research_track_menu(chosen_option)
-            except ValueError:
-              self.ui.display_simple_message("Invalid input!")
 
     def handle_research_track_menu(self, track_id):
             """Handle specific research track and actions"""
@@ -395,36 +321,7 @@ class Game:
             }
           )
       
-    def handle_travel(self):
-        """Handle travelling to a new location"""
-        
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and 
-                               loc.location_type in self.unlocked_location_types]
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
-        
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input( #modified here
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
-
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel') #record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
         
     def handle_building_construction(self, building_name, building_costs):
         """Handle building construction with proper capability checking and building process"""
@@ -687,6 +584,82 @@ class Game:
                         self.action.manipulate_market(planet, commodity, self.research)
     
 # core/game.py
+    def handle_research_options(self):
+        """Enhanced research options system with track selection"""
+        if self.current_location.location_type != "ResearchColony":
+            self.ui.display_simple_message("Basic research options available on this location:")
+           
+        # Show current research points and colony specialization
+        specialization = getattr(self.current_location, 'research_specialization', 
+                            random.choice(['quantum', 'xenology', 'engineering', 'temporal']))
+        self.current_location.research_specialization = specialization
+        
+        while True:
+            self.clear_screen()
+            research_content = [
+                [f"Research Laboratory ({self.current_location.name}) Options"],
+                [f"Available Research Points: {self.ship.research_points}"],
+                [f"Colony Specialization: {specialization.title()}"],
+                [""]
+            ]
+            
+            # List available research tracks
+            available_tracks = []
+            for key, value in self.research.research_data.items():
+                 requirements = self.research.get_research_requirements(key)
+                 if (self.current_location.tech_level >= requirements["tech_level"] and
+                     self.story_manager.plot_points >= requirements["plot_points"] and
+                     value["type"] == "tech"
+                    ):
+                       
+                    status = "Not Started"
+                    if key in self.research.unlocked_options:
+                         status = "Completed"
+                    elif key == self.research.active_research:
+                         status = "In Progress"
+                    
+                     #check for prereqs
+                    if "requires" in value:
+                        if not all(tech in self.research.unlocked_options for tech in value.get("requires", [])):
+                            status = "Req. Not Met"
+
+                    track_info = f"{value['name']}"
+                    if value.get("unlocks"):
+                        upgrade_types = [unlock for unlock in value["unlocks"] if self.research.research_data.get(unlock, {}).get("type") == "ship_upgrade"]
+                        if upgrade_types:
+                            track_info += " + Ship Upgrade"
+                    available_tracks.append((key, track_info, status))
+            
+            # Display tracks
+            if available_tracks:
+               for i, (track_id, track_info, track_status) in enumerate(available_tracks):
+                  research_content.append([f"{i+1}. {track_info} - {track_status}"])
+            else:
+                research_content.append(["No research tracks available!"])
+            research_content.append([""])
+            research_content.append(["Type a number to select track, or back to main menu"])
+            print(self.ui.create_box(research_content, 'double'))
+            
+            valid_options = [str(i) for i in range(1, len(available_tracks) + 1)] + ['back', 'b']
+            choice = self.validate_input(
+                "Choose track or 'back': ",
+                valid_options
+            )
+
+            if choice in ['back', 'b', None]:
+                return
+            
+            try:
+               chosen_index = int(choice) - 1
+               if chosen_index >= 0 and chosen_index < len(available_tracks):
+                    chosen_option = available_tracks[chosen_index][0]  # Get track key
+                    # start new research track, this is needed!
+                    if self.research.start_research(chosen_option):
+                        self.ui.display_simple_message(f"Started new research track: {self.research.research_data[chosen_option].get('name', 'Unknown')}")
+                    self.handle_research_track_menu(chosen_option)
+            except ValueError:
+              self.ui.display_simple_message("Invalid input!")
+
     def display_turn_info(self):
         self.clear_screen()
 
@@ -749,132 +722,177 @@ class Game:
         ]
     #    print(self.create_box(commands, 'round'))
         self.ui.display_simple_message(f"Commands: buy/b, sell/s, travel/t, port/p, cantina/c, shop/sh, upgrade/u, repair/r, action/a, mine/m, build/bl, log/l, info/i...", 1)
-
-        # Display active effects
-        if self.research.unlocked_options:
-            effects = [["Active Research Effects"]]
-            for research in self.research.unlocked_options:
-                effects.append([f"- {research.replace('_', ' ').title()}"])
+        
+        # Display new research effects (only if set)
+        if hasattr(self, '_new_research_effects') and self._new_research_effects:
+            effects = [["New Research Effects"]]
+            for research in self._new_research_effects:
+                research_data = self.research.get_research_data(research)
+                effects.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
             print(self.ui.create_box(effects, 'round'))
 
-    def display_location_info(self):
-        # Ship section
-        # Get total locations
-        total_locations = len(self.locations) if hasattr(self, 'locations') else 0
-        # Add 1 to discovered count for starting location if not already included
-        discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
+    def handle_travel(self):
+        """Handle travelling to a new location"""
+        
+        available_planets = [loc for loc in self.locations
+                            if loc.name != self.current_location.name and 
+                               loc.location_type in self.unlocked_location_types]
 
-        ship_info = [
-            ["Ship Information"],
-            [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
-            [f"Locations Discovered: {discovered + 1}/{total_locations}"],
-            [f"Trades Completed: {self.trades_completed}"],
-            [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
-#            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
-#            [f"Hull Damage: {self.ship.damage}%"],
-            [f"Money: {self.format_money(self.ship.money)}"],
-            [f"Research Points: {self.ship.research_points}"],
-    #        ["Cargo:"],
-    #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
-    #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
-    #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
-    #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
-            ["Items:"]
-        ]
+        if not available_planets:
+            self.ui.display_simple_message("No other locations available to travel!", 1)
+            return False
+        
+        available_names = [loc.name.lower() for loc in available_planets]
+        location_choice = self.validate_input(
+            f"Choose location to travel to: ",
+            available_names
+        )
+        if not location_choice:
+            return False
 
-      
-                
-        # Add items if any exist
-        if self.ship.items:
-            for item, count in self.ship.items.items():
-                ship_info.append([f"  {item.capitalize()}: {count}"])
+        # Find actual Location object with chosen name
+        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+        if chosen_location:
+            self.current_location = chosen_location
+            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+            self.record_activity('travel') #record travel activity
+            self.location_manager.handle_location_discovery(self.current_location)
+            # Clear the research message
+            if hasattr(self, "_new_research_effects"):
+               delattr(self, "_new_research_effects")
+
+            return True
         else:
-            ship_info.append(["  No items"])
+            self.ui.display_simple_message("Invalid location selected!")
+            return False
 
-        # Add combat statistics if they exist
-        if hasattr(self.ship, 'combat_victories'):
-                    ship_info.append(["Combat Record:"])
-                    # Format victories
-                    ship_info.extend([
-                        [f"Victories/Defeats Summary"],
-                        [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
-                        [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
-                        [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
-                        [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
-                        [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
+    def display_location_info(self):
+            # Ship section
+            # Get total locations
+            total_locations = len(self.locations) if hasattr(self, 'locations') else 0
+            # Add 1 to discovered count for starting location if not already included
+            discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
+
+            ship_info = [
+                ["Ship Information"],
+                [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
+                [f"Locations Discovered: {discovered + 1}/{total_locations}"],
+                [f"Trades Completed: {self.trades_completed}"],
+                [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
+    #            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
+    #            [f"Hull Damage: {self.ship.damage}%"],
+                [f"Money: {self.format_money(self.ship.money)}"],
+                [f"Research Points: {self.ship.research_points}"],
+        #        ["Cargo:"],
+        #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
+        #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
+        #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
+        #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
+                ["Items:"]
+            ]
+
+        
+                    
+            # Add items if any exist
+            if self.ship.items:
+                for item, count in self.ship.items.items():
+                    ship_info.append([f"  {item.capitalize()}: {count}"])
+            else:
+                ship_info.append(["  No items"])
+
+            # Add combat statistics if they exist
+            if hasattr(self.ship, 'combat_victories'):
+                        ship_info.append(["Combat Record:"])
+                        # Format victories
+                        ship_info.extend([
+                            [f"Victories/Defeats Summary"],
+                            [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
+                            [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
+                            [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
+                            [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
+                            [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
+                        ])
+
+            if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
+                content.append(["Active Infestations:"])
+                for name, infestation in self.ship.active_infestations.items():
+                    content.append([
+                        f"{infestation['name']} - Turn {infestation['turns_active']}"
                     ])
 
-        if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
-            content.append(["Active Infestations:"])
-            for name, infestation in self.ship.active_infestations.items():
-                content.append([
-                    f"{infestation['name']} - Turn {infestation['turns_active']}"
-                ])
+            # Location section
+            location_info = [
+                ["Location"],
+                [f"Name: {self.current_location.name}"],
+                [f"Type: {self.current_location.location_type}"],
+                [f"Tech Level: {self.current_location.tech_level}"],
+                [f"Agri Level: {self.current_location.agri_level}"],
+                [f"Research Points: {self.current_location.research_points}"],
+                [f"Economy: {self.current_location.economy}"],
+                [f"Mining Efficiency: {self.current_location.exogeology}%"],
+                ["Current Market:"],
+                [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
+                [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
+                [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
+                [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
+            ]
 
-        # Location section
-        location_info = [
-            ["Location"],
-            [f"Name: {self.current_location.name}"],
-            [f"Type: {self.current_location.location_type}"],
-            [f"Tech Level: {self.current_location.tech_level}"],
-            [f"Agri Level: {self.current_location.agri_level}"],
-            [f"Research Points: {self.current_location.research_points}"],
-            [f"Economy: {self.current_location.economy}"],
-            [f"Mining Efficiency: {self.current_location.exogeology}%"],
-            ["Current Market:"],
-            [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
-            [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
-            [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
-            [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
-        ]
+            # Add banned commodities if any
+            if self.current_location.banned_commodities:
+                location_info.append(["Banned Commodities:"])
+                for commodity in self.current_location.banned_commodities:
+                    duration = self.current_location.ban_duration.get(commodity, "Permanent")
+                    location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
 
-        # Add banned commodities if any
-        if self.current_location.banned_commodities:
-            location_info.append(["Banned Commodities:"])
-            for commodity in self.current_location.banned_commodities:
-                duration = self.current_location.ban_duration.get(commodity, "Permanent")
-                location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
+            # Add buildings
+            location_info.append(["Networks (Built):"])
+            if self.current_location.buildings:
+                building_counts = {}
+                for building in self.current_location.buildings:
+                    building_counts[building] = building_counts.get(building, 0) + 1
+                for building, count in building_counts.items():
+                    location_info.append([f"  {building} x{count}"])
+            else:
+                location_info.append(["  No buildings"])
 
-        # Add buildings
-        location_info.append(["Networks (Built):"])
-        if self.current_location.buildings:
-            building_counts = {}
-            for building in self.current_location.buildings:
-                building_counts[building] = building_counts.get(building, 0) + 1
-            for building, count in building_counts.items():
-                location_info.append([f"  {building} x{count}"])
-        else:
-            location_info.append(["  No buildings"])
+            # Add mining information
+            location_info.append(["Mining Operations:"])
+            if self.current_location.mining_platforms:
+                for platform in self.current_location.mining_platforms:
+                    location_info.append([
+                        f"  {platform['type'].capitalize()} Platform",
+                        f"  (Efficiency: {platform['efficiency']}%",
+                        f"  Capacity: {platform['capacity']})"
+                    ])
+            else:
+                location_info.append(["  No mining platforms"])
 
-        # Add mining information
-        location_info.append(["Mining Operations:"])
-        if self.current_location.mining_platforms:
-            for platform in self.current_location.mining_platforms:
-                location_info.append([
-                    f"  {platform['type'].capitalize()} Platform",
-                    f"  (Efficiency: {platform['efficiency']}%",
-                    f"  Capacity: {platform['capacity']})"
-                ])
-        else:
-            location_info.append(["  No mining platforms"])
-
-        # Add mineral deposits if any
-        if self.current_location.mineral_deposits:
-            location_info.append(["Mineral Deposits:"])
-            for deposit_type, amount in self.current_location.mineral_deposits.items():
-                location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
-        
-        # Create content by combining ship and location info
-        content = []
-        max_length = max(len(ship_info), len(location_info))
-        
-        for i in range(max_length):
-            ship_line = ship_info[i][0] if i < len(ship_info) else ""
-            location_line = location_info[i][0] if i < len(location_info) else ""
-            content.append([ship_line, location_line])
-
-        print(self.ui.create_box(content, 'double'))
-        input("Press Enter to continue...")
+            # Add mineral deposits if any
+            if self.current_location.mineral_deposits:
+                location_info.append(["Mineral Deposits:"])
+                for deposit_type, amount in self.current_location.mineral_deposits.items():
+                    location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
+            
+            # Create content by combining ship and location info
+            content = []
+            max_length = max(len(ship_info), len(location_info))
+            
+            for i in range(max_length):
+                ship_line = ship_info[i] if i < len(ship_info) else [""]
+                location_line = location_info[i] if i < len(location_info) else [""]
+                content.append([str(ship_line[0]), str(location_line[0])])
+            
+            # Add active research effects
+            if self.research.unlocked_options:
+                active_research_content = [["Active Research Effects"]]
+                active_research_list = []
+                for research_id in self.research.unlocked_options:
+                    research_data = self.research.get_research_data(research_id)
+                    active_research_list.append([f"{research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
+                print(self.ui.create_box(active_research_list, 'round'))
+                
+            print(self.ui.create_box(content, 'double'))
+            input("Press Enter to continue...")
 
     def build_mining_platform(self):
         """Build a new mining platform on the current planet"""

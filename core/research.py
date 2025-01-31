@@ -213,6 +213,9 @@ class Research:
                        "id": unlock,
                        "name": unlock_data.get("name")
                     })
+            # Set the flag to display new effects
+            game._new_research_effects = [item["id"] for item in unlocks if item["type"] in ["tech", "item_unlock", "ship_upgrade"]] #list comprehension
+            
             # Return that the research was completed successfully, and with the unlocks
             return ActionResult(True, message=f"Successfully researched {research_info.get('name', 'Unknown')}! ", value=unlocks)
         else:
