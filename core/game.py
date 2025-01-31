@@ -356,7 +356,7 @@ class Game:
         else:
             self.ui.display_simple_message("Invalid location selected!")
             return False
-        
+            
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
          
@@ -603,41 +603,41 @@ class Game:
 
         
     def handle_building_construction(self, building_name, building_costs):
-        """Handle building construction with proper capability checking and building process"""
-        # Map short commands to full building names and their base types
-        building_mapping = {}
-        for key, value in self.building_data.items():
-            building_mapping[value['name'].lower()] = value
-            building_mapping[value['short_name'].lower()] = value
+            """Handle building construction with proper capability checking and building process"""
+            # Map short commands to full building names and their base types
+            building_mapping = {}
+            for key, value in self.building_data.items():
+                building_mapping[value['name'].lower()] = value
+                building_mapping[value['short_name'].lower()] = value
 
-        if building_name.lower() not in building_mapping:
-            self.ui.display_simple_message("Invalid building type.")
-            return False
-        
-        building_data = building_mapping[building_name.lower()]
-        full_building_name = building_data['name']
-        base_type = building_data['building_id']
-        
-        # Get base cost and calculate final cost
-        base_cost = int(building_data.get('cost', 3000))
-        cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
-        final_cost = base_cost * cost_multiplier
+            if building_name.lower() not in building_mapping:
+                self.ui.display_simple_message("Invalid building type.")
+                return False
+            
+            building_data = building_mapping[building_name.lower()]
+            full_building_name = building_data['name']
+            base_type = building_data['building_id']
+            
+            # Get base cost and calculate final cost
+            base_cost = int(building_data.get('cost', 3000))
+            cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
+            final_cost = base_cost * cost_multiplier
 
-        # Check if we can afford it
-        if self.ship.money < final_cost:
-            self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
-            return False
+            # Check if we can afford it
+            if self.ship.money < final_cost:
+                self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
+                return False
 
-        # Deduct money first (will be refunded if build fails)
-        self.ship.money -= final_cost
+            # Deduct money first (will be refunded if build fails)
+            self.ship.money -= final_cost
 
-        # Add building directly to location's building list
-        self.current_location.buildings.append(full_building_name)
-        # Apply building effects, by calling building methods from location class
-        self.current_location.build_building(full_building_name) #modified this line
-        
-        self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
-        return True
+            # Add building directly to location's building list
+            self.current_location.buildings.append(full_building_name)
+            # Apply building effects, by calling building methods from location class
+            self.current_location.build_building(full_building_name) #modified this line
+            
+            self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
+            return True
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
@@ -651,8 +651,7 @@ class Game:
                     building_id = row['building_id']
                     building_data[row['name']] = row
                     building_costs[row['name']] = int(row['cost'])
-                    valid_options.append(row['name'].lower())
-                    valid_options.append(building_id)
+                    valid_options.append(row['short_name'].lower())  # Only add short_name
             return building_data, building_costs, valid_options
         except FileNotFoundError:
             print("Error: buildings.csv not found. Using default buildings.")
@@ -762,32 +761,32 @@ class Game:
         return str(floor(amount))
 
     def validate_input(self, prompt, valid_options):
-        """
-        Validate user input against a list of valid options
-        default_prompt: Default prompt text
-        valid_options: List of valid input options
-        prompt: Optional custom prompt to override default
-        """
-        term_width = shutil.get_terminal_size().columns
+            """
+            Validate user input against a list of valid options
+            default_prompt: Default prompt text
+            valid_options: List of valid input options
+            prompt: Optional custom prompt to override default
+            """
+            term_width = shutil.get_terminal_size().columns
 
-        while True:
-            wrapped_prompt = self.word_wrap(prompt, term_width - 4)
-            self.ui.display_simple_message(wrapped_prompt, 0)
+            while True:
+                wrapped_prompt = self.word_wrap(prompt, term_width - 4)
+                self.ui.display_simple_message(wrapped_prompt, 0)
 
-            try:
-                user_input = input(">>> ").strip().lower()
-                if not user_input:
-                    self.ui.display_simple_message("Command cancelled.")
-                    return None
-                if user_input in [opt.lower() for opt in valid_options]: #modified here
-                    return user_input
-                self.ui.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
-            except KeyboardInterrupt:
-                print(f"Do you want to exit? (yes/no):")
-                confirm = input(">>> ").strip().lower()
-                if confirm == 'yes':
-                    self.ui.display_simple_message("Goodbye!", 1)
-                    exit()
+                try:
+                    user_input = input(">>> ").strip().lower()
+                    if not user_input:
+                        self.ui.display_simple_message("Command cancelled.")
+                        return None
+                    if user_input in [opt.lower() for opt in valid_options]: #modified here
+                        return user_input
+                    self.ui.display_simple_message(f"Invalid input, try: {', '.join(valid_options)}", 1)
+                except KeyboardInterrupt:
+                    print(f"Do you want to exit? (yes/no):")
+                    confirm = input(">>> ").strip().lower()
+                    if confirm == 'yes':
+                        self.ui.display_simple_message("Goodbye!", 1)
+                        exit()
 
     def validate_quantity_input(self, prompt):
         while True:

@@ -8,7 +8,8 @@ from core.template import CharacterTemplate
 from core.location_data import LocationCommands, LocationCapabilities, LocationTerminology
 
 class Location:
-    def __init__(self, name, location_type, tech_level, agri_level, research_points, economy, affiliation, relation_to_player, requirements=None):
+    def __init__(self, game, name, location_type, tech_level, agri_level, research_points, economy, affiliation, relation_to_player, requirements=None):
+        self.game = game  #Store game instance
         self.name = name
         self.location_type = location_type
         self.tech_level = int(tech_level)  # Ensure type conversion
