@@ -133,6 +133,42 @@ class Game:
              "mcguffin_beacon": 1
         })
 
+# endofturn
+
+    def end_turn_actions(self):
+        """Handles all turn-ending actions"""
+         # Update passenger satisfaction at end of turn if port is available
+        if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
+            self.port_system.update_passenger_satisfaction()
+
+        # Increment turn after processing everything
+        self.turn += 1
+        self.shop.reset_turn()  # Reset shop state at end of each turn
+        self.captain.update_rank()
+
+         # Check story and events
+        self.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
+        self.check_location_events("turn_end")
+        self.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
+        self.story_manager.check_milestone_progress()  # re-added milestone checks here
+        self.character_system.check_character_triggers()
+        self.story_manager.check_chapter_progress()
+    
+    #check quests and contracts and update before turn is incremented
+        self.quest_system.check_active_quests()
+        self.contract_manager.update_contract_progress({
+            "action": "",
+            "commodity": "",
+            "amount": 0,
+            "location": self.current_location.name,
+            "turn": self.turn
+        })
+        
+        
+        # Clean up old activity logs
+        self.captain.activity_log = [activity for activity in self.captain.activity_log 
+                         if self.turn - activity["turn"] < self.captain.rank_check_interval]
+
     def handle_actions(self):
         """Handle actions based on the current location and type"""
         available_actions = {}
@@ -286,6 +322,7 @@ class Game:
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
     
+# core/game.py
     def handle_travel(self):
         """Handle travelling to a new location"""
         
@@ -339,19 +376,28 @@ class Game:
                             delattr(self, 'active_beacon_encounter')
                             delattr(self, 'active_beacon')
                         else:
-                            self.game.game_events.handle_combat_event("beacon_encounter", beacon_type)
-                            self.ship.items[self.active_beacon] -= 1
-                            if self.ship.items[self.active_beacon] <= 0:
-                                del self.ship.items[self.active_beacon]
-                            delattr(self, 'active_beacon_encounter')
-                            delattr(self, 'active_beacon')
+                           
+                           enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
+                           if enemy_id:
+                               # Start the combat using combat class instead of resolve
+                               combat_result = self.game.combat.resolve_combat(enemy_id)
+                               if combat_result.is_victory():
+                                   self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
+                               elif combat_result.is_defeat():
+                                    self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
+                               
+                               self.ship.items[self.active_beacon] -= 1
+                               if self.ship.items[self.active_beacon] <= 0:
+                                   del self.ship.items[self.active_beacon]
+                               delattr(self, 'active_beacon_encounter')
+                               delattr(self, 'active_beacon')
+                           else:
+                               print("Error: Enemy ID not defined for beacon type:" + beacon_type )
                     else:
                          # Clear if beacon used and no encounter
                          delattr(self, 'active_beacon')
 
-
-                return True
-            
+            # No longer incrementing turn here
             return True
         else:
             self.ui.display_simple_message("Invalid location selected!")
@@ -580,6 +626,7 @@ class Game:
               self.ui.theme_manager.load_theme(selected_theme)
               self.ui.display_simple_message(f"Theme switched to {selected_theme}")
     
+# core/game.py
     def handle_trade(self, action, item, quantity, price):
           """Handle trade actions with update and contract tracking"""
           if hasattr(self, 'contract_manager'):
@@ -599,6 +646,13 @@ class Game:
                 "amount": quantity,
             }
           )
+          
+          # Record trade only when a successful trade action (buy/sell) is performed
+          if action == "buy" or action == "sell":
+            if hasattr(self, 'current_location'): # check if location data is loaded
+              if self.current_location: # make sure that it is not null
+                if item in self.current_location.market: #check if commodity exists in market
+                 self.record_trade(self.current_location, quantity * price)  #Record trade using method, including quantity and price
       
 
         

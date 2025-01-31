@@ -7,6 +7,8 @@ from core.utils import display_logo, logo_data, print_centered_text
 from core.ship import Ship
 from ui.text_ui import TextUI
 
+# core/gameplay.py
+
 def play_turn(game):
     game.display_turn_info()
     game.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
@@ -15,13 +17,18 @@ def play_turn(game):
     game.story_manager.check_milestone_progress()  # re-added milestone checks here
     game.character_system.check_character_triggers()
     game.story_manager.check_chapter_progress()
-    game.force_check_chapter_progression()
+    
+    #check quests and contracts and update before turn is incremented
     game.quest_system.check_active_quests()
-    # Get location commands
-    location_commands = game.current_location.commands
+    game.contract_manager.update_contract_progress({
+            "action": "",
+            "commodity": "",
+            "amount": 0,
+            "location": game.current_location.name,
+            "turn": game.turn
+        })
 
     game.character_manager.update()
-
     game.infestation_manager.check_global_infestations()
     if hasattr(game.ship, 'active_infestations'):
         game.infestation_manager.update_ship_infestations()
@@ -42,6 +49,9 @@ def play_turn(game):
     
     # Update port system if port command is available
     port_is_available = False
+    
+    # Get location commands - IMPORTANT fix here
+    location_commands = game.current_location.commands
     for cmd, shortcut in location_commands["available"]:
         if cmd == 'port' or shortcut == 'p':
             port_is_available = True
@@ -182,7 +192,7 @@ def play_turn(game):
         game.display_location_info()
 
     elif action in ['build', 'bl']:
-        if not game.handle_building_construction(game.building_costs):
+        if not game.handle_building_construction():
            return #skip if canceled.
 
     elif action in ['cantina', 'c']:
@@ -235,18 +245,15 @@ def play_turn(game):
             exit()
         return    
 
+
     elif action in ['end', 'e']:
         # Update passenger satisfaction at end of turn if port is available
         if port_is_available:
             game.port_system.update_passenger_satisfaction()
-        game.turn += 1
-        
-        game.shop.reset_turn()  # Reset shop state at end of each turn
-        game.captain.update_rank()
-        # Clean up old activity logs
-        game.activity_log = [activity for activity in game.activity_log 
-                         if game.turn - activity["turn"] < game.rank_check_interval]
-        return
+
+        # Call turn end methods from game.py
+        game.end_turn_actions()
+        return # Exit play_turn() and start new loop
     
     elif action in ['use', 'us']:
         game.handle_use_item()
