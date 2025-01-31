@@ -197,6 +197,49 @@ class Game:
                         self.display_action_result(result)
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
+           
+    def handle_use_item(self, item_name):
+        """Handle usage of consumable items, including beacons."""
+        if item_name not in self.ship.items or self.ship.items[item_name] <= 0:
+            self.ui.display_simple_message("You do not have this item!")
+            return False
+        
+        item_data = self.ship.item_data.get(item_name, {})
+        
+        if item_data.get("type") == "beacon":
+            beacon_type = item_data.get("beacon_type")
+            if beacon_type == "mcguffin":
+               if self.handle_travel():
+                   # Start boss fight
+                  success = self.game_events.trigger_boss_battle()
+                  if success:
+                      self.ship.items[item_name] -= 1  # Remove consumable after use
+                      if self.ship.items[item_name] <= 0:
+                        del self.ship.items[item_name]
+                      return True
+                  else:
+                      return False
+            elif beacon_type:
+                 # Trigger normal combat event with that beacon type
+                 self.game_events.handle_combat_event("beacon_encounter", beacon_type)
+                 self.ship.items[item_name] -= 1
+                 if self.ship.items[item_name] <= 0:
+                     del self.ship.items[item_name]
+                 return True
+            else:
+               self.ui.display_simple_message("Not a valid beacon!")
+               return False
+        elif item_data.get("type") == "consumable":
+            # Remove item
+             self.ship.items[item_name] -= 1
+             if self.ship.items[item_name] <= 0:
+                 del self.ship.items[item_name]
+             self.ui.display_simple_message(f"Used item: {item_name.title()}!")
+             return True
+        else:
+           self.ui.display_simple_message("Not a usable item")
+           return False
+        return True
 
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""

@@ -56,6 +56,7 @@ def play_turn(game):
     valid_actions.extend(['quit', 'q', 'resign', 'rs', 'version', 'v'])
     valid_actions.extend(['log', 'l'])  # Add but don't show in command hints
     valid_actions.extend(['theme', '/'])  # Add theme switch
+    valid_actions.extend(['use', 'us']) # Add use item command
 
     action = game.validate_input("Choose action: ", valid_actions)
 
@@ -154,7 +155,7 @@ def play_turn(game):
             game.handle_trade('sell', item, quantity, price)
 
     elif action in ['upgrade', 'u']:
-         game.handle_upgrade() #call handle_upgrade here
+        game.handle_upgrade()
 
     elif action in ['travel', 't']:
         game.handle_travel()
@@ -236,6 +237,15 @@ def play_turn(game):
         game.activity_log = [activity for activity in game.activity_log 
                          if game.turn - activity["turn"] < game.rank_check_interval]
         return
-
+    
+    elif action in ['use', 'us']:
+       item = game.validate_input(
+            "Choose item to use: ",
+            list(game.ship.items.keys())
+        )
+       if item is not None:
+          game.handle_use_item(item)
+          
+        
     else:
         game.ui.display_simple_message("Invalid action.")
