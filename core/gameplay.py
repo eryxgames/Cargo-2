@@ -9,10 +9,10 @@ from ui.text_ui import TextUI
 
 def play_turn(game):
     game.display_turn_info()
-    game.check_story_requirements() # check if any new story beats, quests and chapters have been triggered
+    game.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
     game.check_location_events("turn_end")
-    game.location_manager.check_location_unlocks() #check for unlocks, moved from game to location manager
-    game.story_manager.check_milestone_progress() # re-added milestone checks here
+    game.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
+    game.story_manager.check_milestone_progress()  # re-added milestone checks here
     game.character_system.check_character_triggers()
     game.story_manager.check_chapter_progress()
     game.force_check_chapter_progression()
@@ -29,41 +29,60 @@ def play_turn(game):
     # Update synthetic events (if they exist)
     if hasattr(game, 'synthetic_events'):
         game.synthetic_events.update()
-    
+
     # For each location, check building counts
     for location in game.locations:
         neuroguild_count = location.buildings.count("Neuroengineering Guild")
         agrobot_count = location.buildings.count("Agrobot Assembly Line")
-        
+
         if neuroguild_count >= 4 and random.random() < 0.2:
             game.synthetic_events.start_uprising("Neurodroid", location)
         if agrobot_count >= 4 and random.random() < 0.2:
             game.synthetic_events.start_uprising("Agrobot", location)
-    
+
     # Update port system if port command is available
     port_is_available = False
     for cmd, shortcut in location_commands["available"]:
         if cmd == 'port' or shortcut == 'p':
             port_is_available = True
             game.port_system.update_passengers(game.current_location.name)
+
+    # Check if beacon activated
+    if hasattr(game, 'active_beacon'):
+        # if game.handle_use_item(): # old code
+        #    delattr(game, 'active_beacon')
+        beacon_type = game.ship.item_data[game.active_beacon].get("beacon_type")
+        if beacon_type:
+            if beacon_type == "mcguffin":
+               game.handle_use_item()
+            else:
+                # Trigger combat from beacon, but don't remove it, it is removed during travel
+                enemy_id = game.game_events.handle_beacon_encounter(beacon_type)
+                if enemy_id:
+                    # Set the attribute for the game to handle in travel
+                    setattr(game, 'active_beacon_encounter', enemy_id)
     
+    # Call random event before the player makes an action
+    game.random_event()
+
+
     # Create list of valid actions
     valid_actions = []
     for cmd, shortcut in location_commands["available"]:
         valid_actions.extend([cmd, shortcut])
-    
+
     # Add global commands
     valid_actions.extend(['quit', 'q', 'resign', 'rs', 'version', 'v'])
     valid_actions.extend(['log', 'l'])  # Add but don't show in command hints
     valid_actions.extend(['theme', '/'])  # Add theme switch
     valid_actions.extend(['use', 'us']) # Add use item command
-
+    
     action = game.validate_input("Choose action: ", valid_actions)
-
-    # Handle cancelled command
+    
+     # Handle cancelled command
     if action is None:
-        return
-                    
+       return
+    
     # Handle research/repair based on location type
     elif action in ['research', 'r']:
         if game.current_location.location_type == "ResearchColony":
@@ -230,7 +249,7 @@ def play_turn(game):
         if port_is_available:
             game.port_system.update_passenger_satisfaction()
         game.turn += 1
-        game.random_event()
+        
         game.shop.reset_turn()  # Reset shop state at end of each turn
         game.captain.update_rank()
         # Clean up old activity logs
@@ -239,13 +258,7 @@ def play_turn(game):
         return
     
     elif action in ['use', 'us']:
-        # item = game.validate_input(
-        #     "Choose item to use: ",
-        #     list(game.ship.items.keys())
-        # )
-        # if item is not None:
         game.handle_use_item()
-          
-        
+
     else:
         game.ui.display_simple_message("Invalid action.")

@@ -224,12 +224,18 @@ class Game:
         if term_width >= 80:
             items_per_col = (len(usable_items) + 1) // 2
             for i in range(items_per_col):
-                item1 = f"{i+1}. {usable_items[i].title()}" if i < len(usable_items) else ""
-                item2 = f"{i+1+items_per_col}. {usable_items[i+items_per_col].title()}" if i + items_per_col < len(usable_items) else ""
+                item_id1 = usable_items[i] if i < len(usable_items) else None
+                item_id2 = usable_items[i + items_per_col] if i + items_per_col < len(usable_items) else None
+
+                item1 = f"{i+1}. {self.ship.item_data.get(item_id1, {}).get('name', item_id1).title()} - {self.ship.item_data.get(item_id1, {}).get('description','')}" if item_id1 else ""
+                item2 = f"{i+1+items_per_col}. {self.ship.item_data.get(item_id2, {}).get('name', item_id2).title()} - {self.ship.item_data.get(item_id2, {}).get('description','')}" if item_id2 else ""
                 item_content.append([item1, item2])
         else:
-           for i, item in enumerate(usable_items, 1):
-                 item_content.append([f"{i}. {item.title()}"])
+           for i, item_id in enumerate(usable_items, 1):
+                item = self.ship.item_data.get(item_id, {})
+                item_name = item.get('name', item_id).title()
+                item_description = item.get('description', '')
+                item_content.append([f"{i}. {item_name} - {item_description}"])
         
         print(self.ui.create_box(item_content, 'single'))
         
@@ -262,12 +268,10 @@ class Game:
                   else:
                       return False
             elif beacon_type:
-                 # Trigger normal combat event with that beacon type
-                 self.game_events.handle_combat_event("beacon_encounter", beacon_type)
-                 self.ship.items[chosen_item] -= 1
-                 if self.ship.items[chosen_item] <= 0:
-                     del self.ship.items[chosen_item]
-                 return True
+                # store beacon to be triggered later
+                setattr(self, 'active_beacon', chosen_item)
+                self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
+                return True
             else:
                self.ui.display_simple_message("Not a valid beacon!")
                return False
@@ -276,7 +280,7 @@ class Game:
              self.ship.items[chosen_item] -= 1
              if self.ship.items[chosen_item] <= 0:
                  del self.ship.items[chosen_item]
-             self.ui.display_simple_message(f"Used item: {chosen_item.title()}!")
+             self.ui.display_simple_message(f"Used item: {item_data.get('name').title()}!")
              return True
         
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
@@ -319,6 +323,29 @@ class Game:
                 if self.ship.items[self.active_mcguffin_beacon] <= 0:
                      del self.ship.items[self.active_mcguffin_beacon]
                 delattr(self, 'active_mcguffin_beacon')
+            # Check for activated beacon
+            if hasattr(self, 'active_beacon'):
+                beacon_item = getattr(self, 'active_beacon')
+                beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+                if beacon_type:
+                  if beacon_type == 'nav_a':
+                      encounter = self.game_events.handle_beacon_encounter(beacon_type)
+                      if encounter:
+                            # Call for special encounter
+                            self.ship.items[self.active_beacon] -= 1
+                            if self.ship.items[self.active_beacon] <= 0:
+                                del self.ship.items[self.active_beacon]
+                            delattr(self, 'active_beacon')
+                  else:
+                        enemy_id = self.game_events.handle_beacon_encounter(beacon_type)
+                        if enemy_id:
+                            self.game.game_events.handle_combat_event("beacon_encounter", beacon_type)
+                            self.ship.items[self.active_beacon] -= 1
+                            if self.ship.items[self.active_beacon] <= 0:
+                                del self.ship.items[self.active_beacon]
+                            delattr(self, 'active_beacon')
+                  return True
+            
             return True
         else:
             self.ui.display_simple_message("Invalid location selected!")
@@ -1531,7 +1558,7 @@ class Game:
                         self.handle_passenger_event(event_id)
 
                     # Check for story events
-                    self.game.story_manager.check_event_trigger(event_id, self)
+                    self.story_manager.check_event_trigger(event_id, self)
 
     def handle_passenger_event(self, event_id):
         """Handle specific passenger related events."""

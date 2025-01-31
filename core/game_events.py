@@ -100,29 +100,20 @@ class GameEvents:
         """Handle a beacon-triggered combat event"""
         
         if beacon_type == "distress_a":
-            enemy_id = "pirate_scout"  # Set the enemy type from distress signal
+            enemy_pool = ["pirate_scout", "pirate_raider"]  # Set the enemy type from distress signal
         elif beacon_type == "distress_b":
-           enemy_id = "pirate_raider"
+           enemy_pool = ["pirate_marauder", "pirate_raider"]
         elif beacon_type == "distress_c":
-           enemy_id = "pirate_elite"
+            enemy_pool = ["rogue_corsair", "pirate_mothership"]
         elif beacon_type == "nav_a":
-            enemy_id = "militia_patrol"
+            # store the event type and do not activate anything here
+             return "nav_a"
         else:
             self.game.ui.display_simple_message(f"Unknown beacon type: {beacon_type}", 3, color='31')
             return False
         
-        # Start combat using Combat class
-        result = self.combat.resolve_combat(enemy_id)
-        
-        # Process outcome of combat
-        if result.is_victory():
-            self.game.ui.display_simple_message(result.get_message(), 3, color='32')
-            if result.get_rewards():
-                 rewards = result.get_rewards()
-                 self.game.handle_research_gain(rewards.get("research", 0))
-        elif result.is_defeat():
-            self.game.ui.display_simple_message(result.get_message(), 3, color='31')
-        return True
+        enemy_id = random.choice(enemy_pool)
+        return enemy_id
         
 
     def trigger_boss_battle(self):
