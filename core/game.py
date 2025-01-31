@@ -209,12 +209,27 @@ class Game:
          # Display options
          upgrade_content = [["Available Ship Upgrades"]]
          for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
-            upgrade_content.append([f"{i + 1}. {upgrade_data['name']}"])
-            upgrade_content.append([f"    Cost: {self.format_money(upgrade_data.get('cost', 0))}"])
-            if "effects" in upgrade_data:
-                effects = [f"    {key}: {value}" for key, value in upgrade_data['effects'].items()]
-                upgrade_content.append(effects)
-            upgrade_content.append([""])  # Add spacing
+              upgrade_content.append([f"{i + 1}. {upgrade_data['name']}"])
+              upgrade_content.append([f"   Cost: {self.format_money(upgrade_data.get('cost', 0))}"])
+                
+              # Prepare stats display
+              stats = []
+              for stat in ["attack", "defense", "speed"]:
+                  if stat in upgrade_data.get("effects", {}):
+                      value = upgrade_data["effects"][stat]
+                      sign = "+" if value >= 0 else "" # Add + or - sign
+                      stats.append(f"{stat.upper()}: {sign}{value}")
+              if stats:
+                 upgrade_content.append([f"  Stats: {', '.join(stats)}"])
+              
+              # Prepare description
+              description = upgrade_data.get("description", "No description available")
+              wrapped_description = self.word_wrap(description, self.term_width - 10) # Wrap description
+              for line in wrapped_description:
+                   upgrade_content.append([f"  {line}"])
+              
+              upgrade_content.append([""]) # Add spacing between items
+
          print(self.ui.create_box(upgrade_content, 'double'))
 
          valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]

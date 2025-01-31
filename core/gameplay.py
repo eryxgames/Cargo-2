@@ -106,8 +106,8 @@ def play_turn(game):
             game.ui.display_simple_message(f"Cannot calculate amount: {item} has no valid price.")
             return
             
-        #tax_rate = game.current_location.calculate_tax_rate(game.rank, price) #removed player_rank
-        tax_rate = game.current_location.calculate_tax_rate(game.rank, price, game) #now passing game object
+        #tax_rate = game.current_location.calculate_tax_rate(game.rank, price)
+        tax_rate = game.current_location.calculate_tax_rate(game.rank, price, game)
         price_with_tax = price * (1 + tax_rate)
         max_quantity = int(game.ship.money / price_with_tax)
 
@@ -154,17 +154,7 @@ def play_turn(game):
             game.handle_trade('sell', item, quantity, price)
 
     elif action in ['upgrade', 'u']:
-        property_name = game.validate_input(
-            "Choose property to upgrade (attack/defense/speed): ", 
-            ['attack', 'defense', 'speed']
-        )
-        if property_name is None:
-            return
-
-        cost = game.ship.upgrade_costs[property_name]
-        if game.ship.upgrade(property_name, cost):
-            game.ui.display_simple_message(f"Upgraded {property_name}.")
-            game.ship.upgrade_costs[property_name] = int(cost * 1.5)
+         game.handle_upgrade() #call handle_upgrade here
 
     elif action in ['travel', 't']:
         game.handle_travel()
@@ -210,7 +200,7 @@ def play_turn(game):
         return    # Return after showing log to avoid counting it as a turn
 
     elif action in ['version', 'v']:
-        display_logo(logo_data, centered=True) #modified here
+        display_logo(logo_data, centered=True)
         print_centered_text("")
         print_centered_text("Created by Dan Sandner")
         print_centered_text("v1.0.2, ©2025")
