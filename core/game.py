@@ -658,78 +658,85 @@ class Game:
 
         
     def handle_building_construction(self):
-            """Handle building construction with proper capability checking and building process"""
-            # Map short commands to full building names and their base types
-            building_mapping = {}
-            for key, value in self.building_data.items():
-                building_mapping[value['name'].lower()] = value
-                building_mapping[value['short_name'].lower()] = value
+        """Handle building construction with proper capability checking and building process"""
+        # Map short commands to full building names and their base types
+        building_mapping = {}
+        for key, value in self.building_data.items():
+            building_mapping[value['name'].lower()] = value
+            building_mapping[value['short_name'].lower()] = value
+            
+        # Show available building options
+        building_options = [
+            (key, value) 
+                for key, value in self.building_data.items() 
+                if self.current_location.can_build(key.lower())
                 
-            # Show available building options
-            building_options = [
-                (key, value) 
-                    for key, value in self.building_data.items() 
-                    if self.current_location.can_build(key.lower())
-                    
-            ]
+        ]
+        
+        # Create numbered list with full names, descriptions, and costs
+        building_content = [["Develop Networks:",""]]
+        for i, (name, data) in enumerate(building_options, 1):
+            description = data.get('description', "No description available")
+            wrapped_description = self.word_wrap(description, self.term_width - 10)
             
-            # Create numbered list with full names and descriptions
-            building_content = [["Choose Building"]]
-            for i, (name, data) in enumerate(building_options, 1):
-                description = data.get('description', "No description available")
-                wrapped_description = self.word_wrap(description, self.term_width - 10)
-                
-                formatted_desc = " " + ", ".join(wrapped_description) if wrapped_description else ""
-                building_content.append([f"{i}. {data['name']}", f"{formatted_desc}"])
-
-            print(self.ui.create_box(building_content, 'single'))
-
-            # Get user's building choice
-            valid_choices = [str(i) for i in range(1, len(building_options) + 1)] + ['back']
-            choice = self.validate_input("Choose building or 'back': ", valid_choices)
-
-            if choice == 'back' or choice is None:
-                return False
-            
-            try:
-                chosen_index = int(choice) - 1
-                if 0 <= chosen_index < len(building_options):
-                    building_name = building_options[chosen_index][0]  # Get full building name
-                else:
-                    self.ui.display_simple_message("Invalid building selection!")
-                    return False
-            except (ValueError, IndexError):
-                self.ui.display_simple_message("Invalid selection!")
-                return False
-            
-            if building_name.lower() not in building_mapping:
-                self.ui.display_simple_message("Invalid building type.")
-                return False
-            
-            building_data = building_mapping[building_name.lower()]
-            full_building_name = building_data['name']
-            base_type = building_data['building_id']
-            
-            # Get base cost and calculate final cost
-            base_cost = int(building_data.get('cost', 3000))
-            cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
+            # Calculate cost for this building
+            base_cost = int(data.get('cost', 3000))
+            cost_multiplier = self.current_location.buildings.count(data['name']) + 1
             final_cost = base_cost * cost_multiplier
-
-            # Check if we can afford it
-            if self.ship.money < final_cost:
-                self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
-                return False
-
-            # Deduct money first (will be refunded if build fails)
-            self.ship.money -= final_cost
-
-            # Add building directly to location's building list
-            self.current_location.buildings.append(full_building_name)
-            # Apply building effects, by calling building methods from location class
-            self.current_location.build_building(full_building_name) #modified this line
             
-            self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
-            return True
+            # Add cost to the description
+            cost_text = f" (Cost: {self.format_money(final_cost)})"
+            formatted_desc = " " + ", ".join(wrapped_description) + cost_text if wrapped_description else cost_text
+            building_content.append([f"{i}. {data['name']}", f"{formatted_desc}"])
+
+        print(self.ui.create_box(building_content, 'round'))
+
+        # Get user's building choice
+        valid_choices = [str(i) for i in range(1, len(building_options) + 1)] + ['back']
+        choice = self.validate_input("Choose building or 'back': ", valid_choices)
+
+        if choice == 'back' or choice is None:
+            return False
+        
+        try:
+            chosen_index = int(choice) - 1
+            if 0 <= chosen_index < len(building_options):
+                building_name = building_options[chosen_index][0]  # Get full building name
+            else:
+                self.ui.display_simple_message("Invalid building selection!")
+                return False
+        except (ValueError, IndexError):
+            self.ui.display_simple_message("Invalid selection!")
+            return False
+        
+        if building_name.lower() not in building_mapping:
+            self.ui.display_simple_message("Invalid building type.")
+            return False
+        
+        building_data = building_mapping[building_name.lower()]
+        full_building_name = building_data['name']
+        base_type = building_data['building_id']
+        
+        # Get base cost and calculate final cost
+        base_cost = int(building_data.get('cost', 3000))
+        cost_multiplier = self.current_location.buildings.count(full_building_name) + 1
+        final_cost = base_cost * cost_multiplier
+
+        # Check if we can afford it
+        if self.ship.money < final_cost:
+            self.ui.display_simple_message(f"Not enough money. Cost: {self.format_money(final_cost)}")
+            return False
+
+        # Deduct money first (will be refunded if build fails)
+        self.ship.money -= final_cost
+
+        # Add building directly to location's building list
+        self.current_location.buildings.append(full_building_name)
+        # Apply building effects, by calling building methods from location class
+        self.current_location.build_building(full_building_name)
+        
+        self.ui.display_simple_message(f"Built {full_building_name} for {self.format_money(final_cost)} credits.")
+        return True
 
     def load_building_data(self):
         """Load building data from data/buildings.csv"""
