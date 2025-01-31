@@ -202,20 +202,11 @@ class Game:
                     if unlock_data and unlock_data["type"] == "ship_upgrade" and unlock_data["name"] not in self.ship.upgrades:
                        available_upgrades.append((unlock_id, unlock_data))
 
-         # Display installed upgrades first
-         if self.ship.upgrades:
-            installed_upgrades = [f"- {upgrade}" for upgrade in self.ship.upgrades]
-            installed_text = [["Installed Upgrades:"]]
-            for upgrade_line in installed_upgrades:
-                installed_text.append([upgrade_line])
-            print(self.ui.create_box(installed_text, "round"))
+         if not available_upgrades and not self.ship.upgrades:
+             self.ui.display_simple_message("No ship upgrades available.")
+             input("Press Enter to continue...")
+             return
          
-         # No available upgrades case
-         if not available_upgrades:
-            self.ui.display_simple_message("No ship upgrades available.")
-            input("Press Enter to continue...")
-            return
-        
          # Display available upgrades
          upgrade_content = [["Available Ship Upgrades"]]
          for i, (upgrade_id, upgrade_data) in enumerate(available_upgrades):
@@ -241,25 +232,74 @@ class Game:
               upgrade_content.append([""]) # Add spacing between items
          print(self.ui.create_box(upgrade_content, 'double'))
 
-         valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
-         choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
-         
-         if choice in ["back", None]:
-            return
+         # Display installed upgrades
+         if self.ship.upgrades:
+                installed_upgrades = [f"- {upgrade}" for upgrade in self.ship.upgrades]
+                installed_text = [["Installed Upgrades:"]]
+                for upgrade_line in installed_upgrades:
+                   installed_text.append([upgrade_line])
+                print(self.ui.create_box(installed_text, "round"))
 
-         try:
-             selected_upgrade_index = int(choice) - 1
-             upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
-             if self.ship.money >= upgrade_data.get("cost",0):
-                 self.ship.money -= upgrade_data["cost"]
-                 if self.ship.apply_upgrade(upgrade_data):
-                    self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
-                    # Remove the *item* after it is applied, not just id
-                    available_upgrades.pop(selected_upgrade_index)
-                 else:
-                    self.ui.display_simple_message("Upgrade failed!")
-         except (ValueError, IndexError):
-            self.ui.display_simple_message("Invalid input!")
+         if available_upgrades:
+            valid_options = [str(i+1) for i in range(len(available_upgrades))] + ["back"]
+            choice = self.validate_input("Choose upgrade or 'back': ", valid_options)
+             
+            if choice in ["back", None]:
+                return
+
+            try:
+                selected_upgrade_index = int(choice) - 1
+                upgrade_id, upgrade_data = available_upgrades[selected_upgrade_index]
+                if self.ship.money >= upgrade_data.get("cost",0):
+                   # Check if applying this upgrade results in negative values
+                   temp_attack = self.ship.attack
+                   temp_defense = self.ship.defense
+                   temp_speed = self.ship.speed
+                   
+                   negative_stats = []
+                   
+                   for stat, value in upgrade_data["effects"].items():
+                      if stat == 'attack':
+                          if temp_attack + value < 1:
+                            negative_stats.append("ATK")
+                          temp_attack = max(1, int(getattr(self.ship, stat, 0) + value))
+                      if stat == 'defense':
+                         if temp_defense + value < 1:
+                           negative_stats.append("DEF")
+                         temp_defense = max(1, int(getattr(self.ship, stat, 0) + value))
+                      if stat == 'speed':
+                          if temp_speed + value < 1:
+                              negative_stats.append("SPD")
+                          temp_speed = max(1, int(getattr(self.ship, stat, 0) + value))
+                   
+                   # Handle the messages to player
+                   if negative_stats:
+                       if len(negative_stats) > 1:
+                           self.ui.display_simple_message(
+                                "This upgrade is incompatible with your ship's current configuration, increase ship stats first " +
+                                f"({', '.join(negative_stats)})"
+                             )
+                       else:
+                           stat = negative_stats[0]
+                           messages = {
+                                "ATK": "This technology would impair your ship's security systems below critical levels (increase ATK first)",
+                                "DEF": "This technology would weaken your ship's structural integrity below critical limits (increase DEF first)",
+                                "SPD": "This upgrade would drain your propulsion power systems below the recommended level (increase SPD first)"
+                            }
+                           self.ui.display_simple_message(messages.get(stat, "Upgrade not allowed."))
+                       input("Press Enter to continue...") #Added Input here
+                   else: #If no negative stats, apply upgrade
+                     self.ship.money -= upgrade_data["cost"]
+                     if self.ship.apply_upgrade(upgrade_data):
+                        self.ui.display_simple_message(f"Upgrade '{upgrade_data['name']}' applied!")
+                        # Remove the *item* after it is applied, not just id
+                        available_upgrades.pop(selected_upgrade_index)
+                     else:
+                       self.ui.display_simple_message("Upgrade failed!")
+
+            except (ValueError, IndexError):
+                 self.ui.display_simple_message("Invalid input!")
+
 
     def handle_research_track_menu(self, track_id):
             """Handle specific research track and actions"""
@@ -745,9 +785,9 @@ class Game:
 
         status_content = [
             ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
-            [f"Turn: {self.turn}", f"ATK: {self.ship.attack} { '(' + str(self.ship.attack - 1) + ')' if self.ship.attack - 1 < 0 else ''}", f"Name: {self.current_location.name}"],
-            [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if self.ship.defense - 1 < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
-            [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if self.ship.speed - 1 < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
+            [f"Turn: {self.turn}", f"ATK: {self.ship.attack} {f'({self.ship.attack - 1})' if (self.ship.attack - 1) < 0 else ''}", f"Name: {self.current_location.name}"],
+            [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if (self.ship.defense - 1) < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
+            [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if (self.ship.speed - 1) < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
             [f"Agri: {self.format_money(self.ship.cargo['agri'])}", f"DMG: {self.ship.damage}%", f"ECO: {self.current_location.economy}"],
             [f"Salt: {self.format_money(self.ship.cargo['salt'])}", f"RP: {self.ship.research_points}", f"EFF: {self.current_location.exogeology}%"],
             [f"Fuel: {self.format_money(self.ship.cargo['fuel'])}", f"★ {self.rank}", f"NET: {len(self.current_location.buildings)}"],
@@ -839,132 +879,131 @@ class Game:
             return False
 
     def display_location_info(self):
-            # Ship section
-            # Get total locations
-            total_locations = len(self.locations) if hasattr(self, 'locations') else 0
-            # Add 1 to discovered count for starting location if not already included
-            discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
-
-            ship_info = [
-                ["Ship Information"],
-                [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
-                [f"Locations Discovered: {discovered + 1}/{total_locations}"],
-                [f"Trades Completed: {self.trades_completed}"],
-                [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
-    #            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
-    #            [f"Hull Damage: {self.ship.damage}%"],
-                [f"Money: {self.format_money(self.ship.money)}"],
-                [f"Research Points: {self.ship.research_points}"],
-        #        ["Cargo:"],
-        #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
-        #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
-        #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
-        #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
-                ["Items:"]
-            ]
-
+        # Ship section
+        # Get total locations
+        total_locations = len(self.locations) if hasattr(self, 'locations') else 0
+        # Add 1 to discovered count for starting location if not already included
+        discovered = (len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0)
         
-                    
-            # Add items if any exist
-            if self.ship.items:
-                for item, count in self.ship.items.items():
-                    ship_info.append([f"  {item.capitalize()}: {count}"])
-            else:
-                ship_info.append(["  No items"])
+        ship_info = [
+            ["Ship Information"],
+            [f"Stats: {self.ship.attack}|{self.ship.defense}|{self.ship.speed}"],
+            [f"Locations Discovered: {discovered + 1}/{total_locations}"],
+            [f"Trades Completed: {self.trades_completed}"],
+            [f"PAX Delivered: {self.reputation_manager.total_passengers}"],
+#            [f"Locations Discovered: {len(self.discovered_locations) if hasattr(self, 'discovered_locations') else 0}"]
+#            [f"Hull Damage: {self.ship.damage}%"],
+            [f"Money: {self.format_money(self.ship.money)}"],
+            [f"Research Points: {self.ship.research_points}"],
+    #        ["Cargo:"],
+    #        [f"  Tech: {self.format_money(self.ship.cargo['tech'])}"],
+    #        [f"  Agri: {self.format_money(self.ship.cargo['agri'])}"],
+    #        [f"  Salt: {self.format_money(self.ship.cargo['salt'])}"],
+    #        [f"  Fuel: {self.format_money(self.ship.cargo['fuel'])}"],
+            ["Items:"]
+        ]
 
-            # Add combat statistics if they exist
-            if hasattr(self.ship, 'combat_victories'):
-                        ship_info.append(["Combat Record:"])
-                        # Format victories
-                        ship_info.extend([
-                            [f"Victories/Defeats Summary"],
-                            [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
-                            [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
-                            [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
-                            [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
-                            [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
-                        ])
-
-            if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
-                content.append(["Active Infestations:"])
-                for name, infestation in self.ship.active_infestations.items():
-                    content.append([
-                        f"{infestation['name']} - Turn {infestation['turns_active']}"
-                    ])
-
-            # Location section
-            location_info = [
-                ["Location"],
-                [f"Name: {self.current_location.name}"],
-                [f"Type: {self.current_location.location_type}"],
-                [f"Tech Level: {self.current_location.tech_level}"],
-                [f"Agri Level: {self.current_location.agri_level}"],
-                [f"Research Points: {self.current_location.research_points}"],
-                [f"Economy: {self.current_location.economy}"],
-                [f"Mining Efficiency: {self.current_location.exogeology}%"],
-                ["Current Market:"],
-                [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
-                [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
-                [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
-                [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
-            ]
-
-            # Add banned commodities if any
-            if self.current_location.banned_commodities:
-                location_info.append(["Banned Commodities:"])
-                for commodity in self.current_location.banned_commodities:
-                    duration = self.current_location.ban_duration.get(commodity, "Permanent")
-                    location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
-
-            # Add buildings
-            location_info.append(["Networks (Built):"])
-            if self.current_location.buildings:
-                building_counts = {}
-                for building in self.current_location.buildings:
-                    building_counts[building] = building_counts.get(building, 0) + 1
-                for building, count in building_counts.items():
-                    location_info.append([f"  {building} x{count}"])
-            else:
-                location_info.append(["  No buildings"])
-
-            # Add mining information
-            location_info.append(["Mining Operations:"])
-            if self.current_location.mining_platforms:
-                for platform in self.current_location.mining_platforms:
-                    location_info.append([
-                        f"  {platform['type'].capitalize()} Platform",
-                        f"  (Efficiency: {platform['efficiency']}%",
-                        f"  Capacity: {platform['capacity']})"
-                    ])
-            else:
-                location_info.append(["  No mining platforms"])
-
-            # Add mineral deposits if any
-            if self.current_location.mineral_deposits:
-                location_info.append(["Mineral Deposits:"])
-                for deposit_type, amount in self.current_location.mineral_deposits.items():
-                    location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
-            
-            # Create content by combining ship and location info
-            content = []
-            max_length = max(len(ship_info), len(location_info))
-            
-            for i in range(max_length):
-                ship_line = ship_info[i] if i < len(ship_info) else [""]
-                location_line = location_info[i] if i < len(location_info) else [""]
-                content.append([str(ship_line[0]), str(location_line[0])])
-            
-            # Add active research effects
-            if self.research.unlocked_options:
-                active_research_content = [["Active Research Effects"]]
-                active_research_list = []
-                for research_id in self.research.unlocked_options:
-                    research_data = self.research.get_research_data(research_id)
-                    active_research_list.append([f"{research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
-                print(self.ui.create_box(active_research_list, 'round'))
+      
                 
-            print(self.ui.create_box(content, 'double'))
-            input("Press Enter to continue...")
+        # Add items if any exist
+        if self.ship.items:
+            for item, count in self.ship.items.items():
+                ship_info.append([f"  {item.capitalize()}: {count}"])
+        else:
+            ship_info.append(["  No items"])
+
+        # Add combat statistics if they exist
+        if hasattr(self.ship, 'combat_victories'):
+                    ship_info.append(["Combat Record:"])
+                    # Format victories
+                    ship_info.extend([
+                        [f"Victories/Defeats Summary"],
+                        [f"  Pirates: {self.ship.combat_victories.get('pirate', 0)}/{self.ship.combat_defeats.get('pirate', 0)}"],
+                        [f"  Raiders: {self.ship.combat_victories.get('raider', 0)}/{self.ship.combat_defeats.get('raider', 0)}"],
+                        [f"  Militia: {self.ship.combat_victories.get('militia', 0)}/{self.ship.combat_defeats.get('militia', 0)}"],
+                        [f"  Aliens: {self.ship.combat_victories.get('alien', 0)}/{self.ship.combat_defeats.get('alien', 0)}"],
+                        [f"  Total: {self.ship.combat_victories.get('total', 0)}/{self.ship.combat_defeats.get('total', 0)}"]
+                    ])
+
+        if hasattr(self.ship, 'active_infestations') and self.ship.active_infestations:
+            content.append(["Active Infestations:"])
+            for name, infestation in self.ship.active_infestations.items():
+                content.append([
+                    f"{infestation['name']} - Turn {infestation['turns_active']}"
+                ])
+
+        # Location section
+        location_info = [
+            ["Location"],
+            [f"Name: {self.current_location.name}"],
+            [f"Type: {self.current_location.location_type}"],
+            [f"Tech Level: {self.current_location.tech_level}"],
+            [f"Agri Level: {self.current_location.agri_level}"],
+            [f"Research Points: {self.current_location.research_points}"],
+            [f"Economy: {self.current_location.economy}"],
+            [f"Mining Efficiency: {self.current_location.exogeology}%"],
+            ["Current Market:"],
+            [f"  Tech: {self.format_money(self.current_location.market['tech'])}"],
+            [f"  Agri: {self.format_money(self.current_location.market['agri'])}"],
+            [f"  Salt: {self.format_money(self.current_location.market['salt'])}"],
+            [f"  Fuel: {self.format_money(self.current_location.market['fuel'])}"]
+        ]
+
+        # Add banned commodities if any
+        if self.current_location.banned_commodities:
+            location_info.append(["Banned Commodities:"])
+            for commodity in self.current_location.banned_commodities:
+                duration = self.current_location.ban_duration.get(commodity, "Permanent")
+                location_info.append([f"  {commodity.capitalize()}: {duration} turns"])
+
+        # Add buildings
+        location_info.append(["Networks (Built):"])
+        if self.current_location.buildings:
+            building_counts = {}
+            for building in self.current_location.buildings:
+                building_counts[building] = building_counts.get(building, 0) + 1
+            for building, count in building_counts.items():
+                location_info.append([f"  {building} x{count}"])
+        else:
+            location_info.append(["  No buildings"])
+
+        # Add mining information
+        location_info.append(["Mining Operations:"])
+        if self.current_location.mining_platforms:
+            for platform in self.current_location.mining_platforms:
+                location_info.append([
+                    f"  {platform['type'].capitalize()} Platform",
+                    f"  (Efficiency: {platform['efficiency']}%",
+                    f"  Capacity: {platform['capacity']})"
+                ])
+        else:
+            location_info.append(["  No mining platforms"])
+
+        # Add mineral deposits if any
+        if self.current_location.mineral_deposits:
+            location_info.append(["Mineral Deposits:"])
+            for deposit_type, amount in self.current_location.mineral_deposits.items():
+                location_info.append([f"  {deposit_type.capitalize()}: {amount} units"])
+        
+        # Create content by combining ship and location info
+        content = []
+        max_length = max(len(ship_info), len(location_info))
+        
+        for i in range(max_length):
+            ship_line = ship_info[i] if i < len(ship_info) else [""]
+            location_line = location_info[i] if i < len(location_info) else [""]
+            content.append([str(ship_line[0]), str(location_line[0])])
+        
+        # Add active research effects
+        if self.research.unlocked_options:
+            active_research_content = [["Active Research Effects"]]
+            for research_id in self.research.unlocked_options:
+                 research_data = self.research.get_research_data(research_id)
+                 active_research_content.append([f"- {research_data.get('name', 'Unknown').replace('_', ' ').title()}"])
+            content.extend(active_research_content)
+
+        print(self.ui.create_box(content, 'double'))
+        input("Press Enter to continue...")
 
     def build_mining_platform(self):
         """Build a new mining platform on the current planet"""
