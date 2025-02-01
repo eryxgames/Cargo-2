@@ -674,10 +674,11 @@ class Game:
         ]
         
         # Create numbered list with full names, descriptions, and costs
-        building_content = [["Develop Networks:",""]]
+        building_content = [["#", "Build Networks:", "Description:"]]  # Header row
+        building_content.append(["","",""])
         for i, (name, data) in enumerate(building_options, 1):
             description = data.get('description', "No description available")
-            wrapped_description = self.word_wrap(description, self.term_width - 10)
+            wrapped_description = self.word_wrap(description, self.term_width - 30)  # Reduced width to account for new column
             
             # Calculate cost for this building
             base_cost = int(data.get('cost', 3000))
@@ -685,9 +686,9 @@ class Game:
             final_cost = base_cost * cost_multiplier
             
             # Add cost to the description
-            cost_text = f" (Cost: {self.format_money(final_cost)})"
+            cost_text = f" (¤: {self.format_money(final_cost)})"
             formatted_desc = " " + ", ".join(wrapped_description) + cost_text if wrapped_description else cost_text
-            building_content.append([f"{i}. {data['name']}", f"{formatted_desc}"])
+            building_content.append([str(i), data['name'], formatted_desc])
 
         print(self.ui.create_box(building_content, 'round'))
 
