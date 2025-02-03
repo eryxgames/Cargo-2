@@ -10,7 +10,7 @@ from core.utils import format_money
 from core.story_requirements import MilestoneRequirements
 
 class StoryMilestone:
-    def __init__(self, milestone_id, title, description, requirements, rewards=None, unlocks=None, story_text=None, alternate_text=None):
+    def __init__(self, milestone_id, title, description, requirements, rewards=None, unlocks=None, story_text=None, alternate_text=None, dialogue=None):
         self.id = milestone_id
         self.title = title
         self.description = description
@@ -19,6 +19,7 @@ class StoryMilestone:
         self.unlocks = unlocks or []  # List of unlock dictionaries
         self.story_text = story_text
         self.alternate_text = alternate_text
+        self.dialogue = dialogue or {}
         self.completed = False
         self.completion_turn = None
 
@@ -120,11 +121,28 @@ class StoryMilestone:
 
             game.display_story_message(completion_message)
 
-            # Display story text (if available)
-            if self.story_text:
-                game.display_story_message(game.word_wrap(self.story_text))
+            # Display specific dialogue from milestone if it exists, or generic story text if it doesnt
+            if self.dialogue:
+               # Check if location specific dialogue is defined
+               specific_dialogue = self.dialogue.get(game.current_location.location_type)
+               
+               if specific_dialogue:
+                  game.display_story_message(game.word_wrap(specific_dialogue), style='round')
+               elif self.dialogue.get("alternate") and random.random() < 0.2:
+                  game.display_story_message(game.word_wrap(self.dialogue.get("alternate")), style='round')
+               else:
+                  # Check for default dialogue
+                  default_dialogue = self.dialogue.get("default")
+                  if default_dialogue:
+                     game.display_story_message(game.word_wrap(default_dialogue), style='round')
+                  elif self.story_text:
+                     game.display_story_message(game.word_wrap(self.story_text), style='round')
+                  elif self.alternate_text:
+                     game.display_story_message(game.word_wrap(self.alternate_text), style='round')
+            elif self.story_text:
+                 game.display_story_message(game.word_wrap(self.story_text), style='round')
             elif self.alternate_text:
-                game.display_story_message(game.word_wrap(self.alternate_text))
+                game.display_story_message(game.word_wrap(self.alternate_text), style='round')
 
 class StoryChapter:
     def __init__(self, chapter_id, title, description, requirements, milestones, next_chapters=None):

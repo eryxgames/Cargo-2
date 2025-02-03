@@ -67,3 +67,16 @@ def format_money(amount):
         elif amount >= 1_000:
             return f"{amount/1_000:.1f}K"
         return str(floor(amount))
+
+def display_story_message(self, message, pause=2, style='round', color=None):
+        if isinstance(message, list):
+            box_content = message
+        else:
+            box_content = [message]
+
+        box = self.game.ui.create_simple_box(box_content, style)
+        if color:
+            box = f"\033[{color}m{box}\033[0m"
+        print(box)
+        if pause > 0:
+            time.sleep(pause)

@@ -307,6 +307,11 @@ class Game:
                 # store beacon to be triggered later
                 setattr(self, 'active_beacon', chosen_item)
                 self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
+                
+                # IMPORTANT! Trigger event here
+                event_id = self.game.game_events.handle_beacon_encounter(beacon_type)
+                if event_id:
+                   self.game.game_events.trigger_beacon_event(event_id)
                 return True
             else:
                self.ui.display_simple_message("Not a valid beacon!")

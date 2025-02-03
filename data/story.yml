@@ -17,6 +17,11 @@ ch1:
       alternate_text: >
           The market is unforgiving. Your first transaction was clumsy, but
           you survived it.
+      dialogue:
+        default: "You have made first steps in commerce."
+        alternate: "The market was unforgiving, and you barely made any money."
+        market_crash: "You have traded on the market, but there was market crash after you, and you lost money"
+        resource_shortage: "Your trade created a resource shortage. Be careful in the future."
     - milestone_id: "first_combat"
       title: "Combat Initiation"
       description: "Win your first space battle"
@@ -31,6 +36,11 @@ ch1:
       alternate_text: >
           You were lucky to survive, but you did. It was not your skill, but
           a lucky shot.
+      dialogue:
+        default: "You won your first battle. You are ready for more."
+        alternate: "Your battle was not decisive. You barely managed to survive."
+        pirate_attack: "Your first battle was against pirates! Your actions were heroic."
+        rogue_corsair: "You fought against the rogue corsairs. You made quick work of them."
     - milestone_id: "basic_license"
       title: "Extended Trading License"
       description: "Prove your trading capabilities"
@@ -50,6 +60,9 @@ ch1:
       alternate_text: >
         A basic license was all you could get. You are not special. You are
         just another cog in the machine.
+      dialogue:
+          default: "You have acquired an extended trading license."
+          alternate: "Your trading capabilities impressed no one, so a basic license was all you could get."
   next_chapters: ["ch2a", "ch2b"]
 
 ch2a:
@@ -75,6 +88,9 @@ ch2a:
       alternate_text: >
         You are making some decent trades, still nothing that would change
         the galaxy.
+      dialogue:
+          default: "You have established your first trade route network."
+          alternate: "Your trading network is very small, nothing significant, just some decent trades."
     - milestone_id: "passenger_business"
       title: "Passenger Services"
       description: "Start passenger transport business"
@@ -89,6 +105,9 @@ ch2a:
         diversed. You are starting to build a real reputation.
       alternate_text: >
         Some people are willing to pay you to move them from one place to another.
+      dialogue:
+          default: "You have started the passenger transport business."
+          alternate: "There is some interest in your passenger transport business."
   next_chapters: ["ch3a", "ch3c"]
   
 ch2b:
@@ -111,6 +130,9 @@ ch2b:
           You've become a known pirate hunter, making space lanes safer.
         alternate_text: >
           You've eliminated a few small groups of pirates. Nothing to be proud about.
+        dialogue:
+            default: "You have cleared the sector of pirates."
+            alternate: "You managed to defeat some pirates, but this is not significant."
       - milestone_id: "defend_stations"
         title: "Station Defender"
         description: "Successfully defend space stations"
@@ -125,6 +147,9 @@ ch2b:
           be known as a capable protector.
         alternate_text: >
           You've survived a few attacks. It was not skill, but pure luck.
+        dialogue:
+            default: "You are defending stations in the sector."
+            alternate: "You helped defend some stations, but it was not really difficult."
   next_chapters: ["ch3b", "ch3c"]
   
 ch3a:
@@ -150,6 +175,9 @@ ch3a:
       alternate_text: >
         You've accumulated some wealth. But your influence is not as strong as
         you might think.
+      dialogue:
+         default: "You have taken control over the market in this sector."
+         alternate: "You've some control over the markets, but it is not absolute yet."
   next_chapters: ["ending_trade"]
   
 ch3b:
@@ -175,6 +203,9 @@ ch3b:
         alternate_text: >
           You are leading some forces, still nothing that would be a real
           threat to anyone.
+        dialogue:
+            default: "You have become a fleet commander. Your forces are well trained."
+            alternate: "You have some forces under your command, but you are still not the best leader."
   next_chapters: ["ending_combat"]
 
 ch3c:
@@ -199,6 +230,9 @@ ch3c:
         a simple trader, you are a seeker of knowledge.
       alternate_text: >
         You've found some shiny objects. They don't seem to be worth much.
+      dialogue:
+          default: "You have found some ancient artifacts."
+          alternate: "You explored some old places, but did not find anything too impressive."
   next_chapters: ["ending_discovery"]
 
 ending_trade:
@@ -224,6 +258,9 @@ ending_trade:
         empire spans the whole galaxy.
       alternate_text: >
         You've accumulated wealth, but it seems like there is nothing more to do.
+      dialogue:
+            default: "You are now a Galactic Trade Mogul!"
+            alternate: "You became very rich, but it feels like you could do more."
   next_chapters: []
 
 ending_combat:
@@ -249,6 +286,9 @@ ending_combat:
         alternate_text: >
           You've defeated some pirates, but you are not the only one.
           Nothing significant, really.
+        dialogue:
+            default: "You are now a Legendary Fleet Admiral!"
+            alternate: "You led your forces well, and managed to survive."
   next_chapters: []
 
 ending_discovery:
@@ -274,4 +314,7 @@ ending_discovery:
         alternate_text: >
           You've visited some old places and found some old stuff. Nothing
           interesting, really.
+        dialogue:
+            default: "You are now a solver of Ancient Mysteries!"
+            alternate: "You found some artifacts, but not really anything significant."
   next_chapters: []

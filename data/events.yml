@@ -9,7 +9,13 @@ pirate_attack:
     max_turn: 100
     min_reputation: -20
     max_reputation: 50
-  weight: 2  # Added weight
+  weight: 2
+  cooldown: 5
+  plot_points: 3
+  messages:
+    default: "Pirate attack!"
+    successful_defense: "Pirate attack repelled!"
+    damage_taken: "Pirate attack! Ship took some damage."
 
 rogue_corsair:
   type: "combat"
@@ -19,8 +25,14 @@ rogue_corsair:
     location_type: ["DeepSpaceOutpost", "AsteroidBase"]
     min_turn: 20
     min_reputation: 10
-  weight: 1  # Default weight
-
+  weight: 1
+  cooldown: 7
+  plot_points: 4
+  messages:
+      default: "Rogue Corsair sighted!"
+      successful_defense: "Rogue Corsair defeated!"
+      damage_taken: "Rogue Corsair attack! Ship was damaged!"
+  
 militia_patrol:
   type: "combat"
   message: "Militia Patrol!"
@@ -30,6 +42,12 @@ militia_patrol:
       min_turn: 5
       max_turn: 50
   weight: 1
+  cooldown: 3
+  plot_points: 1
+  messages:
+      default: "Militia patrol approaching!"
+      successful_defense: "Militia patrol has been checked."
+      damage_taken: "Militia patrol has engaged and caused damage."
   
 pirate_mothership:
   type: "combat"
@@ -39,7 +57,13 @@ pirate_mothership:
       min_combat_victories: 20
       min_plot_points: 40
   weight: 1
-  
+  cooldown: 10
+  plot_points: 8
+  messages:
+     default: "Pirate mothership is attacking!"
+     successful_defense: "Pirate mothership is destroyed!"
+     damage_taken: "Pirate mothership attack has caused severe damage!"
+     
 rogue_warship:
   type: "combat"
   message: "Rogue Warship!"
@@ -50,7 +74,13 @@ rogue_warship:
       min_reputation: 50
       max_reputation: 80
   weight: 1
-  
+  cooldown: 12
+  plot_points: 7
+  messages:
+    default: "Rogue Warship is present!"
+    successful_defense: "Rogue Warship was defeated."
+    damage_taken: "Rogue Warship attack was significant!"
+      
 guerrilla_militia:
   type: "combat"
   message: "Guerrilla Militia!"
@@ -59,7 +89,13 @@ guerrilla_militia:
       min_combat_victories: 40
       min_plot_points: 80
   weight: 1
-     
+  cooldown: 15
+  plot_points: 9
+  messages:
+    default: "Guerrilla Militia are present"
+    successful_defense: "Guerrilla Militia is pacified!"
+    damage_taken: "Guerrilla Militia attack has taken significant damage."
+        
 market_crash:
   type: "trade"
   message: "Market crash!"
@@ -70,6 +106,11 @@ market_crash:
     min_turn: 15
     max_turn: 100
   weight: 1
+  cooldown: 8
+  plot_points: 2
+  messages:
+    default: "Market crash!"
+    affected_commodities: "Market crash! Affected commodities: {commodities}."
 
 trade_embargo:
   type: "trade"
@@ -80,7 +121,12 @@ trade_embargo:
   conditions:
       min_trades_completed: 20
   weight: 1
-
+  cooldown: 10
+  plot_points: 4
+  messages:
+        default: "Trade embargo has been issued!"
+        affected_commodities: "Trade embargo. Affected commodities: {commodities}!"
+        
 resource_shortage:
   type: "trade"
   message: "Resource shortage!"
@@ -91,7 +137,12 @@ resource_shortage:
     min_turn: 5
     max_turn: 50
   weight: 1
-   
+  cooldown: 6
+  plot_points: 1
+  messages:
+        default: "There is a resource shortage!"
+        affected_commodities: "Resource shortage! Affected commodities: {commodities}!"
+  
 price_manipulation:
   type: "trade"
   message: "Price manipulation!"
@@ -102,29 +153,44 @@ price_manipulation:
       min_plot_points: 10
       max_plot_points: 30
   weight: 1
+  cooldown: 4
+  plot_points: 1
+  messages:
+        default: "Price manipulation is happening!"
+        affected_commodities: "Price manipulation! Affected commodities: {commodities}!"
 
 trade_route_disruption:
-     type: "trade"
-     message: "Trade route disruption!"
-     price_impact: [0.1, 0.3]
-     duration: [2, 4]
-     severity: "moderate"
-     conditions:
-       min_trades_completed: 30
-       max_trades_completed: 70
-     weight: 1
-
+    type: "trade"
+    message: "Trade route disruption!"
+    price_impact: [0.1, 0.3]
+    duration: [2, 4]
+    severity: "moderate"
+    conditions:
+      min_trades_completed: 30
+      max_trades_completed: 70
+    weight: 1
+    cooldown: 9
+    plot_points: 3
+    messages:
+        default: "Trade route has been disrupted!"
+        affected_commodities: "Trade route disruption! Affected commodities: {commodities}!"
+  
 black_market_emergence:
-     type: "trade"
-     message: "Black market emergence!"
-     price_impact: [-0.4, -0.2]
-     duration: [3, 5]
-     severity: "moderate"
-     conditions:
-       min_ship_speed: 3
-       min_trade_profit: 30000
-     weight: 1
-
+    type: "trade"
+    message: "Black market emergence!"
+    price_impact: [-0.4, -0.2]
+    duration: [3, 5]
+    severity: "moderate"
+    conditions:
+      min_ship_speed: 3
+      min_trade_profit: 30000
+    weight: 1
+    cooldown: 12
+    plot_points: 5
+    messages:
+        default: "Black market has emerged!"
+        affected_commodities: "Black market has emerged. Affected commodities: {commodities}!"
+  
 spacetime_rift:
   type: "exploration"
   message: "Spacetime rift!"
@@ -133,7 +199,13 @@ spacetime_rift:
   conditions:
     min_turn: 10
   weight: 1
- 
+  cooldown: 5
+  plot_points: 4
+  messages:
+      default: "Spacetime rift detected!"
+      success: "Spacetime rift discovered! You have retrieved some rare elements and samples."
+      failure: "Spacetime rift was dangerous and nothing was retrieved."
+  
 gravitational_anomaly:
   type: "exploration"
   message: "Gravitational anomaly!"
@@ -142,7 +214,13 @@ gravitational_anomaly:
   conditions:
     min_turn: 20
   weight: 1
-
+  cooldown: 6
+  plot_points: 3
+  messages:
+      default: "Gravitational anomaly detected!"
+      success: "You have survived the gravitational anomaly and obtained some samples!"
+      failure: "Gravitational anomaly was too strong. Nothing was found."
+  
 mysterious_signal:
   type: "exploration"
   message: "Mysterious signal!"
@@ -151,7 +229,13 @@ mysterious_signal:
   conditions:
     min_turn: 30
   weight: 1
- 
+  cooldown: 8
+  plot_points: 5
+  messages:
+      default: "Mysterious signal detected!"
+      success: "You have discovered valuable minerals, artifacts, and data!"
+      failure: "Mysterious signal vanished. Nothing was found."
+    
 quantum_fluctuation:
   type: "exploration"
   message: "Quantum fluctuation!"
@@ -160,7 +244,13 @@ quantum_fluctuation:
   conditions:
     min_turn: 40
   weight: 1
-
+  cooldown: 10
+  plot_points: 6
+  messages:
+    default: "Quantum fluctuation is present!"
+    success: "You have investigated quantum fluctuation and acquired valuable materials."
+    failure: "Quantum fluctuation was too unstable and nothing was recovered."
+  
 ancient_ruins:
     type: "exploration"
     message: "Ancient ruins!"
@@ -169,7 +259,13 @@ ancient_ruins:
     conditions:
       min_plot_points: 15
     weight: 1
-   
+    cooldown: 7
+    plot_points: 4
+    messages:
+         default: "Ancient ruins detected nearby!"
+         success: "You have found ancient artifacts."
+         failure: "Ruins were explored, but nothing interesting was found."
+
 alien_artifact:
   type: "exploration"
   message: "Alien artifact!"
@@ -178,6 +274,13 @@ alien_artifact:
   conditions:
       min_reputation: 30
   weight: 1
+  cooldown: 11
+  plot_points: 7
+  messages:
+        default: "Alien artifact detected!"
+        success: "You have found alien artifacts, and ancient technology."
+        failure: "You tried to explore alien artifact, but found nothing."
+ 
 
 asteroid_impact:
     type: "disaster"
@@ -190,7 +293,14 @@ asteroid_impact:
       min_turn: 10
       location_type: ["AsteroidBase"]
     weight: 1
-   
+    cooldown: 10
+    plot_points: 3
+    messages:
+        default: "Asteroid impact!"
+        shield_protection: "Asteroid impact! Shields partially absorbed the impact."
+        cargo_loss: "Asteroid impact! Cargo was damaged!"
+ 
+
 solar_flare:
     type: "disaster"
     message: "Solar flare!"
@@ -202,7 +312,13 @@ solar_flare:
       min_turn: 15
       max_turn: 80
     weight: 1
-
+    cooldown: 12
+    plot_points: 4
+    messages:
+        default: "Solar flare is approaching!"
+        shield_protection: "Solar flare! Shields protected most of the damage!"
+        equipment_failure: "Solar flare! Some equipment was damaged!"
+  
 equipment_malfunction:
     type: "disaster"
     message: "Equipment malfunction!"
@@ -213,7 +329,12 @@ equipment_malfunction:
     conditions:
         min_turn: 10
     weight: 1
-   
+    cooldown: 8
+    plot_points: 2
+    messages:
+        default: "Equipment malfunction detected!"
+        equipment_failure: "Equipment malfunction caused some of your items to break."
+      
 hull_breach:
     type: "disaster"
     message: "Hull breach!"
@@ -225,7 +346,13 @@ hull_breach:
         min_turn: 20
         min_reputation: 30
     weight: 1
-   
+    cooldown: 12
+    plot_points: 5
+    messages:
+        default: "Hull breach detected!"
+        shield_protection: "Hull breach! Shields absorbed some damage."
+        cargo_loss: "Hull breach has caused cargo damage!"
+      
 reactor_leak:
     type: "disaster"
     message: "Reactor leak!"
@@ -237,7 +364,13 @@ reactor_leak:
       min_turn: 25
       max_turn: 90
     weight: 1
-   
+    cooldown: 15
+    plot_points: 6
+    messages:
+      default: "Reactor leak is imminent!"
+      shield_protection: "Reactor leak! Partial protection by your ship."
+      equipment_failure: "Reactor leak! Some equipment was damaged."
+    
 navigation_failure:
     type: "disaster"
     message: "Navigation failure!"
@@ -248,26 +381,46 @@ navigation_failure:
     conditions:
         min_turn: 10
     weight: 1
-       
+    cooldown: 7
+    plot_points: 1
+    messages:
+        default: "Navigation failure detected!"
+        equipment_failure: "Navigation failure damaged some of the systems."
+          
 passenger_celebration:
-  type: "passenger"
-  message: "Passenger celebration boosts morale!"
-  conditions:
-    min_passengers_transported: 5
-  weight: 1
+    type: "passenger"
+    message: "Passenger celebration boosts morale!"
+    conditions:
+        min_passengers_transported: 5
+    weight: 1
+    cooldown: 3
+    plot_points: 1
+    messages:
+        default: "Passengers are having a celebration!"
+        celebration: "Passengers are celebrating their journey with you!"
 passenger_complaint:
-  type: "passenger"
-  message: "Passenger complaint about accommodations!"
-  conditions:
-    min_passengers_transported: 5
-  weight: 1
+    type: "passenger"
+    message: "Passenger complaint about accommodations!"
+    conditions:
+        min_passengers_transported: 5
+    weight: 1
+    cooldown: 5
+    plot_points: 1
+    messages:
+        default: "Passengers are complaining about accommodations!"
+        complaint: "Passengers have filed complaints about the quality of their stay."
 medical_emergency:
-  type: "passenger"
-  message: "Medical emergency with passenger!"
-  conditions:
-    min_passengers_transported: 3
-  weight: 1
-
+    type: "passenger"
+    message: "Medical emergency with passenger!"
+    conditions:
+        min_passengers_transported: 3
+    weight: 1
+    cooldown: 7
+    plot_points: 2
+    messages:
+        default: "Medical emergency!"
+        medical: "There is a medical emergency with one of your passengers!"
+  
 vip_request:
     type: "passenger"
     message: "VIP passenger requests special treatment!"
@@ -275,9 +428,58 @@ vip_request:
         min_passengers_transported: 1
         min_reputation: 10
     weight: 1
+    cooldown: 10
+    plot_points: 5
+    messages:
+         default: "VIP passenger requests special treatment."
+         vip: "VIP passenger made a special request!"
 passenger_trade_info:
-  type: "passenger"
-  message: "Passengers share valuable trade information!"
-  conditions:
+    type: "passenger"
+    message: "Passengers share valuable trade information!"
+    conditions:
         min_passengers_transported: 7
-  weight: 1
+    weight: 1
+    cooldown: 8
+    plot_points: 3
+    messages:
+         default: "Passengers shared valuable trade information!"
+
+distress_beacon_a_event:
+    type: "combat"
+    enemy_pool: ["pirate_scout", "pirate_raider"]
+    conditions:
+        beacon_type: "distress_a"
+    plot_points: 2
+    messages:
+        default: "Distress beacon A activated! Enemy detected!"
+        success: "Distress beacon A - the threat was neutralized."
+        damage: "Distress beacon A! You've sustained some damage."
+distress_beacon_b_event:
+    type: "combat"
+    enemy_pool: ["pirate_marauder", "pirate_raider"]
+    conditions:
+       beacon_type: "distress_b"
+    plot_points: 3
+    messages:
+       default: "Distress beacon B activated! Enemy detected!"
+       success: "Distress beacon B - you were victorious."
+       damage: "Distress beacon B - you sustained some damage in the battle."
+distress_beacon_c_event:
+    type: "combat"
+    enemy_pool: ["rogue_corsair", "pirate_mothership"]
+    conditions:
+       beacon_type: "distress_c"
+    plot_points: 5
+    messages:
+       default: "Distress beacon C activated! Very dangerous enemy detected!"
+       success: "Distress beacon C - you managed to defeat a significant enemy force."
+       damage: "Distress beacon C - you have sustained heavy damage!"
+       
+nav_beacon_a_event:
+    type: "combat"
+    enemy_pool: ["merchant_trader"]
+    conditions:
+       beacon_type: "nav_a"
+    plot_points: 5
+    messages:
+        default: "You have found a merchant using Nav beacon A."
