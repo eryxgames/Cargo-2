@@ -58,7 +58,7 @@ def play_turn(game):
             game.port_system.update_passengers(game.current_location.name)
 
     # Check if beacon activated
-    if hasattr(game, 'active_beacon'):
+    if hasattr(game, 'active_beacon') and game.active_beacon:
         # if game.handle_use_item(): # old code
         #    delattr(game, 'active_beacon')
         beacon_type = game.ship.item_data[game.active_beacon].get("beacon_type")

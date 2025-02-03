@@ -132,7 +132,9 @@ class Game:
              "nav_beacon_a": 3,
              "mcguffin_beacon": 1
         })
-
+        #Set default values for active beacon
+        self.active_beacon = None
+        self.active_beacon_encounter = False
 # endofturn
 
     def end_turn_actions(self):
@@ -331,6 +333,7 @@ class Game:
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
 
+# core/game.py
     def handle_travel(self):
         """Handle travelling to a new location"""
         
@@ -369,15 +372,16 @@ class Game:
                      del self.ship.items[self.active_mcguffin_beacon]
                 delattr(self, 'active_mcguffin_beacon')
             # Check for activated beacon
-            if hasattr(self, 'active_beacon'):
+            if hasattr(self, 'active_beacon') and self.active_beacon: #added this check!
                 beacon_item = getattr(self, 'active_beacon')
-                beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
-                if beacon_type:
-                    event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                    if event_id:
+                if beacon_item: # Added this check
+                   beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+                   if beacon_type:
+                     event_id = self.game_events.handle_beacon_encounter(beacon_type)
+                     if event_id:
                         # Trigger the beacon event BEFORE other events, using new method
                         if hasattr(self, 'active_beacon_encounter') and self.active_beacon_encounter:
-                            if self.game.game_events.check_event_cooldown(event_id):
+                            if self.game_events.check_event_cooldown(event_id):
                                 success = self.game.game_events.trigger_beacon_event(event_id)
                                 if success:  # if successful remove the item
                                     self.ship.items[self.active_beacon] -= 1
@@ -396,9 +400,9 @@ class Game:
                             delattr(self, 'active_beacon')
                             if hasattr(self, 'active_beacon_encounter'):
                                delattr(self, 'active_beacon_encounter')
-                    else:
-                        print("Error: Enemy ID not defined for beacon type:" + beacon_type )
-
+                   else:
+                        print("Error: Enemy ID not defined for beacon type:" + str(beacon_type))
+            
             # Perform turn ending logic here - IMPORTANT CALL
             self.end_turn_actions()
             return True
