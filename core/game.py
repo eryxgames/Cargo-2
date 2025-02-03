@@ -234,6 +234,8 @@ class Game:
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
            
+# refining beacon use
+# core/game.py for beacons
     def handle_use_item(self):
         """Handle usage of consumable items, including beacons."""
         
@@ -294,7 +296,7 @@ class Game:
             beacon_type = item_data.get("beacon_type")
             if beacon_type == "mcguffin":
                if self.handle_travel():
-                   # Start boss fight
+                   # Start boss battle
                   success = self.game_events.trigger_boss_battle()
                   if success:
                       self.ship.items[chosen_item] -= 1  # Remove consumable after use
@@ -303,16 +305,18 @@ class Game:
                       return True
                   else:
                       return False
-            elif beacon_type:
+            elif beacon_type and not hasattr(self, 'active_beacon'):
                 # store beacon to be triggered later
                 setattr(self, 'active_beacon', chosen_item)
                 self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
                 
-                # IMPORTANT! Trigger event here
-                event_id = self.game.game_events.handle_beacon_encounter(beacon_type)
-                if event_id:
-                   self.game.game_events.trigger_beacon_event(event_id)
+                # IMPORTANT! Set flag for encounter in travel
+                setattr(self, 'active_beacon_encounter', True)
+                
                 return True
+            elif hasattr(self, 'active_beacon'):
+                  self.ui.display_simple_message("Only one beacon can be activated at a time.", 1)
+                  return False
             else:
                self.ui.display_simple_message("Not a valid beacon!")
                return False
@@ -326,8 +330,7 @@ class Game:
         
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
-    
-# core/game.py
+
     def handle_travel(self):
         """Handle travelling to a new location"""
         
@@ -357,7 +360,7 @@ class Game:
             # Clear the research message
             if hasattr(self, "_new_research_effects"):
                delattr(self, "_new_research_effects")
-           
+
             if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
                 # Start boss battle if activated
                 self.game.game_events.trigger_boss_battle()
@@ -370,37 +373,31 @@ class Game:
                 beacon_item = getattr(self, 'active_beacon')
                 beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
                 if beacon_type:
-                    if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
-                        if self.active_beacon_encounter == True:
-                            character = self.game.character_system.character_encounters.generate_character("merchant")
-                            if character:
-                                self.game.character_system.character_encounters.handle_merchant_encounter(character)
-                            self.ship.items[self.active_beacon] -= 1
-                            if self.ship.items[self.active_beacon] <= 0:
-                                del self.ship.items[self.active_beacon]
-                            delattr(self, 'active_beacon_encounter')
-                            delattr(self, 'active_beacon')
+                    event_id = self.game_events.handle_beacon_encounter(beacon_type)
+                    if event_id:
+                        # Trigger the beacon event BEFORE other events, using new method
+                        if hasattr(self, 'active_beacon_encounter') and self.active_beacon_encounter:
+                            if self.game.game_events.check_event_cooldown(event_id):
+                                success = self.game.game_events.trigger_beacon_event(event_id)
+                                if success:  # if successful remove the item
+                                    self.ship.items[self.active_beacon] -= 1
+                                    if self.ship.items[self.active_beacon] <= 0:
+                                        del self.ship.items[self.active_beacon]
+                                    
+                                #Clear beacon state after the use
+                                delattr(self, 'active_beacon')
+                                delattr(self, 'active_beacon_encounter')
+                            else:
+                                #Clear beacon state if on cooldown
+                                delattr(self, 'active_beacon')
+                                delattr(self, 'active_beacon_encounter')
                         else:
-                           
-                           enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
-                           if enemy_id:
-                               # Start the combat using combat class instead of resolve
-                               combat_result = self.game.combat.resolve_combat(enemy_id)
-                               if combat_result.is_victory():
-                                   self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
-                               elif combat_result.is_defeat():
-                                    self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
-                               
-                               self.ship.items[self.active_beacon] -= 1
-                               if self.ship.items[self.active_beacon] <= 0:
-                                   del self.ship.items[self.active_beacon]
+                             #Clear if no active encounter flag but active beacon (should not happen)
+                            delattr(self, 'active_beacon')
+                            if hasattr(self, 'active_beacon_encounter'):
                                delattr(self, 'active_beacon_encounter')
-                               delattr(self, 'active_beacon')
-                           else:
-                               print("Error: Enemy ID not defined for beacon type:" + beacon_type )
                     else:
-                         # Clear if beacon used and no encounter
-                         delattr(self, 'active_beacon')
+                        print("Error: Enemy ID not defined for beacon type:" + beacon_type )
 
             # Perform turn ending logic here - IMPORTANT CALL
             self.end_turn_actions()

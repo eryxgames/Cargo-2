@@ -79,18 +79,21 @@ class GameEvents:
         """Selects a weighted random event"""
         eligible_events = []
         for event_id, event_data in self.event_data.items():
-            if self.check_event_conditions(event_data) and self.check_event_cooldown(event_id):
+            if (self.check_event_conditions(event_data) and 
+                self.check_event_cooldown(event_id) and
+                not event_data.get("beacon_type") # skip beacon events
+                ):
                 eligible_events.append((event_id, event_data.get("weight", 1)))
         if not eligible_events:
             return None
-
+        
         # Accumulate weights
         weighted_events = []
         total_weight = 0
         for event_id, weight in eligible_events:
             total_weight += weight
             weighted_events.append((event_id, total_weight))
-
+        
         # Select a weighted random event
         random_value = random.uniform(0, total_weight)
         for event_id, weight in weighted_events:
@@ -108,15 +111,15 @@ class GameEvents:
     def trigger_event(self, event_id):
         """Trigger specific event with its consequences"""
         event_data = self.event_data.get(event_id)
-
+        
         if not event_data:
             return False
-
+        
         event_type = event_data.get("type")
-
+        
         # Set cooldown for event that was just triggered
         self.event_cooldowns[event_id] = self.game.turn
-
+        
         # Handle different event types
         if event_type == "combat":
             self.handle_combat_event(event_id)
@@ -129,9 +132,10 @@ class GameEvents:
         elif event_type == "passenger":
             self.handle_passenger_event(event_id)
 
+
         # Apply plot point logic
         self.apply_plot_points(event_data)
-
+        
         # Check for story events
         self.game.story_manager.check_event_trigger(event_id, self.game)
         return True
@@ -141,15 +145,15 @@ class GameEvents:
         event_data = self.event_data.get(event_id)
         if not event_data:
             return False
-
+        
         event_type = event_data.get("type")
-
+        
         # Set cooldown for event that was just triggered
         self.event_cooldowns[event_id] = self.game.turn
-
+        
         # Handle different event types
         if event_type == "combat":
-            self.handle_combat_event(event_id)
+            self.handle_combat_event(event_id, is_beacon=True) #is_beacon parameter set here
         elif event_type == "trade":
             self.handle_trade_event(event_id)
         elif event_type == "exploration":
@@ -159,9 +163,10 @@ class GameEvents:
         elif event_type == "passenger":
             self.handle_passenger_event(event_id)
 
+
         # Apply plot point logic
         self.apply_plot_points(event_data)
-
+        
         # Check for story events
         self.game.story_manager.check_event_trigger(event_id, self.game)
         return True
@@ -181,32 +186,41 @@ class GameEvents:
             self.game.story_manager.plot_points += int(base_points * multiplier)
 
     def random_event(self):
-        """Handles random game events"""
-        if random.random() < self.game.event_probability:
-            # Select a weighted random event
-            event_id = self.get_weighted_event()
-            if not event_id:
-                return  # if not event, do not run anything further
+            """Handles random game events"""
+            if random.random() < self.game.event_probability:
+                # Select a weighted random event
+                event_id = self.get_weighted_event()
+                if not event_id:
+                    return  # if not event, do not run anything further
+                
+                self.trigger_event(event_id)
+                print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
 
-            self.trigger_event(event_id)
-            print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data)])} events")
 
-    def handle_combat_event(self, event_name, beacon_type=None):
+    def handle_combat_event(self, event_name, beacon_type=None, is_beacon=False):
         """Handle combat event using Combat class"""
         event = self.event_data.get(event_name.lower().replace(" ", "_"), self.event_data["pirate_attack"])
-        if not self.check_event_conditions(event) and not beacon_type:
+        if not self.check_event_conditions(event) and not beacon_type and not is_beacon:
             return False
-
+        
         if beacon_type:
             event_id = self.handle_beacon_encounter(beacon_type)
-            return self.trigger_beacon_event(event_id)
+            if event_id:
+                return self.trigger_beacon_event(event_id)
+            else:
+                return False # do not trigger combat if no event id.
 
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
 
-        # Start combat using Combat class
-        result = self.combat.resolve_combat(enemy_id)
 
+        # Start combat using Combat class
+        if enemy_id:
+            result = self.combat.resolve_combat(enemy_id)
+        else:
+            print(f"Error: No enemy_id defined for event {event_name}")
+            return False
+            
         # Process outcome of combat
         if result.is_victory():
             self.game.ui.display_simple_message(self.get_event_message(event, "successful_defense"), 3, color='32')
@@ -228,7 +242,6 @@ class GameEvents:
 
     def handle_beacon_encounter(self, beacon_type):
         """Handle a beacon-triggered combat event"""
-
         if beacon_type == "distress_a":
             return "distress_beacon_a_event"  # Set the event id
         elif beacon_type == "distress_b":
@@ -237,9 +250,11 @@ class GameEvents:
             return "distress_beacon_c_event"
         elif beacon_type == "nav_a":
             return "nav_beacon_a_event"
+        elif beacon_type == "mcguffin":
+            return "mcguffin_beacon_event"
         else:
             self.game.ui.display_simple_message(f"Unknown beacon type: {beacon_type}", 3, color='31')
-            return False
+            return None
 
     def trigger_boss_battle(self):
         """Trigger boss battle using CharacterTemplate with ship, instead of defined stats"""
@@ -260,8 +275,8 @@ class GameEvents:
         if result.is_victory():
             self.game.ui.display_simple_message(result.get_message(), 3, color='32')
             if result.get_rewards():
-                rewards = result.get_rewards()
-                self.game.handle_research_gain(rewards.get("research", 0))
+                 rewards = result.get_rewards()
+                 self.game.handle_research_gain(rewards.get("research", 0))
         elif result.is_defeat():
             self.game.ui.display_simple_message(result.get_message(), 3, color='31')
         # Check for unlock based on victory

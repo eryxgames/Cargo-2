@@ -483,3 +483,11 @@ nav_beacon_a_event:
     plot_points: 5
     messages:
         default: "You have found a merchant using Nav beacon A."
+
+mcguffin_beacon_event:
+    type: "combat"
+    conditions:
+       beacon_type: "mcguffin"
+    plot_points: 10
+    messages:
+        default: "You have activated mcguffin beacon!"        
