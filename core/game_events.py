@@ -1,7 +1,7 @@
 # core/game_events.py
 import random
 from core.utils import format_money
-from core.combat import Combat, CombatResult  # Import the new module
+from core.combat import Combat, CombatResult
 from core.template import CharacterTemplate
 
 
@@ -9,7 +9,7 @@ class GameEvents:
     def __init__(self, game):
         self.game = game
         self.event_data = self.load_event_data()
-        self.combat = Combat(game) # Use the new Combat class
+        self.combat = Combat(game)
         self.templates = CharacterTemplate.load_character_templates("data/characters.yml")
 
     def load_event_data(self):
@@ -25,7 +25,6 @@ class GameEvents:
             print(f"Error loading events from YAML: {e}")
             return {}
 
-# core/game_events.py
 
     def check_event_conditions(self, event):
         """Check if an event's conditions are met"""
@@ -35,63 +34,96 @@ class GameEvents:
             location_types = conditions["location_type"]
             if isinstance(location_types, list):
                 if self.game.current_location.location_type not in location_types:
-                    print(f"Condition failed: location_type, Current: {self.game.current_location.location_type} Required: {location_types}")
                     return False
             elif self.game.current_location.location_type != location_types:
-                 print(f"Condition failed: location_type, Current: {self.game.current_location.location_type} Required: {location_types}")
                  return False
         if "min_turn" in conditions and self.game.turn < conditions["min_turn"]:
-            print(f"Condition failed: min_turn, Current: {self.game.turn} Required: {conditions['min_turn']}")
             return False
         if "max_turn" in conditions and self.game.turn > conditions["max_turn"]:
-            print(f"Condition failed: max_turn, Current: {self.game.turn} Required: {conditions['max_turn']}")
             return False
         if "min_reputation" in conditions and self.game.ship.passenger_reputation < conditions["min_reputation"]:
-            print(f"Condition failed: min_reputation, Current: {self.game.ship.passenger_reputation} Required: {conditions['min_reputation']}")
             return False
         if "max_reputation" in conditions and self.game.ship.passenger_reputation > conditions["max_reputation"]:
-            print(f"Condition failed: max_reputation, Current: {self.game.ship.passenger_reputation} Required: {conditions['max_reputation']}")
             return False
         if "min_combat_victories" in conditions and self.game.ship.combat_victories['total'] < conditions["min_combat_victories"]:
-            print(f"Condition failed: min_combat_victories, Current: {self.game.ship.combat_victories['total']} Required: {conditions['min_combat_victories']}")
             return False
         if "min_trades_completed" in conditions and self.game.trades_completed < conditions["min_trades_completed"]:
-            print(f"Condition failed: min_trades_completed, Current: {self.game.trades_completed} Required: {conditions['min_trades_completed']}")
             return False
         if "max_trades_completed" in conditions and self.game.trades_completed > conditions["max_trades_completed"]:
-            print(f"Condition failed: max_trades_completed, Current: {self.game.trades_completed} Required: {conditions['max_trades_completed']}")
             return False
         if "min_plot_points" in conditions and self.game.story_manager.plot_points < conditions["min_plot_points"]:
-             print(f"Condition failed: min_plot_points, Current: {self.game.story_manager.plot_points} Required: {conditions['min_plot_points']}")
              return False
         if "max_plot_points" in conditions and self.game.story_manager.plot_points > conditions["max_plot_points"]:
-            print(f"Condition failed: max_plot_points, Current: {self.game.story_manager.plot_points} Required: {conditions['max_plot_points']}")
             return False
         if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
-            print(f"Condition failed: min_ship_speed, Current: {self.game.ship.speed} Required: {conditions['min_ship_speed']}")
             return False
         if "min_trade_profit" in conditions:
             total_profit = sum(self.game.ship.trade_profits.values())
             if total_profit < conditions["min_trade_profit"]:
-                 print(f"Condition failed: min_trade_profit, Current: {total_profit} Required: {conditions['min_trade_profit']}")
                  return False
         if "min_cargo_amount" in conditions:
              if not hasattr(self.game.ship, 'cargo'):
-                print(f"Condition failed: min_cargo_amount, Ship has no cargo object defined")
                 return False
              for cargo, amount in conditions["min_cargo_amount"].items():
                 if self.game.ship.cargo.get(cargo, 0) < amount:
-                    print(f"Condition failed: min_cargo_amount, Current: {self.game.ship.cargo.get(cargo, 0)} Required: {amount}")
                     return False
         if "min_passengers_transported" in conditions:
             if self.game.reputation_manager.total_passengers < conditions["min_passengers_transported"]:
-                print(f"Condition failed: min_passengers_transported, Current: {self.game.reputation_manager.total_passengers} Required: {conditions['min_passengers_transported']}")
                 return False
         if "items_required" in conditions:
              if not all(item in self.game.ship.items for item in conditions["items_required"]):
-                 print(f"Condition failed: items_required, Required: {conditions['items_required']}, Available: {self.game.ship.items.keys()}")
                  return False
         return True
+    
+    def get_weighted_event(self):
+        """Selects a weighted random event"""
+        eligible_events = []
+        for event_id, event_data in self.event_data.items():
+            if self.check_event_conditions(event_data):
+                eligible_events.append((event_id, event_data.get("weight", 1)))  # Default weight = 1
+        if not eligible_events:
+            return None
+        
+        # Accumulate weights
+        weighted_events = []
+        total_weight = 0
+        for event_id, weight in eligible_events:
+            total_weight += weight
+            weighted_events.append((event_id, total_weight))
+        
+        # Select a weighted random event
+        random_value = random.uniform(0, total_weight)
+        for event_id, weight in weighted_events:
+            if random_value <= weight:
+                return event_id
+        return None # Shouldn't happen
+    
+    def random_event(self):
+            """Handles random game events"""
+            if random.random() < self.game.event_probability:
+                # Select a weighted random event
+                event_id = self.get_weighted_event()
+                if not event_id:
+                   return #if not event, do not run anything further
+                
+                event_data = self.event_data[event_id]
+                event_type = event_data.get("type")
+
+                # Handle different event types
+                if event_type == "combat":
+                    self.handle_combat_event(event_id)
+                elif event_type == "trade":
+                    self.handle_trade_event(event_id)
+                elif event_type == "exploration":
+                    self.handle_exploration_event(event_id)
+                elif event_type == "disaster":
+                    self.handle_disaster_event(event_id)
+                elif event_type == "passenger":
+                    self.handle_passenger_event(event_id)
+                
+                # Check for story events
+                self.game.story_manager.check_event_trigger(event_id, self.game)
+                print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data)])} events")
 
     def handle_combat_event(self, event_name, beacon_type=None):
         """Handle combat event using Combat class"""
@@ -114,7 +146,6 @@ class GameEvents:
             if result.get_rewards():
                  rewards = result.get_rewards()
                  self.game.handle_research_gain(rewards.get("research", 0))
-
         elif result.is_defeat():
             self.game.ui.display_simple_message(result.get_message(), 3, color='31')
         return True
@@ -137,7 +168,6 @@ class GameEvents:
         
         enemy_id = random.choice(enemy_pool)
         return enemy_id
-        
 
     def trigger_boss_battle(self):
         """Trigger boss battle using CharacterTemplate with ship, instead of defined stats"""
@@ -165,7 +195,6 @@ class GameEvents:
             
         # Check for unlock based on victory
         return result.is_victory()
-
 
     def handle_exploration_event(self, event_name):
          """Handle exploration events with full outcome processing"""
@@ -251,7 +280,7 @@ class GameEvents:
                 f"Ship took {damage}% damage from hazardous conditions."
             ], color='31')
             return True
-
+    
     def handle_trade_event(self, event_name):
         """Handle trade disruption events with full market impact"""
         event = self.event_data.get(event_name.lower().replace(" ", "_"))

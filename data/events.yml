@@ -9,15 +9,17 @@ pirate_attack:
     max_turn: 100
     min_reputation: -20
     max_reputation: 50
+  weight: 2  # Added weight
 
 rogue_corsair:
   type: "combat"
   message: "Rogue Corsair!"
   enemy_pool: ["rogue_corsair"]
   conditions:
-      location_type: ["DeepSpaceOutpost", "AsteroidBase"]
-      min_turn: 20
-      min_reputation: 10
+    location_type: ["DeepSpaceOutpost", "AsteroidBase"]
+    min_turn: 20
+    min_reputation: 10
+  weight: 1  # Default weight
 
 militia_patrol:
   type: "combat"
@@ -27,7 +29,8 @@ militia_patrol:
       location_type: ["Planet"]
       min_turn: 5
       max_turn: 50
-      
+  weight: 1
+  
 pirate_mothership:
   type: "combat"
   message: "Pirate mothership!"
@@ -35,7 +38,8 @@ pirate_mothership:
   conditions:
       min_combat_victories: 20
       min_plot_points: 40
-    
+  weight: 1
+  
 rogue_warship:
   type: "combat"
   message: "Rogue Warship!"
@@ -45,7 +49,8 @@ rogue_warship:
       max_trades_completed: 100
       min_reputation: 50
       max_reputation: 80
-      
+  weight: 1
+  
 guerrilla_militia:
   type: "combat"
   message: "Guerrilla Militia!"
@@ -53,7 +58,8 @@ guerrilla_militia:
   conditions:
       min_combat_victories: 40
       min_plot_points: 80
-      
+  weight: 1
+     
 market_crash:
   type: "trade"
   message: "Market crash!"
@@ -63,6 +69,7 @@ market_crash:
   conditions:
     min_turn: 15
     max_turn: 100
+  weight: 1
 
 trade_embargo:
   type: "trade"
@@ -72,6 +79,7 @@ trade_embargo:
   severity: "major"
   conditions:
       min_trades_completed: 20
+  weight: 1
 
 resource_shortage:
   type: "trade"
@@ -82,7 +90,8 @@ resource_shortage:
   conditions:
     min_turn: 5
     max_turn: 50
-    
+  weight: 1
+   
 price_manipulation:
   type: "trade"
   message: "Price manipulation!"
@@ -92,26 +101,29 @@ price_manipulation:
   conditions:
       min_plot_points: 10
       max_plot_points: 30
+  weight: 1
 
 trade_route_disruption:
-    type: "trade"
-    message: "Trade route disruption!"
-    price_impact: [0.1, 0.3]
-    duration: [2, 4]
-    severity: "moderate"
-    conditions:
-      min_trades_completed: 30
-      max_trades_completed: 70
+     type: "trade"
+     message: "Trade route disruption!"
+     price_impact: [0.1, 0.3]
+     duration: [2, 4]
+     severity: "moderate"
+     conditions:
+       min_trades_completed: 30
+       max_trades_completed: 70
+     weight: 1
 
 black_market_emergence:
-    type: "trade"
-    message: "Black market emergence!"
-    price_impact: [-0.4, -0.2]
-    duration: [3, 5]
-    severity: "moderate"
-    conditions:
-      min_ship_speed: 3
-      min_trade_profit: 30000
+     type: "trade"
+     message: "Black market emergence!"
+     price_impact: [-0.4, -0.2]
+     duration: [3, 5]
+     severity: "moderate"
+     conditions:
+       min_ship_speed: 3
+       min_trade_profit: 30000
+     weight: 1
 
 spacetime_rift:
   type: "exploration"
@@ -120,7 +132,8 @@ spacetime_rift:
   reward_type: "rare elements,scientific samples"
   conditions:
     min_turn: 10
-  
+  weight: 1
+ 
 gravitational_anomaly:
   type: "exploration"
   message: "Gravitational anomaly!"
@@ -128,6 +141,7 @@ gravitational_anomaly:
   reward_type: "rare elements,scientific samples"
   conditions:
     min_turn: 20
+  weight: 1
 
 mysterious_signal:
   type: "exploration"
@@ -136,7 +150,8 @@ mysterious_signal:
   reward_type: "valuable minerals,ancient artifacts,scientific data,advanced technology"
   conditions:
     min_turn: 30
-
+  weight: 1
+ 
 quantum_fluctuation:
   type: "exploration"
   message: "Quantum fluctuation!"
@@ -144,6 +159,7 @@ quantum_fluctuation:
   reward_type: "valuable minerals,ancient artifacts,scientific data,advanced technology"
   conditions:
     min_turn: 40
+  weight: 1
 
 ancient_ruins:
     type: "exploration"
@@ -152,7 +168,8 @@ ancient_ruins:
     reward_type: "ancient_artifacts"
     conditions:
       min_plot_points: 15
-    
+    weight: 1
+   
 alien_artifact:
   type: "exploration"
   message: "Alien artifact!"
@@ -160,6 +177,7 @@ alien_artifact:
   reward_type: "ancient_artifacts,advanced_technology"
   conditions:
       min_reputation: 30
+  weight: 1
 
 asteroid_impact:
     type: "disaster"
@@ -171,7 +189,8 @@ asteroid_impact:
     conditions:
       min_turn: 10
       location_type: ["AsteroidBase"]
-    
+    weight: 1
+   
 solar_flare:
     type: "disaster"
     message: "Solar flare!"
@@ -182,6 +201,7 @@ solar_flare:
     conditions:
       min_turn: 15
       max_turn: 80
+    weight: 1
 
 equipment_malfunction:
     type: "disaster"
@@ -192,7 +212,8 @@ equipment_malfunction:
     equipment_failure: True
     conditions:
         min_turn: 10
-    
+    weight: 1
+   
 hull_breach:
     type: "disaster"
     message: "Hull breach!"
@@ -203,7 +224,8 @@ hull_breach:
     conditions:
         min_turn: 20
         min_reputation: 30
-    
+    weight: 1
+   
 reactor_leak:
     type: "disaster"
     message: "Reactor leak!"
@@ -214,7 +236,8 @@ reactor_leak:
     conditions:
       min_turn: 25
       max_turn: 90
-    
+    weight: 1
+   
 navigation_failure:
     type: "disaster"
     message: "Navigation failure!"
@@ -224,22 +247,26 @@ navigation_failure:
     equipment_failure: True
     conditions:
         min_turn: 10
-        
+    weight: 1
+       
 passenger_celebration:
   type: "passenger"
   message: "Passenger celebration boosts morale!"
   conditions:
     min_passengers_transported: 5
+  weight: 1
 passenger_complaint:
   type: "passenger"
   message: "Passenger complaint about accommodations!"
   conditions:
     min_passengers_transported: 5
+  weight: 1
 medical_emergency:
   type: "passenger"
   message: "Medical emergency with passenger!"
   conditions:
     min_passengers_transported: 3
+  weight: 1
 
 vip_request:
     type: "passenger"
@@ -247,8 +274,10 @@ vip_request:
     conditions:
         min_passengers_transported: 1
         min_reputation: 10
+    weight: 1
 passenger_trade_info:
   type: "passenger"
   message: "Passengers share valuable trade information!"
   conditions:
         min_passengers_transported: 7
+  weight: 1

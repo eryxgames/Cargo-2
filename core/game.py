@@ -1629,41 +1629,7 @@ class Game:
 
     def random_event(self):
             """Handles random game events"""
-            if random.random() < self.event_probability:
-                # Select a random event type
-                event_type = random.choice(
-                    ["combat", "trade", "exploration", "disaster", "passenger"]
-                )
-                
-                # Filter events by type
-                events_of_type = [
-                    event_id for event_id, event_data in self.game_events.event_data.items()
-                    if event_data.get("type") == event_type
-                ]
-                
-                # Try to select a random event of this type
-                if events_of_type:
-                    event_id = random.choice(events_of_type)
-                    event_data = self.game_events.event_data[event_id]
-                    
-                    # If any event has requirements, check those first
-                    if not self.game_events.check_event_conditions(event_data):
-                        return #If conditions are not met, cancel
-
-                    # Handle different event types
-                    if event_type == "combat":
-                        self.game_events.handle_combat_event(event_id)
-                    elif event_type == "trade":
-                        self.game_events.handle_trade_event(event_id)
-                    elif event_type == "exploration":
-                        self.game_events.handle_exploration_event(event_id)
-                    elif event_type == "disaster":
-                        self.game_events.handle_disaster_event(event_id)
-                    elif event_type == "passenger":
-                        self.handle_passenger_event(event_id)
-
-                    # Check for story events
-                    self.story_manager.check_event_trigger(event_id, self)
+            self.game_events.random_event()
 
     def handle_passenger_event(self, event_id):
         """Handle specific passenger related events."""
