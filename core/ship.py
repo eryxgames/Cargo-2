@@ -115,6 +115,7 @@ class Ship:
         # Load items
         self.load_items()
 
+# core/ship.py items
     def load_items(self):
         """Load item data from the CSV file and store for later use"""
         self.item_data = {}

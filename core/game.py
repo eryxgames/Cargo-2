@@ -32,9 +32,11 @@ from core.captain import Captain
 from core.cantina import Cantina
 from ui import UI_Interface
 from core.location_data import LocationTerminology
+from core.game_state import GameState
 
 class Game:
     def __init__(self, settings=None, ui=None):
+        self.state = GameState()
         self.settings = settings if settings else self.load_settings()
         self.ui = ui if ui else TextUI()  # Default UI if none passed
         self.term_width = self.get_terminal_width()
@@ -133,46 +135,43 @@ class Game:
              "mcguffin_beacon": 1
         })
         #Set default values for active beacon
-        self.active_beacon = None
-        self.active_beacon_encounter = False
+        self.state.active_beacon = None
+        self.state.active_beacon_encounter = False
 # endofturn
 
     def end_turn_actions(self):
         """Handles all turn-ending actions"""
-         # Update passenger satisfaction at end of turn if port is available
+        # Update passenger satisfaction at end of turn if port is available
         if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
             self.port_system.update_passenger_satisfaction()
         # Check for activated beacon after the player makes an action
-        if hasattr(self, 'active_beacon') and self.active_beacon: #added this check!
-            beacon_item = getattr(self, 'active_beacon')
-            if beacon_item: # Added this check
-               beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
-               if beacon_type:
-                 event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                 if event_id:
-                    # Trigger the beacon event BEFORE other events, using new method
-                    if hasattr(self, 'active_beacon_encounter') and self.active_beacon_encounter:
-                        if self.game_events.check_event_cooldown(event_id):
-                            success = self.game_events.trigger_beacon_event(event_id)
-                            if success:  # if successful remove the item
-                                self.ship.items[self.active_beacon] -= 1
-                                if self.ship.items[self.active_beacon] <= 0:
-                                    del self.ship.items[self.active_beacon]
+        if hasattr(self, 'state') and hasattr(self.state, 'active_beacon') and self.state.active_beacon: #added this check!
+            beacon_item = getattr(self.state, 'active_beacon')
+            if beacon_item:  # Added this check
+                if beacon_item in self.ship.item_data:
+                    beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+                if beacon_type:
+                    event_id = self.game_events.handle_beacon_encounter(beacon_type)
+                    if event_id:
+                        # Trigger the beacon event BEFORE other events, using new method
+                        if hasattr(self.state, 'active_beacon_encounter') and self.state.active_beacon_encounter:
+                            if self.game_events.check_event_cooldown(event_id):
+                                success = self.game_events.trigger_beacon_event(event_id)
+                                if success:  # if successful remove the item
+                                    self.ship.items[self.state.active_beacon] -= 1
+                                    if self.ship.items[self.state.active_beacon] <= 0:
+                                        del self.ship.items[self.state.active_beacon]
                                 
                             #Clear beacon state after the use
-                            delattr(self, 'active_beacon')
-                            delattr(self, 'active_beacon_encounter')
+                            self.state.active_beacon = None
+                            self.state.active_beacon_encounter = None
                         else:
-                            #Clear beacon state if on cooldown
-                            delattr(self, 'active_beacon')
-                            delattr(self, 'active_beacon_encounter')
-                    else:
-                        #Clear if no active encounter flag but active beacon (should not happen)
-                        delattr(self, 'active_beacon')
-                        if hasattr(self, 'active_beacon_encounter'):
-                            delattr(self, 'active_beacon_encounter')
-               else:
-                  print("Error: Enemy ID not defined for beacon type:" + str(beacon_type))
+                            #Clear beacon state if no active encounter flag but active beacon (should not happen)
+                            self.state.active_beacon = None
+                            if hasattr(self.state, 'active_beacon_encounter'):
+                                self.state.active_beacon_encounter = None
+                else:
+                        print("Error: Enemy ID not defined for beacon type:" + str(beacon_type))
 
 
         # Increment turn after processing everything
@@ -180,14 +179,14 @@ class Game:
         self.shop.reset_turn()  # Reset shop state at end of each turn
         self.captain.update_rank()
 
-         # Check story and events
+        # Check story and events
         self.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
         self.check_location_events("turn_end")
         self.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
         self.story_manager.check_milestone_progress()  # re-added milestone checks here
         self.character_system.check_character_triggers()
         self.story_manager.check_chapter_progress()
-    
+
     #check quests and contracts and update before turn is incremented
         self.quest_system.check_active_quests()
         self.contract_manager.update_contract_progress({
@@ -201,7 +200,7 @@ class Game:
         
         # Clean up old activity logs
         self.captain.activity_log = [activity for activity in self.captain.activity_log 
-                         if self.turn - activity["turn"] < self.captain.rank_check_interval]
+                        if self.turn - activity["turn"] < self.captain.rank_check_interval]
 
     def handle_actions(self):
         """Handle actions based on the current location and type"""
@@ -337,17 +336,17 @@ class Game:
                     return True
                 else:
                     return False
-            elif beacon_type and not hasattr(self, 'active_beacon'):
+            elif beacon_type and not self.state.active_beacon:
                 # store beacon to be triggered later
                 setattr(self, 'active_beacon', chosen_item)
                 self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
                 
                 # IMPORTANT! Set flag for encounter in travel
                 event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                setattr(self, 'active_beacon_encounter', event_id)
+                self.state.active_beacon_encounter = event_id
                 
                 return True
-            elif hasattr(self, 'active_beacon'):
+            elif self.state.active_beacon:
                   self.ui.display_simple_message("Only one beacon can be activated at a time.", 1)
                   return False
             else:
@@ -403,7 +402,7 @@ class Game:
                      del self.ship.items[self.active_mcguffin_beacon]
                 delattr(self, 'active_mcguffin_beacon')
             # Check for activated beacon
-            if hasattr(self, 'active_beacon') and self.active_beacon: #added this check!
+            if hasattr(self, 'active_beacon') and self.state.active_beacon: #added this check!
                 beacon_item = getattr(self, 'active_beacon')
                 if beacon_item: # Added this check
                    beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
@@ -411,13 +410,13 @@ class Game:
                      event_id = self.game_events.handle_beacon_encounter(beacon_type)
                      if event_id:
                         # Trigger the beacon event BEFORE other events, using new method
-                        if hasattr(self, 'active_beacon_encounter') and self.active_beacon_encounter:
+                        if hasattr(self, 'active_beacon_encounter') and self.state.active_beacon_encounter:
                             if self.game_events.check_event_cooldown(event_id):
                                 success = self.game.game_events.trigger_beacon_event(event_id)
                                 if success:  # if successful remove the item
-                                    self.ship.items[self.active_beacon] -= 1
-                                    if self.ship.items[self.active_beacon] <= 0:
-                                        del self.ship.items[self.active_beacon]
+                                    self.ship.items[self.state.active_beacon] -= 1
+                                    if self.ship.items[self.state.active_beacon] <= 0:
+                                        del self.ship.items[self.state.active_beacon]
                                     
                                 #Clear beacon state after the use
                                 delattr(self, 'active_beacon')

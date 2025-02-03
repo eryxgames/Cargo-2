@@ -25,6 +25,7 @@ cargo-2/
 │   ├── game.py
 │   ├── gameplay.py    
 │   ├── game_events.py    
+│   ├── game_state.py    
 │   ├── location.py
 │   ├── location_data.py
 │   ├── location_manager.py
