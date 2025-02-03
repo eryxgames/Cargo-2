@@ -142,6 +142,38 @@ class Game:
          # Update passenger satisfaction at end of turn if port is available
         if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
             self.port_system.update_passenger_satisfaction()
+        # Check for activated beacon after the player makes an action
+        if hasattr(self, 'active_beacon') and self.active_beacon: #added this check!
+            beacon_item = getattr(self, 'active_beacon')
+            if beacon_item: # Added this check
+               beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
+               if beacon_type:
+                 event_id = self.game_events.handle_beacon_encounter(beacon_type)
+                 if event_id:
+                    # Trigger the beacon event BEFORE other events, using new method
+                    if hasattr(self, 'active_beacon_encounter') and self.active_beacon_encounter:
+                        if self.game_events.check_event_cooldown(event_id):
+                            success = self.game_events.trigger_beacon_event(event_id)
+                            if success:  # if successful remove the item
+                                self.ship.items[self.active_beacon] -= 1
+                                if self.ship.items[self.active_beacon] <= 0:
+                                    del self.ship.items[self.active_beacon]
+                                
+                            #Clear beacon state after the use
+                            delattr(self, 'active_beacon')
+                            delattr(self, 'active_beacon_encounter')
+                        else:
+                            #Clear beacon state if on cooldown
+                            delattr(self, 'active_beacon')
+                            delattr(self, 'active_beacon_encounter')
+                    else:
+                        #Clear if no active encounter flag but active beacon (should not happen)
+                        delattr(self, 'active_beacon')
+                        if hasattr(self, 'active_beacon_encounter'):
+                            delattr(self, 'active_beacon_encounter')
+               else:
+                  print("Error: Enemy ID not defined for beacon type:" + str(beacon_type))
+
 
         # Increment turn after processing everything
         self.turn += 1
@@ -237,7 +269,6 @@ class Game:
            self.ui.display_simple_message("Invalid action selected!")
            
 # refining beacon use
-# core/game.py for beacons
     def handle_use_item(self):
         """Handle usage of consumable items, including beacons."""
         
@@ -297,23 +328,23 @@ class Game:
         if item_data.get("type") == "beacon":
             beacon_type = item_data.get("beacon_type")
             if beacon_type == "mcguffin":
-               if self.handle_travel():
-                   # Start boss battle
-                  success = self.game_events.trigger_boss_battle()
-                  if success:
-                      self.ship.items[chosen_item] -= 1  # Remove consumable after use
-                      if self.ship.items[chosen_item] <= 0:
+               # Start boss battle
+                success = self.game_events.trigger_boss_battle()
+                if success:
+                    self.ship.items[chosen_item] -= 1  # Remove consumable after use
+                    if self.ship.items[chosen_item] <= 0:
                         del self.ship.items[chosen_item]
-                      return True
-                  else:
-                      return False
+                    return True
+                else:
+                    return False
             elif beacon_type and not hasattr(self, 'active_beacon'):
                 # store beacon to be triggered later
                 setattr(self, 'active_beacon', chosen_item)
                 self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
                 
                 # IMPORTANT! Set flag for encounter in travel
-                setattr(self, 'active_beacon_encounter', True)
+                event_id = self.game_events.handle_beacon_encounter(beacon_type)
+                setattr(self, 'active_beacon_encounter', event_id)
                 
                 return True
             elif hasattr(self, 'active_beacon'):
@@ -333,7 +364,7 @@ class Game:
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
 
-# core/game.py
+# travel to location
     def handle_travel(self):
         """Handle travelling to a new location"""
         

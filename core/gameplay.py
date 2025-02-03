@@ -10,6 +10,21 @@ from ui.text_ui import TextUI
 # core/gameplay.py
 
 def play_turn(game):
+    # Check if beacon activated
+    if hasattr(game, 'active_beacon') and game.active_beacon:
+        # if game.handle_use_item(): # old code
+        #    delattr(game, 'active_beacon')
+        beacon_type = game.ship.item_data[game.active_beacon].get("beacon_type")
+        if beacon_type:
+            if beacon_type == "mcguffin":
+               game.handle_use_item()
+            else:
+                # Trigger combat from beacon, but don't remove it, it is removed during travel
+                enemy_id = game.game_events.handle_beacon_encounter(beacon_type)
+                if enemy_id:
+                    # Set the attribute for the game to handle in travel
+                    setattr(game, 'active_beacon_encounter', enemy_id)
+
     game.display_turn_info()
     game.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
     game.check_location_events("turn_end")
@@ -57,21 +72,7 @@ def play_turn(game):
             port_is_available = True
             game.port_system.update_passengers(game.current_location.name)
 
-    # Check if beacon activated
-    if hasattr(game, 'active_beacon') and game.active_beacon:
-        # if game.handle_use_item(): # old code
-        #    delattr(game, 'active_beacon')
-        beacon_type = game.ship.item_data[game.active_beacon].get("beacon_type")
-        if beacon_type:
-            if beacon_type == "mcguffin":
-               game.handle_use_item()
-            else:
-                # Trigger combat from beacon, but don't remove it, it is removed during travel
-                enemy_id = game.game_events.handle_beacon_encounter(beacon_type)
-                if enemy_id:
-                    # Set the attribute for the game to handle in travel
-                    setattr(game, 'active_beacon_encounter', enemy_id)
-    
+   
     # Call random event before the player makes an action
     game.random_event()
 
