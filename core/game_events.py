@@ -81,7 +81,7 @@ class GameEvents:
         for event_id, event_data in self.event_data.items():
             if (self.check_event_conditions(event_data) and 
                 self.check_event_cooldown(event_id) and
-                not event_data.get("beacon_type") # skip beacon events
+                not event_data.get("start_event") # skip if there is an start event defined, as it is being used by item
                 ):
                 eligible_events.append((event_id, event_data.get("weight", 1)))
         if not eligible_events:
@@ -144,8 +144,9 @@ class GameEvents:
         """Trigger beacon-specific event without conditions check"""
         event_data = self.event_data.get(event_id)
         if not event_data:
+            print(f"Error: No event data found for event ID: {event_id}")
             return False
-        
+
         event_type = event_data.get("type")
         
         # Set cooldown for event that was just triggered
@@ -156,6 +157,7 @@ class GameEvents:
             success = self.handle_combat_event(event_id, is_beacon=True) #is_beacon parameter set here
             if success:
                 return True
+            return False
         elif event_type == "trade":
             self.handle_trade_event(event_id)
         elif event_type == "exploration":
@@ -164,7 +166,7 @@ class GameEvents:
             self.handle_disaster_event(event_id)
         elif event_type == "passenger":
             self.handle_passenger_event(event_id)
-        
+
         # Apply plot point logic
         self.apply_plot_points(event_data)
         
@@ -198,39 +200,31 @@ class GameEvents:
                 print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
 
 
-    def handle_combat_event(self, event_name, beacon_type=None, is_beacon=False):
-            """Handle combat event using Combat class"""
-            event = self.event_data.get(event_name.lower().replace(" ", "_"), self.event_data["pirate_attack"])
-            if not self.check_event_conditions(event) and not beacon_type and not is_beacon:
-                return False
+    def handle_combat_event(self, event_name, is_beacon=False):
+        """Handle combat event using Combat class"""
+        event = self.event_data.get(event_name.lower().replace(" ", "_"))
+        if not self.check_event_conditions(event) and not is_beacon:
+            return False
+        
+        enemy_pool = event.get("enemy_pool", ["pirate_scout"])
+        enemy_id = random.choice(enemy_pool)
+
+        # Start combat using Combat class
+        if enemy_id:
+            result = self.combat.resolve_combat(enemy_id)
+        else:
+            print(f"Error: No enemy_id defined for event {event_name}")
+            return False
             
-            if beacon_type:
-                event_id = self.handle_beacon_encounter(beacon_type)
-                if event_id:
-                    return self.trigger_beacon_event(event_id)
-                else:
-                    return False # do not trigger combat if no event id.
-
-            enemy_pool = event.get("enemy_pool", ["pirate_scout"])
-            enemy_id = random.choice(enemy_pool)
-
-
-            # Start combat using Combat class
-            if enemy_id:
-                result = self.combat.resolve_combat(enemy_id)
-            else:
-                print(f"Error: No enemy_id defined for event {event_name}")
-                return False
-                
-            # Process outcome of combat
-            if result.is_victory():
-                self.game.ui.display_simple_message(self.get_event_message(event, "successful_defense"), 3, color='32')
-                if result.get_rewards():
-                    rewards = result.get_rewards()
-                    self.game.handle_research_gain(rewards.get("research", 0))
-            elif result.is_defeat():
-                self.game.ui.display_simple_message(self.get_event_message(event, "damage_taken"), 3, color='31')
-            return True
+        # Process outcome of combat
+        if result.is_victory():
+            self.game.ui.display_simple_message(self.get_event_message(event, "successful_defense"), 3, color='32')
+            if result.get_rewards():
+                rewards = result.get_rewards()
+                self.game.handle_research_gain(rewards.get("research", 0))
+        elif result.is_defeat():
+            self.game.ui.display_simple_message(self.get_event_message(event, "damage_taken"), 3, color='31')
+        return True
 
     def get_event_message(self, event, message_type):
         """Get message for event based on type"""

@@ -1,4 +1,4 @@
-item_id,name,description,type,price,tech_required,plot_required,effects,location_type,upgradeable,beacon_type,trigger
+item_id,name,description,type,price,tech_required,plot_required,effects,location_type,upgradeable,start_event,trigger
 navcomp,Navigation Computer,"Reveals all destinations",equipment,500,1,0,,,,,none
 scanner,Basic Scanner,"Improves resource detection",equipment,700,2,0,scout_bonus:10,,,none
 probe,Deep Space Probe,"Increases exploration success",equipment,900,3,10,explore_bonus:10,,,none
@@ -26,8 +26,7 @@ containment_optimizer,Containment Optimizer,"Smart cargo optimization",equipment
 quantum_core_v2,Quantum Core V2,"Advanced quantum computing core",upgrade,100000,9,100,quantum_bonus:0.2,,,none
 phase_shifter,Phase Shifter,"Advanced stealth system",upgrade,120000,10,120,stealth_ability:1,,,none
 temporal_lens,Temporal Lens,"Advanced temporal data analysis",upgrade,150000,11,150,research_bonus:0.3,,,none
-distress_beacon_a,Distress Beacon A,"Emits an Abandoned Mining Hauler signal",consumable,1000,1,0,,distress_a,use
-distress_beacon_b,Distress Beacon B,"Emits a Distressed Transport Vessel signal",consumable,1500,3,10,,distress_b,travel
-distress_beacon_c,Distress Beacon C,"Emits a Merchant's Liner Navigation Error signal",consumable,2000,5,20,,distress_c,end_of_turn
-nav_beacon_a,Navigation Beacon A,"Emits a Navigation signal to help passing ships",consumable,2000,5,10,,nav_a,use
-mcguffin_beacon,McGuffin Beacon,"Lures a powerful foe for a deadly challenge",consumable,10000,10,50,,mcguffin,use
+distress_beacon_a,Distress Beacon A,"Emits an Abandoned Mining Hauler signal",consumable,1000,1,0,,distress_beacon_a_event,use
+distress_beacon_b,Distress Beacon B,"Emits a Distressed Transport Vessel signal",consumable,1500,3,10,,distress_beacon_b_event,travel
+distress_beacon_c,Distress Beacon C,"Emits a Merchant's Liner Navigation Error signal",consumable,2000,5,20,,distress_beacon_c_event,end_of_turn
+mcguffin_beacon,McGuffin Beacon,"Lures a powerful foe for a deadly challenge",consumable,10000,10,50,,mcguffin_beacon_event,use

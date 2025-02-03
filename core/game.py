@@ -139,108 +139,103 @@ class Game:
         self.state.active_beacon_encounter = False
 
     def trigger_travel_events(self):
-            # Check for travel items
-            for item, quantity in self.ship.items.items():
-                if self.ship.item_data.get(item, {}).get("trigger") == "travel":
-                    # Get the item effect
-                    effects = self.ship.get_item_effects(item)
-                    if not effects:
-                        continue
-                    
-                    if 'scout_bonus' in effects:
-                        self.ui.display_simple_message("Navigation systems detected resources!", 1)
-                        #call function to add resouce on location
-                    
-                    if 'auto_repair' in effects and self.ship.damage > 0:
-                        repair = random.randint(5, 15)
-                        self.ship.damage = max(0, self.ship.damage - repair)
+        # Check for travel items
+        for item, quantity in self.ship.items.items():
+            if self.ship.item_data.get(item, {}).get("trigger") == "travel":
+                # Get the item effect
+                effects = self.ship.get_item_effects(item)
+                if not effects:
+                    continue
+                
+                if 'scout_bonus' in effects:
+                  self.ui.display_simple_message("Navigation systems detected resources!", 1)
+                  #call function to add resouce on location
+                
+                if 'auto_repair' in effects and self.ship.damage > 0:
+                  repair = random.randint(5, 15)
+                  self.ship.damage = max(0, self.ship.damage - repair)
+                  self.ui.display_simple_message(
+                      f"Travel repair bot automatically fixed {repair}% damage!",
+                      1, color='32'
+                  )
+                if 'escape_chance' in effects:
+                     if random.random() < 0.4:
+                        # Trigger an escape event - do nothing, just display
                         self.ui.display_simple_message(
-                            f"Travel repair bot automatically fixed {repair}% damage!",
-                            1, color='32'
-                    )
-                    if 'escape_chance' in effects:
-                        if random.random() < 0.4:
-                            # Trigger an escape event - do nothing, just display
-                            self.ui.display_simple_message(
-                            "Travel: You managed to avoid an encounter!", 
+                           "Travel: You managed to avoid an encounter!", 
+                           1, color='32'
+                       )
+                        
+                if 'stealth_ability' in effects:
+                    if random.random() < 0.2: # reduced
+                        self.ui.display_simple_message(
+                            "Travel: You have used stealth system to hide from patrols!",
                             1, color='32'
                         )
-                            
-                    if 'stealth_ability' in effects:
-                        if random.random() < 0.2: # reduced
-                            self.ui.display_simple_message(
-                                "Travel: You have used stealth system to hide from patrols!",
-                                1, color='32'
-                            )
-                    # beacon specific
-                    beacon_type = self.ship.item_data[item].get("beacon_type")
-                    if beacon_type:
-                        event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                    if event_id:
-                            if self.game_events.check_event_cooldown(event_id):
-                                success = self.game_events.trigger_beacon_event(event_id)
-                                if success:  # if successful remove the item
-                                    self.ship.items[item] -= 1
-                                    if self.ship.items[item] <= 0:
-                                        del self.ship.items[item]
-                            else:
-                                #if on cooldown, do not use it
-                                continue
-                 
+                 # beacon specific
+                event_id = self.ship.item_data[item].get("start_event")
+                if event_id:
+                   if self.game_events.check_event_cooldown(event_id):
+                       success = self.game_events.trigger_beacon_event(event_id)
+                       if success:  # if successful remove the item
+                            self.ship.items[item] -= 1
+                            if self.ship.items[item] <= 0:
+                               del self.ship.items[item]
+                   else:
+                       #if on cooldown, do not use it
+                       continue
 
 
 # endofturn
 
     def end_turn_actions(self):
-        """Handles all turn-ending actions"""
-        # Update passenger satisfaction at end of turn if port is available
-        if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
-            self.port_system.update_passenger_satisfaction()
-        
-        # Trigger items with "end_of_turn" trigger
-        for item, quantity in self.ship.items.items():
-            if self.ship.item_data.get(item, {}).get("trigger") == "end_of_turn":
-                beacon_type = self.ship.item_data[item].get("beacon_type")
-                if beacon_type:
-                    event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                if event_id:
+            """Handles all turn-ending actions"""
+            # Update passenger satisfaction at end of turn if port is available
+            if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
+                self.port_system.update_passenger_satisfaction()
+            
+            # Trigger items with "end_of_turn" trigger
+            for item, quantity in self.ship.items.items():
+                if self.ship.item_data.get(item, {}).get("trigger") == "end_of_turn":
+                    event_id = self.ship.item_data[item].get("start_event")
+                    if event_id:
                         if self.game_events.check_event_cooldown(event_id):
                             success = self.game_events.trigger_beacon_event(event_id)
                             if success:  # if successful remove the item
                                 self.ship.items[item] -= 1
                                 if self.ship.items[item] <= 0:
                                     del self.ship.items[item]
-                        else:
-                        #if on cooldown, do not use it
-                            continue
-        
-        # Increment turn after processing everything
-        self.turn += 1
-        self.shop.reset_turn()  # Reset shop state at end of each turn
-        self.captain.update_rank()
+                        #else:  #Removed continue, not needed
+                        #    #if on cooldown, do not use it
+                        #     continue
+            
+            # Increment turn after processing everything
+            self.turn += 1
+            self.shop.reset_turn()  # Reset shop state at end of each turn
+            self.captain.update_rank()
 
-        # Check story and events
-        self.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
-        self.check_location_events("turn_end")
-        self.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
-        self.story_manager.check_milestone_progress()  # re-added milestone checks here
-        self.character_system.check_character_triggers()
-        self.story_manager.check_chapter_progress()
-
-    #check quests and contracts and update before turn is incremented
-        self.quest_system.check_active_quests()
-        self.contract_manager.update_contract_progress({
-            "action": "",
-            "commodity": "",
-            "amount": 0,
-            "location": self.current_location.name,
-            "turn": self.turn
-        })
+            # Check story and events
+            self.check_story_requirements()  # check if any new story beats, quests and chapters have been triggered
+            self.check_location_events("turn_end")
+            self.location_manager.check_location_unlocks()  # check for unlocks, moved from game to location manager
+            self.story_manager.check_milestone_progress()  # re-added milestone checks here
+            self.character_system.check_character_triggers()
+            self.story_manager.check_chapter_progress()
         
-        
-        # Clean up old activity logs
-        self.captain.activity_log = [activity for activity in self.captain.activity_log 
-                        if self.turn - activity["turn"] < self.captain.rank_check_interval]
+        #check quests and contracts and update before turn is incremented
+            self.quest_system.check_active_quests()
+            self.contract_manager.update_contract_progress({
+                "action": "",
+                "commodity": "",
+                "amount": 0,
+                "location": self.current_location.name,
+                "turn": self.turn
+            })
+            
+            
+            # Clean up old activity logs
+            self.captain.activity_log = [activity for activity in self.captain.activity_log 
+                            if self.turn - activity["turn"] < self.captain.rank_check_interval]
 
     def handle_actions(self):
         """Handle actions based on the current location and type"""
@@ -341,7 +336,7 @@ class Game:
                 item2 = f"{i+1+items_per_col}. {self.ship.item_data.get(item_id2, {}).get('name', item_id2).title()} - {self.ship.item_data.get(item_id2, {}).get('description','')}" if item_id2 else ""
                 item_content.append([item1, item2])
         else:
-            for i, item_id in enumerate(usable_items, 1):
+           for i, item_id in enumerate(usable_items, 1):
                 item = self.ship.item_data.get(item_id, {})
                 item_name = item.get('name', item_id).title()
                 item_description = item.get('description', '')
@@ -365,44 +360,37 @@ class Game:
         item_data = self.ship.item_data.get(chosen_item, {})
         
         if item_data.get("type") == "beacon":
-            beacon_type = item_data.get("beacon_type")
             trigger = item_data.get("trigger")
-
-            if beacon_type == "mcguffin":
-                # Start boss battle
-                success = self.game_events.trigger_boss_battle()
-                if success:
-                    self.ship.items[chosen_item] -= 1  # Remove consumable after use
-                    if self.ship.items[chosen_item] <= 0:
-                        del self.ship.items[chosen_item]
-                    return True
-                else:
-                    return False
-            elif trigger == 'use' and beacon_type:
-                # Activate beacon event right away
-                event_id = self.game_events.handle_beacon_encounter(beacon_type)
-                if event_id:
-                    if self.game_events.check_event_cooldown(event_id):
-                        success = self.game_events.trigger_beacon_event(event_id)
-                        if success:  # if successful remove the item
-                            self.ship.items[chosen_item] -= 1
-                            if self.ship.items[chosen_item] <= 0:
-                                del self.ship.items[chosen_item]
-                            return True
-                        else:
-                            return False # Do not do anything if on cooldown
+            event_id = item_data.get("start_event")
+            if trigger == 'use' and event_id:
+               if event_id == "mcguffin_beacon_event":
+                  # Start boss battle
+                    success = self.game_events.trigger_boss_battle()
+                    if success:
+                        self.ship.items[chosen_item] -= 1  # Remove consumable after use
+                        if self.ship.items[chosen_item] <= 0:
+                            del self.ship.items[chosen_item]
+                        return True
                     else:
-                        return False # do not do anything if on cooldown
-                else:
-                    self.ui.display_simple_message("Not a valid beacon event")
-                    return False
-            elif beacon_type:
+                        return False
+               else: # Normal "use" item
+                    if self.game_events.check_event_cooldown(event_id):
+                      success = self.game_events.trigger_beacon_event(event_id)
+                      if success:  # if successful remove the item
+                          self.ship.items[chosen_item] -= 1
+                          if self.ship.items[chosen_item] <= 0:
+                             del self.ship.items[chosen_item]
+                          return True
+                      else:
+                          return False #if on cooldown skip
+                    else:
+                         return False #if on cooldown skip
+            elif event_id:
                 # store beacon to be triggered later
                 self.state.active_beacon = chosen_item
                 self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
                 
                 # IMPORTANT! Set flag for encounter in travel
-                event_id = self.game_events.handle_beacon_encounter(beacon_type)
                 self.state.active_beacon_encounter = event_id
                 
                 return True
@@ -411,11 +399,11 @@ class Game:
                 return False
         elif item_data.get("type") == "consumable":
             # Remove item
-            self.ship.items[chosen_item] -= 1
-            if self.ship.items[chosen_item] <= 0:
-                del self.ship.items[chosen_item]
-            self.ui.display_simple_message(f"Used item: {item_data.get('name').title()}!")
-            return True
+             self.ship.items[chosen_item] -= 1
+             if self.ship.items[chosen_item] <= 0:
+                 del self.ship.items[chosen_item]
+             self.ui.display_simple_message(f"Used item: {item_data.get('name').title()}!")
+             return True
         
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
