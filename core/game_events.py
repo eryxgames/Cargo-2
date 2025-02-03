@@ -203,8 +203,9 @@ class GameEvents:
     def handle_combat_event(self, event_name, is_beacon=False):
         """Handle combat event using Combat class"""
         event = self.event_data.get(event_name.lower().replace(" ", "_"))
-        if not self.check_event_conditions(event) and not is_beacon:
-            return False
+        if not is_beacon:
+            if not self.check_event_conditions(event):
+             return False
         
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
