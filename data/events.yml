@@ -1,4 +1,22 @@
 # data/events.yml
+pirate_attack_simple:
+  type: "combat"
+  message: "Pirate attack on cargo line!"
+  enemy_pool: ["pirate_scout", "pirate_raider", "pirate_marauder"]
+  conditions:
+    location_type: ["Planet", "AsteroidBase", "DeepSpaceOutpost"]
+    min_turn: 1
+    max_turn: 100
+    min_reputation: 0
+    max_reputation: 50
+  weight: 10
+  cooldown: 5
+  plot_points: 1
+  messages:
+    default: "Pirates ambushed your cargo hauler!"
+    successful_defense: "Pirate attack repelled!"
+    damage_taken: "Pirate attack! Ship took some damage."
+
 pirate_attack:
   type: "combat"
   message: "Pirate attack!"

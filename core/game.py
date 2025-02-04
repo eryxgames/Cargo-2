@@ -205,9 +205,9 @@ class Game:
                                 self.ship.items[item] -= 1
                                 if self.ship.items[item] <= 0:
                                     del self.ship.items[item]
-                        #else:  #Removed continue, not needed
-                        #    #if on cooldown, do not use it
-                        #     continue
+                    #else:
+                        #if on cooldown, do not use it
+                        # continue
             
             # Increment turn after processing everything
             self.turn += 1
@@ -373,18 +373,17 @@ class Game:
                         return True
                     else:
                         return False
-               else: # Normal "use" item
-                    if self.game_events.check_event_cooldown(event_id):
-                      success = self.game_events.trigger_beacon_event(event_id)
-                      if success:  # if successful remove the item
-                          self.ship.items[chosen_item] -= 1
-                          if self.ship.items[chosen_item] <= 0:
-                             del self.ship.items[chosen_item]
-                          return True
-                      else:
-                          return False #if on cooldown skip
-                    else:
-                         return False #if on cooldown skip
+               elif self.game_events.check_event_cooldown(event_id):
+                  success = self.game_events.trigger_beacon_event(event_id)
+                  if success:
+                       self.ship.items[chosen_item] -= 1
+                       if self.ship.items[chosen_item] <= 0:
+                          del self.ship.items[chosen_item]
+                       return True
+                  else:
+                        return False
+               else:
+                   return False  #if on cooldown, skip logic
             elif event_id:
                 # store beacon to be triggered later
                 self.state.active_beacon = chosen_item
@@ -409,52 +408,52 @@ class Game:
         return False
 
     def handle_travel(self):
-        """Handle travelling to a new location"""
+            """Handle travelling to a new location"""
+            
+            available_planets = [loc for loc in self.locations
+                                if loc.name != self.current_location.name and 
+                                loc.location_type in self.unlocked_location_types]
 
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and
-                               loc.location_type in self.unlocked_location_types]
+            if not available_planets:
+                self.ui.display_simple_message("No other locations available to travel!", 1)
+                return False
+            
+            available_names = [loc.name.lower() for loc in available_planets]
+            location_choice = self.validate_input(
+                f"Choose location to travel to: ",
+                available_names
+            )
+            if not location_choice:
+                return False
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
+            # Find actual Location object with chosen name
+            chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+            if chosen_location:
+                self.current_location = chosen_location
+                self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+                self.record_activity('travel') #record travel activity
+                self.location_manager.handle_location_discovery(self.current_location)
+                # Clear the research message
+                if hasattr(self, "_new_research_effects"):
+                    delattr(self, "_new_research_effects")
 
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input(
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
-
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel')  # record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            # Clear the research message
-            if hasattr(self, "_new_research_effects"):
-                delattr(self, "_new_research_effects")
-
-            if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
-                # Start boss battle if activated
-                self.game_events.trigger_boss_battle()
-                self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
-                if self.ship.items[self.active_mcguffin_beacon] <= 0:
-                     del self.ship.items[self.active_mcguffin_beacon]
-                delattr(self, 'active_mcguffin_beacon')
-
-             # Trigger travel events
-            self.trigger_travel_events()
-
-            # Perform turn ending logic here - IMPORTANT CALL
-            self.end_turn_actions()
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
+                if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
+                    # Start boss battle if activated
+                    self.game_events.trigger_boss_battle()
+                    self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
+                    if self.ship.items[self.active_mcguffin_beacon] <= 0:
+                        del self.ship.items[self.active_mcguffin_beacon]
+                    delattr(self, 'active_mcguffin_beacon')
+                
+                # Trigger travel events
+                self.trigger_travel_events()
+                
+                # Perform turn ending logic here - IMPORTANT CALL
+                self.end_turn_actions()
+                return True
+            else:
+                self.ui.display_simple_message("Invalid location selected!")
+                return False
             
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
