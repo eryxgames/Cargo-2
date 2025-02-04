@@ -159,9 +159,9 @@ class GameEvents:
             return False
         
         if not is_beacon:
-          if not self.check_event_conditions(event):
-              print(f"Error: Event conditions not met for event {event_name}!")
-              return False
+            if not self.check_event_conditions(event):
+                print(f"Error: Event conditions not met for event {event_name}!")
+                return False
         
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
@@ -179,14 +179,14 @@ class GameEvents:
             
         # Process outcome of combat
         if result.is_victory():
-            self.game.ui.display_simple_message(result.get_message(), 3, color='32')
+            self.game.ui.display_simple_message(self.get_event_message(event, "successful_defense"), 3, color='32')
             if result.get_rewards():
                 rewards = result.get_rewards()
                 self.game.handle_research_gain(rewards.get("research", 0))
         elif result.is_defeat():
-            self.game.ui.display_simple_message(result.get_message(), 3, color='31')
+            self.game.ui.display_simple_message(self.get_event_message(event, "damage_taken"), 3, color='31')
         return True
-
+    
     def get_event_message(self, event, message_type):
         """Get message for event based on type"""
         if event and "messages" in event:
