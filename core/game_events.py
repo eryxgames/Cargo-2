@@ -3,7 +3,7 @@ import random
 from core.utils import format_money
 #from core.combat import Combat, CombatResult
 from core.template import CharacterTemplate
-
+from core.utils import debug_message
 
 class GameEvents:
     def __init__(self, game):
@@ -32,57 +32,57 @@ class GameEvents:
 
             if "location_type" in conditions:
                 location_types = conditions["location_type"]
-                print(f"Location_types: {location_types} and location_type: {self.game.current_location.location_type}")#DEBUG here!
+                debug_message(self.game, f"Location_types: {location_types} and location_type: {self.game.current_location.location_type}")#DEBUG here!
                 if isinstance(location_types, list):
                     if self.game.current_location.location_type not in location_types:
                         return False
                 elif self.game.current_location.location_type != location_types:
                     return False
             if "min_turn" in conditions and self.game.turn < conditions["min_turn"]:
-                print(f"Min_turn: {conditions['min_turn']} and turn: {self.game.turn}")#DEBUG here!
+                debug_message(self.game, f"Min_turn: {conditions['min_turn']} and turn: {self.game.turn}")#DEBUG here!
                 return False
             if "max_turn" in conditions and self.game.turn > conditions["max_turn"]:
-                print(f"Max_turn: {conditions['max_turn']} and turn: {self.game.turn}")#DEBUG here!
+                debug_message(self.game, f"Max_turn: {conditions['max_turn']} and turn: {self.game.turn}")#DEBUG here!
                 return False
             if "min_reputation" in conditions and self.game.ship.passenger_reputation < conditions["min_reputation"]:
-                print(f"min_reputation: {conditions['min_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
+                debug_message(self.game, f"min_reputation: {conditions['min_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
                 return False
             if "max_reputation" in conditions and self.game.ship.passenger_reputation > conditions["max_reputation"]:
-                print(f"max_reputation: {conditions['max_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
+                debug_message(self.game, f"max_reputation: {conditions['max_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
                 return False
             if "min_combat_victories" in conditions and self.game.ship.combat_victories['total'] < conditions["min_combat_victories"]:
-                print(f"min_combat_victories: {conditions['min_combat_victories']} and combat victories: {self.game.ship.combat_victories['total']}")#DEBUG here!
+                debug_message(self.game, f"min_combat_victories: {conditions['min_combat_victories']} and combat victories: {self.game.ship.combat_victories['total']}")#DEBUG here!
                 return False
             if "min_trades_completed" in conditions and self.game.trades_completed < conditions["min_trades_completed"]:
-                print(f"min_trades_completed: {conditions['min_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
+                debug_message(self.game, f"min_trades_completed: {conditions['min_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
                 return False
             if "max_trades_completed" in conditions and self.game.trades_completed > conditions["max_trades_completed"]:
-                print(f"max_trades_completed: {conditions['max_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
+                debug_message(self.game, f"max_trades_completed: {conditions['max_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
                 return False
             if "min_plot_points" in conditions and self.game.story_manager.plot_points < conditions["min_plot_points"]:
-                print(f"min_plot_points: {conditions['min_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
+                debug_message(self.game, f"min_plot_points: {conditions['min_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
                 return False
             if "max_plot_points" in conditions and self.game.story_manager.plot_points > conditions["max_plot_points"]:
-                print(f"max_plot_points: {conditions['max_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
+                debug_message(self.game, f"max_plot_points: {conditions['max_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
                 return False
             if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
-                print(f"min_ship_speed: {conditions['min_ship_speed']} and ship speed: {self.game.ship.speed}")#DEBUG here!
+                debug_message(self.game, f"min_ship_speed: {conditions['min_ship_speed']} and ship speed: {self.game.ship.speed}")#DEBUG here!
                 return False
             if "min_trade_profit" in conditions:
                 total_profit = sum(self.game.ship.trade_profits.values())
                 if total_profit < conditions["min_trade_profit"]:
-                    print(f"min_trade_profit: {conditions['min_trade_profit']} and trade profit: {total_profit}")#DEBUG here!
+                    debug_message(self.game, f"min_trade_profit: {conditions['min_trade_profit']} and trade profit: {total_profit}")#DEBUG here!
                     return False
             if "min_cargo_amount" in conditions:
                 if not hasattr(self.game.ship, 'cargo'):
                     return False
                 for cargo, amount in conditions["min_cargo_amount"].items():
                     if self.game.ship.cargo.get(cargo, 0) < amount:
-                        print(f"min_cargo_amount: {amount} and cargo: {self.game.ship.cargo.get(cargo, 0)}")#DEBUG here!
+                        debug_message(self.game, f"min_cargo_amount: {amount} and cargo: {self.game.ship.cargo.get(cargo, 0)}")#DEBUG here!
                         return False
             if "min_passengers_transported" in conditions:
                 if self.game.reputation_manager.total_passengers < conditions["min_passengers_transported"]:
-                    print(f"min_passengers_transported: {conditions['min_passengers_transported']} and passengers transported: {self.game.reputation_manager.total_passengers}")#DEBUG here!
+                    debug_message(self.game, f"min_passengers_transported: {conditions['min_passengers_transported']} and passengers transported: {self.game.reputation_manager.total_passengers}")#DEBUG here!
                     return False
             if "items_required" in conditions:
                 for required_item in conditions["items_required"]:
@@ -94,25 +94,25 @@ class GameEvents:
     def get_weighted_event(self, is_beacon=False):
             """Selects a weighted random event"""
             eligible_events = []
-            print ("Starting get_weighted_event")#debug
+            debug_message(self.game, "Starting get_weighted_event")#debug
             for event_id, event_data in self.event_data.items():
-                print (f"Checking event {event_id}")#debug
+                debug_message(self.game, f"Checking event {event_id}")#debug
                 #Skip check beacon events
                 if is_beacon:
-                    print ("Skipped " + event_id + " because is beacon call")
+                    debug_message(self.game, "Skipped " + event_id + " because is beacon call")
                 if (self.check_event_conditions(event_data) and 
                     self.check_event_cooldown(event_id) and
                     not is_beacon #Skip the check, for manual calls.
                     ):
                     eligible_events.append((event_id, event_data.get("weight", 1)))
-                    print (f"Event {event_id} is eligible")#debug
+                    debug_message(self.game, f"Event {event_id} is eligible")#debug
                 else:
-                    print (f"Event {event_id} is not eligible")#debug
+                    debug_message(self.game, f"Event {event_id} is not eligible")#debug
             if not eligible_events:
-                print ("No eligible events at all!")#debug
+                debug_message(self.game, "No eligible events at all!")#debug
                 return None
             else:
-                print ("Eligible events:" + str(eligible_events))#add
+                debug_message(self.game, "Eligible events:" + str(eligible_events))#add
             
             # Accumulate weights
             weighted_events = []
@@ -125,7 +125,7 @@ class GameEvents:
             random_value = random.uniform(0, total_weight)
             for event_id, weight in weighted_events:
                 if random_value <= weight:
-                    print (f"Returning event: {event_id}")#debug
+                    debug_message(self.game, f"Returning event: {event_id}")#debug
                     return event_id
             return None  # Shouldn't happen
 
@@ -169,18 +169,18 @@ class GameEvents:
 
     def random_event(self):
             """Handles random game events"""
-            print(f"Running random event, probability {self.game.event_probability}")#debug
+            debug_message(self.game, f"Running random event, probability {self.game.event_probability}")#debug
             if random.random() < self.game.event_probability:
-                print("Event roll succeeded")#debug
+                debug_message(self.game, "Event roll succeeded")#debug
                 # Select a weighted random event
                 event_id = self.get_weighted_event()
                 if not event_id:
-                    print("No eligible events")#debug
+                    debug_message(self.game, "No eligible events")#debug
                     return  # if not event, do not run anything further
                 
-                print (f"We are now on {event_id}")#debug
+                debug_message(self.game, f"We are now on {event_id}")#debug
                 self.handle_event(event_id) #here!
-                print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
+                debug_message(self.game, f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
 
     def handle_combat_event(self, event_id, is_beacon=False):
         """Handle combat event using CombatSystem class"""
