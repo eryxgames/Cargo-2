@@ -4,6 +4,8 @@ import json
 import random
 import shutil
 import time
+from core.combat import ClassicCombatSystem  # Import ClassicCombatSystem
+from core.new_combat_system import NewCombatSystem # Import NewCombatSystem
 from core.location import Location #Now only base class
 from core.ship import Ship
 from core.port import Port 
@@ -38,6 +40,12 @@ class Game:
     def __init__(self, settings=None, ui=None):
         self.state = GameState()
         self.settings = settings if settings else self.load_settings()
+                # Initialize combat system based on settings
+        combat_system_name = self.settings.get("combat_system", "classic")
+        if combat_system_name == "new":
+            self.combat_system = NewCombatSystem(self)
+        else:
+            self.combat_system = ClassicCombatSystem(self)  # Default to classic
         self.ui = ui if ui else TextUI()  # Default UI if none passed
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()

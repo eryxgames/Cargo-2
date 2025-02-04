@@ -19,6 +19,7 @@
         }
     },
     "default_difficulty": "normal",
+    "combat_system": "classic",  // or "new"
      "sound_enabled": true,
     "music_enabled": true,
     "volume_level": 0.75,

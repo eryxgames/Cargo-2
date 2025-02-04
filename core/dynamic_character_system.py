@@ -86,6 +86,7 @@ class DynamicCharacterSystem:
         self.add_passenger_triggers()
         self.create_passenger_event_chains()
         self.character_encounters = SpecialCharacterEncounters(self.game)
+        self.templates = CharacterTemplate.load_character_templates("data/characters.yml") #added here, template info is needed
 
     def create_character_box(self, character_content, style='round'):
         return self.game.ui.create_box(character_content, style)

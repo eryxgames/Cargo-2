@@ -1,7 +1,7 @@
 # core/game_events.py
 import random
 from core.utils import format_money
-from core.combat import Combat, CombatResult
+#from core.combat import Combat, CombatResult
 from core.template import CharacterTemplate
 
 
@@ -9,7 +9,7 @@ class GameEvents:
     def __init__(self, game):
         self.game = game
         self.event_data = self.load_event_data()
-        self.combat = Combat(game)
+        #self.combat = Combat(game)
         self.templates = CharacterTemplate.load_character_templates("data/characters.yml")
         self.event_cooldowns = {}  # Track cooldowns per event id
 
@@ -81,25 +81,11 @@ class GameEvents:
         for event_id, event_data in self.event_data.items():
             if (self.check_event_conditions(event_data) and 
                 self.check_event_cooldown(event_id) and
-                not event_data.get("start_event") # skip if there is an start event defined, as it is being used by item
+                not event_data.get("start_event") and event_data.get("type") != "combat"# skip if there is an start event defined, as it is being used by item
                 ):
                 eligible_events.append((event_id, event_data.get("weight", 1)))
         if not eligible_events:
             return None
-        
-        # Accumulate weights
-        weighted_events = []
-        total_weight = 0
-        for event_id, weight in eligible_events:
-            total_weight += weight
-            weighted_events.append((event_id, total_weight))
-        
-        # Select a weighted random event
-        random_value = random.uniform(0, total_weight)
-        for event_id, weight in weighted_events:
-            if random_value <= weight:
-                return event_id
-        return None  # Shouldn't happen
 
     def check_event_cooldown(self, event_id):
         """Check if an event is on cooldown"""
@@ -151,32 +137,29 @@ class GameEvents:
                 print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
 
 
-    def handle_combat_event(self, event_name, is_beacon=False):
-        """Handle combat event using Combat class"""
-        event = self.event_data.get(event_name.lower().replace(" ", "_"))
+    def handle_combat_event(self, event_id, is_beacon=False):
+        """Handle combat event using CombatSystem class"""
+        event = self.event_data.get(event_id)
         if not event:
-            print(f"Error: No event data found for event {event_name}!")
+            print(f"Error: No event data found for event ID: {event_id}!")
             return False
-        
+
         if not is_beacon:
             if not self.check_event_conditions(event):
-                print(f"Error: Event conditions not met for event {event_name}!")
+                print(f"Error: Event conditions not met for event {event_id}!")
                 return False
-        
+
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
 
         if not enemy_id:
-            print(f"Error: No enemy_id defined for event {event_name} inside enemy_pool")
+            print(f"Error: No enemy_id defined for event {event_id} inside enemy_pool")
             return False
 
-        # Start combat using Combat class
-        if enemy_id:
-            result = self.combat.resolve_combat(enemy_id)
-        else:
-            print(f"Error: No enemy_id defined for event {event_name}")
-            return False
-            
+        # Use combat system for resolve_combat
+        combat_data = {"enemy_id": enemy_id}
+        result = self.game.combat_system.resolve_combat(self.game.ship, self.game.ship, combat_data)
+
         # Process outcome of combat
         if result.is_victory():
             self.game.ui.display_simple_message(self.get_event_message(event, "successful_defense"), 3, color='32')
@@ -185,6 +168,12 @@ class GameEvents:
                 self.game.handle_research_gain(rewards.get("research", 0))
         elif result.is_defeat():
             self.game.ui.display_simple_message(self.get_event_message(event, "damage_taken"), 3, color='31')
+
+        # Apply plot point logic
+        self.apply_plot_points(event)
+
+        # Check for story events
+        self.game.story_manager.check_event_trigger(event_id, self.game)
         return True
     
     def get_event_message(self, event, message_type):
@@ -225,14 +214,26 @@ class GameEvents:
             {'attack': 3, 'defense': 3, 'speed': 2}
         )
 
+        # Create a temporary enemy object using the boss template data
+        # so we can pass it to the combat system
+        class BossEnemy:
+            def __init__(self, data):
+                self.attack = data.get('attack', 1)
+                self.defense = data.get('defense', 1)
+                self.speed = data.get('speed', 1)
+                # Add any other relevant stats from the template
+                self.get = lambda key, default=None: data.get(key, default)  #mock get
+
+        boss = BossEnemy(ship_stats) #now we generate boss on the fly
         # Start combat using Combat class and pass boss stats directly
-        result = self.combat.handle_boss_battle(boss_id)
+        combat_data = {"enemy_id": boss_id}  # Provide boss_id as combat data
+        result = self.game.combat_system.resolve_combat(self.game.ship, boss, combat_data)
 
         if result.is_victory():
             self.game.ui.display_simple_message(result.get_message(), 3, color='32')
             if result.get_rewards():
-                 rewards = result.get_rewards()
-                 self.game.handle_research_gain(rewards.get("research", 0))
+                rewards = result.get_rewards()
+                self.game.handle_research_gain(rewards.get("research", 0))
         elif result.is_defeat():
             self.game.ui.display_simple_message(result.get_message(), 3, color='31')
         # Check for unlock based on victory
@@ -443,41 +444,41 @@ class GameEvents:
         return True
     
     def handle_event(self, event_id, is_beacon=False):
-         """Central event dispatcher"""
-         event_data = self.event_data.get(event_id)
-         if not event_data:
-              print(f"Error: No event data found for event ID: {event_id}!")
-              return False
-
-         event_type = event_data.get("type")
-         
-         # Set cooldown for event that was just triggered
-         self.event_cooldowns[event_id] = self.game.turn
-
-         match event_type:
-            case "combat":
-                success = self.handle_combat_event(event_id, is_beacon)
-                if success:
-                   # Apply plot point logic
-                   self.apply_plot_points(event_data)
-                   return True
-                else:
-                   return False
-            case "trade":
-                self.handle_trade_event(event_id)
-            case "exploration":
-                self.handle_exploration_event(event_id)
-            case "disaster":
-                self.handle_disaster_event(event_id)
-            case "passenger":
-                self.handle_passenger_event(event_id)
-            case _:
-                print(f"Warning: Unknown event type {event_type}")
+            """Central event dispatcher"""
+            event_data = self.event_data.get(event_id)
+            if not event_data:
+                print(f"Error: No event data found for event ID: {event_id}!")
                 return False
 
-         # Apply plot point logic
-         self.apply_plot_points(event_data)
+            event_type = event_data.get("type")
+            
+            # Set cooldown for event that was just triggered
+            self.event_cooldowns[event_id] = self.game.turn
 
-         # Check for story events
-         self.game.story_manager.check_event_trigger(event_id, self.game)
-         return True    
+            match event_type:
+                case "combat":
+                    success = self.handle_combat_event(event_id, is_beacon) #added here, and fixed
+                    if success:
+                    # Apply plot point logic
+                        self.apply_plot_points(event_data)
+                        return True
+                    else:
+                        return False
+                case "trade":
+                    self.handle_trade_event(event_id)
+                case "exploration":
+                    self.handle_exploration_event(event_id)
+                case "disaster":
+                    self.handle_disaster_event(event_id)
+                case "passenger":
+                    self.handle_passenger_event(event_id)
+                case _:
+                    print(f"Warning: Unknown event type {event_type}")
+                    return False
+
+            # Apply plot point logic
+            self.apply_plot_points(event_data)
+
+            # Check for story events
+            self.game.story_manager.check_event_trigger(event_id, self.game)
+            return True   
