@@ -80,3 +80,7 @@ def display_story_message(self, message, pause=2, style='round', color=None):
         print(box)
         if pause > 0:
             time.sleep(pause)
+
+def debug_message(game, message):
+    if game.debug_mode:
+        print(f"[DEBUG] {message}")            

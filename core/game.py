@@ -41,6 +41,7 @@ class Game:
         self.state = GameState()
         self.settings = settings if settings else self.load_settings()
                 # Initialize combat system based on settings
+        self.debug_mode = self.settings.get("debug_mode", False) #add        
         combat_system_name = self.settings.get("combat_system", "classic")
         if combat_system_name == "new":
             self.combat_system = NewCombatSystem(self)
