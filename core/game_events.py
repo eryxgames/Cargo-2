@@ -91,15 +91,18 @@ class GameEvents:
                         return False
             return True
 
-    def get_weighted_event(self):
+    def get_weighted_event(self, is_beacon=False):
             """Selects a weighted random event"""
             eligible_events = []
             print ("Starting get_weighted_event")#debug
             for event_id, event_data in self.event_data.items():
                 print (f"Checking event {event_id}")#debug
+                #Skip check beacon events
+                if is_beacon:
+                    print ("Skipped " + event_id + " because is beacon call")
                 if (self.check_event_conditions(event_data) and 
                     self.check_event_cooldown(event_id) and
-                    not event_data.get("start_event") # skip if there is an start event defined, as it is being used by item
+                    not is_beacon #Skip the check, for manual calls.
                     ):
                     eligible_events.append((event_id, event_data.get("weight", 1)))
                     print (f"Event {event_id} is eligible")#debug
@@ -108,6 +111,8 @@ class GameEvents:
             if not eligible_events:
                 print ("No eligible events at all!")#debug
                 return None
+            else:
+                print ("Eligible events:" + str(eligible_events))#add
             
             # Accumulate weights
             weighted_events = []
@@ -131,12 +136,12 @@ class GameEvents:
                 return False
         return True
 
-    def trigger_event(self, event_id):
+    def trigger_event(self, event_id, is_beacon=False):
         """Trigger specific event with its consequences"""
         if not event_id:
             return False
         
-        return self.handle_event(event_id)
+        return self.handle_event(event_id, is_beacon=is_beacon)
 
     def trigger_beacon_event(self, event_id):
         """Trigger beacon-specific event without conditions check"""
@@ -173,7 +178,8 @@ class GameEvents:
                     print("No eligible events")#debug
                     return  # if not event, do not run anything further
                 
-                self.trigger_event(event_id)
+                print (f"We are now on {event_id}")#debug
+                self.handle_event(event_id) #here!
                 print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
 
     def handle_combat_event(self, event_id, is_beacon=False):
