@@ -27,53 +27,69 @@ class GameEvents:
             return {}
 
     def check_event_conditions(self, event):
-        """Check if an event's conditions are met"""
-        conditions = event.get("conditions", {})
+            """Check if an event's conditions are met"""
+            conditions = event.get("conditions", {})
 
-        if "location_type" in conditions:
-            location_types = conditions["location_type"]
-            if isinstance(location_types, list):
-                if self.game.current_location.location_type not in location_types:
+            if "location_type" in conditions:
+                location_types = conditions["location_type"]
+                print(f"Location_types: {location_types} and location_type: {self.game.current_location.location_type}")#DEBUG here!
+                if isinstance(location_types, list):
+                    if self.game.current_location.location_type not in location_types:
+                        return False
+                elif self.game.current_location.location_type != location_types:
                     return False
-            elif self.game.current_location.location_type != location_types:
+            if "min_turn" in conditions and self.game.turn < conditions["min_turn"]:
+                print(f"Min_turn: {conditions['min_turn']} and turn: {self.game.turn}")#DEBUG here!
                 return False
-        if "min_turn" in conditions and self.game.turn < conditions["min_turn"]:
-            return False
-        if "max_turn" in conditions and self.game.turn > conditions["max_turn"]:
-            return False
-        if "min_reputation" in conditions and self.game.ship.passenger_reputation < conditions["min_reputation"]:
-            return False
-        if "max_reputation" in conditions and self.game.ship.passenger_reputation > conditions["max_reputation"]:
-            return False
-        if "min_combat_victories" in conditions and self.game.ship.combat_victories['total'] < conditions["min_combat_victories"]:
-            return False
-        if "min_trades_completed" in conditions and self.game.trades_completed < conditions["min_trades_completed"]:
-            return False
-        if "max_trades_completed" in conditions and self.game.trades_completed > conditions["max_trades_completed"]:
-            return False
-        if "min_plot_points" in conditions and self.game.story_manager.plot_points < conditions["min_plot_points"]:
-            return False
-        if "max_plot_points" in conditions and self.game.story_manager.plot_points > conditions["max_plot_points"]:
-            return False
-        if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
-            return False
-        if "min_trade_profit" in conditions:
-            total_profit = sum(self.game.ship.trade_profits.values())
-            if total_profit < conditions["min_trade_profit"]:
+            if "max_turn" in conditions and self.game.turn > conditions["max_turn"]:
+                print(f"Max_turn: {conditions['max_turn']} and turn: {self.game.turn}")#DEBUG here!
                 return False
-        if "min_cargo_amount" in conditions:
-            if not hasattr(self.game.ship, 'cargo'):
+            if "min_reputation" in conditions and self.game.ship.passenger_reputation < conditions["min_reputation"]:
+                print(f"min_reputation: {conditions['min_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
                 return False
-            for cargo, amount in conditions["min_cargo_amount"].items():
-                if self.game.ship.cargo.get(cargo, 0) < amount:
+            if "max_reputation" in conditions and self.game.ship.passenger_reputation > conditions["max_reputation"]:
+                print(f"max_reputation: {conditions['max_reputation']} and reputation: {self.game.ship.passenger_reputation}")#DEBUG here!
+                return False
+            if "min_combat_victories" in conditions and self.game.ship.combat_victories['total'] < conditions["min_combat_victories"]:
+                print(f"min_combat_victories: {conditions['min_combat_victories']} and combat victories: {self.game.ship.combat_victories['total']}")#DEBUG here!
+                return False
+            if "min_trades_completed" in conditions and self.game.trades_completed < conditions["min_trades_completed"]:
+                print(f"min_trades_completed: {conditions['min_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
+                return False
+            if "max_trades_completed" in conditions and self.game.trades_completed > conditions["max_trades_completed"]:
+                print(f"max_trades_completed: {conditions['max_trades_completed']} and trades completed: {self.game.trades_completed}")#DEBUG here!
+                return False
+            if "min_plot_points" in conditions and self.game.story_manager.plot_points < conditions["min_plot_points"]:
+                print(f"min_plot_points: {conditions['min_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
+                return False
+            if "max_plot_points" in conditions and self.game.story_manager.plot_points > conditions["max_plot_points"]:
+                print(f"max_plot_points: {conditions['max_plot_points']} and plot points: {self.game.story_manager.plot_points}")#DEBUG here!
+                return False
+            if "min_ship_speed" in conditions and self.game.ship.speed < conditions["min_ship_speed"]:
+                print(f"min_ship_speed: {conditions['min_ship_speed']} and ship speed: {self.game.ship.speed}")#DEBUG here!
+                return False
+            if "min_trade_profit" in conditions:
+                total_profit = sum(self.game.ship.trade_profits.values())
+                if total_profit < conditions["min_trade_profit"]:
+                    print(f"min_trade_profit: {conditions['min_trade_profit']} and trade profit: {total_profit}")#DEBUG here!
                     return False
-        if "min_passengers_transported" in conditions:
-            if self.game.reputation_manager.total_passengers < conditions["min_passengers_transported"]:
-                return False
-        if "items_required" in conditions:
-            if not all(item in self.game.ship.items for item in conditions["items_required"]):
-                return False
-        return True
+            if "min_cargo_amount" in conditions:
+                if not hasattr(self.game.ship, 'cargo'):
+                    return False
+                for cargo, amount in conditions["min_cargo_amount"].items():
+                    if self.game.ship.cargo.get(cargo, 0) < amount:
+                        print(f"min_cargo_amount: {amount} and cargo: {self.game.ship.cargo.get(cargo, 0)}")#DEBUG here!
+                        return False
+            if "min_passengers_transported" in conditions:
+                if self.game.reputation_manager.total_passengers < conditions["min_passengers_transported"]:
+                    print(f"min_passengers_transported: {conditions['min_passengers_transported']} and passengers transported: {self.game.reputation_manager.total_passengers}")#DEBUG here!
+                    return False
+            if "items_required" in conditions:
+                for required_item in conditions["items_required"]:
+                    if required_item not in self.game.ship.items:
+                        print(f"Missing required item: {required_item}")
+                        return False
+            return True
 
     def get_weighted_event(self):
         """Selects a weighted random event"""
