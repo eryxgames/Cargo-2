@@ -150,42 +150,6 @@ class Combat:
                 
             return CombatResult("defeat", message=message)
         
-    def handle_boss_battle(self, boss_id):
-         """Handle special boss battle encounter"""
-         enemy = self.enemy_data.get(boss_id)
-         
-         # Set special properties for boss fight
-         if not enemy:
-            return CombatResult("defeat", "Boss not defined correctly.")
-         
-         boss_type = enemy.get("type", "boss")
-         
-         # Display special message for this boss battle
-         self.game.ui.display_simple_message([
-            "WARNING! Encountering a significant enemy presence:",
-            f"Battle against: {enemy.get('name', 'Unknown')}"
-         ], 3, color='31')
-         
-         # Use core resolve_combat and add special rewards
-         combat_result = self.resolve_combat(boss_id)
-         if combat_result.is_victory():
-             rewards = combat_result.get_rewards()
-             if rewards:
-                rewards['money'] = int(rewards['money'] * 3) # triple
-                rewards['research'] = int(rewards['research'] * 2) # double
-             
-                
-             # Give special message for boss victory
-             self.game.ui.display_simple_message([
-                 "Victory! Defeated the Boss: " + enemy.get("name"),
-                 f"Credits: {self.game.format_money(rewards['money'])}",
-                  f"Research Points: {rewards['research']}"
-             ], 3, color='32')
-             return CombatResult("victory", combat_result.get_message(), rewards=rewards)
-         elif combat_result.is_defeat():
-            self.game.ui.display_simple_message("Defeated by the boss: " + enemy.get("name"), 3, color='31')
-            return CombatResult("defeat", combat_result.get_message())
-         return combat_result
         
     def handle_boss_battle(self, boss_id):
          """Handle special boss battle encounter"""
