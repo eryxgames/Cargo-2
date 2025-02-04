@@ -73,10 +73,9 @@ def play_turn(game):
             game.port_system.update_passengers(game.current_location.name)
 
    
-    # Call random event before the player makes an action
-    game.random_event()
+    # # Call random event before the player makes an action #Removed
+    # game.random_event() #Removed
 
-    # Create list of valid actions
     valid_actions = []
     for cmd, shortcut in location_commands["available"]:
         valid_actions.extend([cmd, shortcut])
@@ -254,9 +253,15 @@ def play_turn(game):
 
         # Call turn end methods from game.py
         game.end_turn_actions()
+        # NEW CODE: run events AFTER turn ends
+        game.random_event() #New Call
+
         return # Exit play_turn() and start new loop
     
     elif action in ['use', 'us']:
         game.handle_use_item()
     else:
         game.ui.display_simple_message("Invalid action.")
+    
+    # # Call random event here AFTER the player makes an action  #Old Commented
+    # game.random_event() # Old Commented

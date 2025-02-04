@@ -194,6 +194,7 @@ class Game:
 
     def end_turn_actions(self):
         """Handles all turn-ending actions"""
+        self.ui.display_simple_message("End turn Triggered.") # Add this line
         # Update passenger satisfaction at end of turn if port is available
         if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
             self.port_system.update_passenger_satisfaction()
@@ -219,7 +220,7 @@ class Game:
         self.character_system.check_character_triggers()
         self.story_manager.check_chapter_progress()
     
-    #check quests and contracts and update before turn is incremented
+        #check quests and contracts and update before turn is incremented
         self.quest_system.check_active_quests()
         self.contract_manager.update_contract_progress({
             "action": "",
@@ -1086,7 +1087,7 @@ class Game:
                 total_capacity += module.capacity
 
         status_content = [
-            ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
+            ["CΔRGΩ ][", "Ship", f"{self.current_location.location_type}"],
             [f"Turn: {self.turn}", f"ATK: {self.ship.attack} {f'({self.ship.attack - 1})' if (self.ship.attack - 1) < 0 else ''}", f"Name: {self.current_location.name}"],
             [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if (self.ship.defense - 1) < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
             [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if (self.ship.speed - 1) < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
