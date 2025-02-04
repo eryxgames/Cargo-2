@@ -180,11 +180,11 @@ class Game:
                             "Travel: You have used stealth system to hide from patrols!",
                             1, color='32'
                         )
-                 # beacon specific
-                event_id = self.ship.item_data[item].get("start_event")
-                if event_id:
-                   if self.game_events.check_event_cooldown(event_id):
-                     self.game_events.handle_event(event_id, is_beacon=True)
+        # beacon specific
+        event_id = self.ship.item_data[item].get("start_event")
+        if event_id:
+           if self.game_events.check_event_cooldown(event_id):
+             self.game_events.handle_event(event_id, is_beacon=True)
                    #else:
                        #if on cooldown, do not use it
                        #continue

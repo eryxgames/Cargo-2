@@ -1,7 +1,7 @@
 # core/combat.py
 import random
 import yaml
-from core.combat_system import CombatSystem, CombatResult
+from core.combat_system import CombatSystem, CombatResult #CombatResult is in combat_system
 from core.utils import format_money
 
 class ClassicCombatSystem(CombatSystem):  # Renamed class to ClassicCombatSystem
