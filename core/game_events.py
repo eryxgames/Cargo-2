@@ -159,12 +159,16 @@ class GameEvents:
             return False
         
         if not is_beacon:
-            if not self.check_event_conditions(event):
-                print(f"Error: Event conditions not met for event {event_name}!")
-                return False
+          if not self.check_event_conditions(event):
+              print(f"Error: Event conditions not met for event {event_name}!")
+              return False
         
         enemy_pool = event.get("enemy_pool", ["pirate_scout"])
         enemy_id = random.choice(enemy_pool)
+
+        if not enemy_id:
+            print(f"Error: No enemy_id defined for event {event_name} inside enemy_pool")
+            return False
 
         # Start combat using Combat class
         if enemy_id:
