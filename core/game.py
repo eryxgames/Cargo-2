@@ -60,7 +60,7 @@ class Game:
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop(self)
         self.ship = Ship(self)
-        self.turn = 0
+        self.turn = 1
         self.known_locations = [self.current_location.name]
         self.event_log = []
         self.player_name = self.get_player_name()
@@ -79,7 +79,7 @@ class Game:
         self.combat_difficulty = 1.0
         self.pirate_frequency = 1.0
         self.event_risk = 1.0
-        self.event_probability = 0.2
+        self.event_probability = 0.75
         self.crisis_active = False
         self.endgame_active = False
         self.enable_stellar_portal = False

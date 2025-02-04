@@ -92,16 +92,37 @@ class GameEvents:
             return True
 
     def get_weighted_event(self):
-        """Selects a weighted random event"""
-        eligible_events = []
-        for event_id, event_data in self.event_data.items():
-            if (self.check_event_conditions(event_data) and 
-                self.check_event_cooldown(event_id) and
-                not event_data.get("start_event") and event_data.get("type") != "combat"# skip if there is an start event defined, as it is being used by item
-                ):
-                eligible_events.append((event_id, event_data.get("weight", 1)))
-        if not eligible_events:
-            return None
+            """Selects a weighted random event"""
+            eligible_events = []
+            print ("Starting get_weighted_event")#debug
+            for event_id, event_data in self.event_data.items():
+                print (f"Checking event {event_id}")#debug
+                if (self.check_event_conditions(event_data) and 
+                    self.check_event_cooldown(event_id) and
+                    not event_data.get("start_event") # skip if there is an start event defined, as it is being used by item
+                    ):
+                    eligible_events.append((event_id, event_data.get("weight", 1)))
+                    print (f"Event {event_id} is eligible")#debug
+                else:
+                    print (f"Event {event_id} is not eligible")#debug
+            if not eligible_events:
+                print ("No eligible events at all!")#debug
+                return None
+            
+            # Accumulate weights
+            weighted_events = []
+            total_weight = 0
+            for event_id, weight in eligible_events:
+                total_weight += weight
+                weighted_events.append((event_id, total_weight))
+            
+            # Select a weighted random event
+            random_value = random.uniform(0, total_weight)
+            for event_id, weight in weighted_events:
+                if random_value <= weight:
+                    print (f"Returning event: {event_id}")#debug
+                    return event_id
+            return None  # Shouldn't happen
 
     def check_event_cooldown(self, event_id):
         """Check if an event is on cooldown"""
@@ -143,15 +164,17 @@ class GameEvents:
 
     def random_event(self):
             """Handles random game events"""
+            print(f"Running random event, probability {self.game.event_probability}")#debug
             if random.random() < self.game.event_probability:
+                print("Event roll succeeded")#debug
                 # Select a weighted random event
                 event_id = self.get_weighted_event()
                 if not event_id:
+                    print("No eligible events")#debug
                     return  # if not event, do not run anything further
                 
                 self.trigger_event(event_id)
                 print(f"Triggered event based on random chance {self.game.event_probability} from pool of {len([ev for ev, data in self.event_data.items() if self.check_event_conditions(data) and not data.get('beacon_type') ])} events")
-
 
     def handle_combat_event(self, event_id, is_beacon=False):
         """Handle combat event using CombatSystem class"""
