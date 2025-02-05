@@ -146,11 +146,14 @@ class Port:
 
     def display_port_info(self):
         """Display port information and options"""
-        content = [""]
+        content = []
+
+        # Spacer
+        content.append(["", "", ""])
         
         # Show installed modules
-        content.append(["Installed Passenger Modules"])
-        if hasattr(self.game.ship, 'passenger_modules'):
+        content.append(["=== Installed Passenger Modules ===", "", ""])
+        if hasattr(self.game.ship, 'passenger_modules') and self.game.ship.passenger_modules:
             for module in self.game.ship.passenger_modules:
                 passengers = len(module.passengers)
                 content.append([
@@ -159,27 +162,31 @@ class Port:
                     f"Comfort Lvl.: {module.comfort_level}"
                 ])
         else:
-            content.append(["No passenger modules installed"])
-            
+            content.append(["No passenger modules installed", "", ""])
+                    
+        # Spacer
+        content.append(["", "", ""])
+        
         # Show current passengers
-        content.append([""])
-        content.append(["Current Passengers","",""])
+        content.append(["=== Current Passengers ===", "", ""])
         total_passengers = 0
-        if hasattr(self.game.ship, 'passenger_modules'):
+        if hasattr(self.game.ship, 'passenger_modules') and self.game.ship.passenger_modules:
             for module in self.game.ship.passenger_modules:
                 for passenger in module.passengers:
                     total_passengers += 1
                     content.append([
                         f"{passenger.name}",
                         f"→ {passenger.destination}",
-                        f"Satisfaction: {passenger.satisfaction}%"
+                        f"☺: {passenger.satisfaction}%"
                     ])
         if total_passengers == 0:
-            content.append(["No passengers currently aboard","",""])
+            content.append(["No passengers currently aboard", "", ""])
 
+        # Spacer
+        content.append(["", "", ""])
+        
         # Show waiting passengers at current location
-        content.append([""])
-        content.append(["Waiting Passengers","",""])
+        content.append(["=== Waiting Passengers ===", "", ""])
         location = self.game.current_location.name
         if location in self.waiting_passengers and self.waiting_passengers[location]:
             for passenger in self.waiting_passengers[location]:
@@ -189,9 +196,10 @@ class Port:
                     f"Class: {passenger.wealth_level}"
                 ])
         else:
-            content.append(["No passengers waiting"])
-            
+            content.append(["No passengers waiting", "", ""])
+                    
         return self.game.ui.create_box(content, 'double')
+
 
     def handle_port_menu(self):
         """Handle port menu options"""
@@ -272,9 +280,9 @@ class Port:
                 list(self.available_modules.keys()) + ['back']
             )
             
-            if module_id == 'back':
-                self.game.clear_screen()
-                return
+
+            if module_id in ['back', None]:
+                break
                     
             if module_id in self.available_modules:
                 module = self.available_modules[module_id]
@@ -448,7 +456,7 @@ class Port:
 
             # Display unloading results
             if passengers_to_unload:
-                content = [["Passengers Disembarked"]]
+                content = [["Passengers Disembarked","",""]]
                 
                 for result in passengers_to_unload:
                     passenger = result['passenger']
@@ -574,7 +582,7 @@ class Port:
         
         while passengers_left and available_modules:
             # Show remaining passengers
-            content = [["Remaining Passengers"]]
+            content = [["Remaining Passengers",""]]
             for i, passenger in enumerate(passengers_left, 1):
                 content.append([
                     f"{i}. {passenger.name} [{passenger.classification['code']}]",
@@ -583,7 +591,7 @@ class Port:
             print(self.game.ui.create_box(content, 'single'))
             
             # Show available modules
-            module_content = [["Available Modules"]]
+            module_content = [["Available Modules","",""]]
             for i, module in enumerate(available_modules, 1):
                 module_content.append([
                     f"{i}. {module.name}",
