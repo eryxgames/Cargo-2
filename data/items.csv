@@ -4,7 +4,7 @@ scanner,Basic Scanner,"Improves resource detection",equipment,700,2,0,scout_bonu
 probe,Deep Space Probe,"Increases exploration success",equipment,900,3,10,explore_bonus:10,,,,,,
 turrets,Defense Turrets,"Automatically repels pirates",equipment,1200,4,15,auto_defense_chance:0.4,,,,,,
 shield,Energy Shield,"Reduces damage taken in combat",equipment,1500,5,20,damage_reduction:0.3,,,,,,
-patcher,Hull Patcher,"Repairs minor combat damage",consumable,300,1,0,repair:10,,,,,
+patcher,Hull Patcher,"Repairs minor combat damage",consumable,300,1,0,repair:10,,,,,,
 cargo_extender,Cargo Extender,"Increases cargo capacity by 20%",equipment,5000,3,25,cargo_capacity:0.2,,,,,,
 containment_field,Containment Field,"Specialized storage for salt/fuel",equipment,8000,4,30,cargo_capacity_salt_fuel:0.3,,,,,,
 auto_loader,Auto-Loader,"Reduces loading/unloading time",equipment,12000,5,35,trade_time_reduction:1,,,,,,
@@ -26,8 +26,8 @@ containment_optimizer,Containment Optimizer,"Smart cargo optimization",equipment
 quantum_core_v2,Quantum Core V2,"Advanced quantum computing core",upgrade,100000,9,100,quantum_bonus:0.2,,,,,,
 phase_shifter,Phase Shifter,"Advanced stealth system",upgrade,120000,10,120,stealth_ability:1,,,,,,
 temporal_lens,Temporal Lens,"Advanced temporal data analysis",upgrade,150000,11,150,research_bonus:0.3,,,,,,
-distress_beacon_a,Distress Beacon A,"Emits an Abandoned Mining Hauler signal",consumable,1000,1,0,,"",distress_beacon_a_event,use,distress_a
-distress_beacon_b,Distress Beacon B,"Emits a Distressed Transport Vessel signal",consumable,1500,3,10,,"",distress_beacon_b_event,use,distress_b
-distress_beacon_c,Distress Beacon C,"Emits a Merchant's Liner Navigation Error signal",consumable,2000,5,20,,"",distress_beacon_c_event,use,distress_c
-mcguffin_beacon,McGuffin Beacon,"Lures a powerful foe for a deadly challenge",consumable,10000,10,50,,"",mcguffin_beacon_event,use,mcguffin
-nav_beacon_a,Merchant Beacon,"Directs you to a merchant vessel",consumable,5000,5,30,,"",nav_beacon_a_event,use,nav_a
+distress_beacon_a,Distress Beacon A,"Emits an Abandoned Mining Hauler signal",consumable,1000,1,0,,,,"distress_beacon_a_event",use,distress_a
+distress_beacon_b,Distress Beacon B,"Emits a Distressed Transport Vessel signal",consumable,1500,3,10,,,,"distress_beacon_b_event",use,distress_b
+distress_beacon_c,Distress Beacon C,"Emits a Merchant's Liner Navigation Error signal",consumable,2000,5,20,,,,"distress_beacon_c_event",use,distress_c
+mcguffin_beacon,McGuffin Beacon,"Lures a powerful foe for a deadly challenge",consumable,10000,10,50,,,,"mcguffin_beacon_event",use,mcguffin
+nav_beacon_a,Merchant Beacon,"Directs you to a merchant vessel",consumable,5000,5,30,,,,"nav_beacon_a_event",use,nav_a
