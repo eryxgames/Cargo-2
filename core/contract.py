@@ -227,7 +227,7 @@ class ContractManager:
     def unlock_special_contracts(self):
         """Unlock special contract types"""
         self.special_contracts_unlocked = True
-        self.game.display_simple_message([
+        self.game.ui.display_simple_message([
             "Special Contracts Unlocked!",
             "New high-value contracts now available:",
             "• High-Value Cargo Transport",
@@ -238,7 +238,7 @@ class ContractManager:
     def handle_contract_menu(self):
         """Handle port menu options"""
         self.game.clear_screen()
-        self.game.display_simple_message("Contract Management Terminal", 0)
+        self.game.ui.display_simple_message("Contract Management Terminal", 0)
 
         while True:
             # Refresh contracts if needed
@@ -278,7 +278,7 @@ class ContractManager:
     def show_available_contracts(self):
         """Show available contracts for acceptance"""
         if not self.available_contracts:
-            self.game.display_simple_message("No contracts available currently.")
+            self.game.ui.display_simple_message("No contracts available currently.")
             return
 
         contract_content = [["Available Contracts"]]
@@ -299,14 +299,14 @@ class ContractManager:
             return
 
         success, message = self.accept_contract(int(choice) - 1)
-        self.game.display_simple_message(message)
+        self.game.ui.display_simple_message(message)
 
     def claim_completed_contracts(self):
         """Handle claiming rewards for completed contracts"""
         completed = [c for c in self.active_contracts if c.completed and not c.rewards_claimed]
         
         if not completed:
-            self.game.display_simple_message("No completed contracts to claim!")
+            self.game.ui.display_simple_message("No completed contracts to claim!")
             return
 
         # Show completed contracts
@@ -336,7 +336,7 @@ class ContractManager:
     def show_detailed_status(self):
         """Show detailed status of all active contracts with trade history"""
         if not self.active_contracts:
-            self.game.display_simple_message("No active contracts!")
+            self.game.ui.display_simple_message("No active contracts!")
             return
 
         for contract in self.active_contracts:
@@ -626,7 +626,7 @@ class ContractManager:
         self.completed_contracts.append(contract)
 
         # Display completion message
-        self.game.display_simple_message([
+        self.game.ui.display_simple_message([
             "Contract Rewards Claimed!",
             f"Earned {self.game.format_money(rewards['money'])} credits",
             f"Reputation +{rewards['reputation']}",
@@ -680,12 +680,12 @@ class ContractManager:
             if result["status"] == "completed":
                 messages.append(result["message"])
                 if contract.contract_type == "cargo":
-                    self.game.display_simple_message(
+                    self.game.ui.display_simple_message(
                         f"Contract completed: Delivered {contract.progress['amount']} {contract.requirements['cargo_type']} " +
                         f"from {contract.requirements['source']} to {contract.requirements['destination']}"
                     )
                 elif contract.contract_type == "passenger":
-                    self.game.display_simple_message(
+                    self.game.ui.display_simple_message(
                         f"Contract completed: Transported {contract.progress['passengers_delivered']} passengers " +
                         f"from {contract.requirements['source']} to {contract.requirements['destination']}"
                     )
@@ -694,7 +694,7 @@ class ContractManager:
                 
         if messages:
             for msg in messages:
-                self.game.display_simple_message(msg)
+                self.game.ui.display_simple_message(msg)
 
     def handle_contract_failure(self, contract):
         """Handle failed contract cleanup"""
@@ -719,5 +719,5 @@ class ContractManager:
                 f"Progress: {contract.progress['passengers_delivered']}/{contract.requirements.get('count', 0)} passengers"
             )
             
-        self.game.display_simple_message(message)
+        self.game.ui.display_simple_message(message)
         self.active_contracts.remove(contract)

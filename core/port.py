@@ -146,7 +146,7 @@ class Port:
 
     def display_port_info(self):
         """Display port information and options"""
-        content = []
+        content = [""]
         
         # Show installed modules
         content.append(["Installed Passenger Modules"])
@@ -163,7 +163,7 @@ class Port:
             
         # Show current passengers
         content.append([""])
-        content.append(["Current Passengers"])
+        content.append(["Current Passengers","",""])
         total_passengers = 0
         if hasattr(self.game.ship, 'passenger_modules'):
             for module in self.game.ship.passenger_modules:
@@ -175,11 +175,11 @@ class Port:
                         f"Satisfaction: {passenger.satisfaction}%"
                     ])
         if total_passengers == 0:
-            content.append(["No passengers currently aboard"])
+            content.append(["No passengers currently aboard","",""])
 
         # Show waiting passengers at current location
         content.append([""])
-        content.append(["Waiting Passengers"])
+        content.append(["Waiting Passengers","",""])
         location = self.game.current_location.name
         if location in self.waiting_passengers and self.waiting_passengers[location]:
             for passenger in self.waiting_passengers[location]:
@@ -249,7 +249,7 @@ class Port:
         """Handle purchase of new modules with numbered selection"""
         while True:
 #            self.game.clear_screen()
-            content = [["", f"¤: {self.game.format_money(self.game.ship.money)}"]]
+            content = [["", f"¤: {self.game.format_money(self.game.ship.money)}","","",""]]
     #        content.append([""])  # Empty line for spacing
             content.append(["#", "Module Types:", "Cap.", "Comf.", "Cost"])
 #            content.append(["#", "Module Types:", "Cap.", "Comf.", "Cost", "Special"])
@@ -265,7 +265,7 @@ class Port:
 #                    special #yet uinimplemented module special
                 ])
                     
-            print(self.game.ui.create_box(content, 'double'))
+            print(self.game.ui.create_box(content, 'round'))
             
             module_id = self.game.validate_input(
                 "Enter module number to buy (or 'back'): ",
@@ -531,7 +531,7 @@ class Port:
 
     def display_module_status(self):
         """Display current module status"""
-        module_status = [["Current Module Status"]]
+        module_status = [["Current Module Status","",""]]
         for module in self.game.ship.passenger_modules:
             passengers_info = []
             for p in module.passengers:
@@ -548,7 +548,7 @@ class Port:
     def display_waiting_passengers(self):
         """Display waiting passengers"""
         location = self.game.current_location.name
-        content = [[""]]
+        content = [["","","","",""]]
         content.append(["#", f"Waiting on {location}", "Dest.", "Cls.", "≈Fare"])
         
         waiting_passengers = self.waiting_passengers[location]
