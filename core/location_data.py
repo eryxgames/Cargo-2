@@ -83,7 +83,8 @@ class LocationCapabilities:
                 "agrobot",
                 "nanotech",
                 "neuroengineering",
-                "mining"
+                "mining",
+                "combined_refinery"
             ],
             "can_produce": ["tech", "agri"],
             "can_mine": ["salt", "fuel"],
