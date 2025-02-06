@@ -381,4 +381,5 @@ class TextUI(object):
             for deposit, amount in location.mineral_deposits.items():
                 content.append([f"{deposit.capitalize()}: {amount} units"])
         
-        print(self.create_box(content, 'double'))            
+        print(self.create_box(content, 'double'))
+        time.sleep(2)            

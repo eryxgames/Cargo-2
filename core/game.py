@@ -285,6 +285,7 @@ class Game:
                    elif action_key == 'build_mining_platform':
                        if not self.current_location.mineral_deposits:
                            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
+                           time.sleep(1)
                            return
                      
                        available_deposits = list(self.current_location.mineral_deposits.keys())
@@ -625,8 +626,12 @@ class Game:
         success, message = self.action.build_mining_platform(self.current_location, deposit_type)
         if success:
             self.ui.display_simple_message(message)
+            delay = min(len(message) / 50, 3)  # Adjust the divisor and maximum as needed
+            time.sleep(delay)
         else:
             self.ui.display_simple_message(message)
+            delay = min(len(message) / 50, 3)  # Adjust the divisor and maximum as needed
+            time.sleep(delay)
 
     def display_action_result(self, result):
         """Display results of an action in a unified way."""
@@ -1276,32 +1281,6 @@ class Game:
         print(self.ui.create_box(content, 'double'))
         input("Press Enter to continue...")
 
-    def build_mining_platform(self):
-        """Build a new mining platform on the current planet"""
-        if not self.current_location.mineral_deposits:
-            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
-            return
-            
-        available_deposits = list(self.current_location.mineral_deposits.keys())
-        deposit_type = self.validate_input(
-            f"Choose deposit type to mine ({', '.join(available_deposits)}): ",
-            available_deposits
-        )
-        
-        if deposit_type is None:
-            return
-            
-        cost = 10000
-        if self.ship.money >= cost:
-            self.ship.money -= cost
-            self.current_location.mining_platforms.append({
-                'type': deposit_type,
-                'efficiency': self.current_location.exogeology,
-                'capacity': random.randint(100, 200)
-            })
-            self.ui.display_simple_message(f"Mining platform for {deposit_type} built!")
-        else:
-            self.ui.display_simple_message("Not enough money to build mining platform.")
 
     def format_buildings(self):
         building_counts = {}
