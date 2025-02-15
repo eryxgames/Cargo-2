@@ -3,8 +3,10 @@ The Cargo saga continues! Navigate treacherous space lanes and pilot customizabl
 - [ ] Improved game system
 - [ ] Improved tactical system
 - [ ] Evolving story lines
-- [ ] New ships and items
-- [ ] Evolving story lines
+- [ ] New enemy ships and items
+- [ ] Technology research trees
+- [ ] Captain achievements
+- [ ] Color themes and settings
 - [ ] Original music and sounds
 
 ```console
@@ -17,8 +19,9 @@ The Cargo saga continues! Navigate treacherous space lanes and pilot customizabl
 ```
 
 Refactoring notes:
-You are professional game developer and you are refactoring Cargo text rpg strategy game to Cargo 2, with goal to refactor its structure to data driven approach. I will present a structure of the project so far, several refactored files and the original code. You will analyze the data and find necessary adjustments. 
+We are refactoring Cargo text rpg strategy game to Cargo 2, with goal to refactor its structure to a more data driven approach. This is a structure of the project so far. We will analyze the data of the original gameplay, improve the system, add more features, and find necessary adjustments. 
 
+```
 cargo-2/
 ├── core/
 │   ├── __init__.py
@@ -98,3 +101,4 @@ cargo-2/
 │   ├── save1.json
 │   └── ...
 └── requirements.txt
+```
