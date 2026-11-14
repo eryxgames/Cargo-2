@@ -200,7 +200,7 @@ class SyntheticEventManager:
             'options': "1. Pay Demands  2. Negotiate  3. Refuse"
         }
 
-        print(self.game.create_character_box(character_content))
+        print(self.game.ui.create_character_box(character_content))
         choice = self.game.validate_input("Choose action: ", ['1', '2', '3'])
 
         if not choice:
@@ -217,10 +217,10 @@ class SyntheticEventManager:
                 # Remove from potential uprisings if present
                 if location.name in self.potential_uprisings:
                     del self.potential_uprisings[location.name]
-                self.game.display_simple_message(f"{synthetic_type} demands met. Systems pacified.")
+                self.game.ui.display_simple_message(f"{synthetic_type} demands met. Systems pacified.")
                 return False
             else:
-                self.game.display_simple_message("Insufficient funds! Uprising begins!")
+                self.game.ui.display_simple_message("Insufficient funds! Uprising begins!")
                 return True
 
         elif choice == '2':  # Negotiate
@@ -229,7 +229,7 @@ class SyntheticEventManager:
                 self.game.ship.money -= partial_payment
                 uprising_chance = template["negotiation_multipliers"]["partial_payment"]
                 if random.random() < uprising_chance:
-                    self.game.display_simple_message("Negotiation failed! Uprising begins!")
+                    self.game.ui.display_simple_message("Negotiation failed! Uprising begins!")
                     return True
                 else:
                     # IMPORTANT: Mark as pacified on successful negotiation
@@ -237,13 +237,13 @@ class SyntheticEventManager:
                         "type": synthetic_type,
                         "turn": self.game.turn
                     }
-                    self.game.display_simple_message("Negotiation successful. Systems pacified.")
+                    self.game.ui.display_simple_message("Negotiation successful. Systems pacified.")
                     return False
             else:
-                self.game.display_simple_message("Insufficient funds for negotiation! Uprising begins!")
+                self.game.ui.display_simple_message("Insufficient funds for negotiation! Uprising begins!")
                 return True
         else:  # Refuse
-            self.game.display_simple_message(f"{synthetic_type} uprising imminent!")
+            self.game.ui.display_simple_message(f"{synthetic_type} uprising imminent!")
             return True
 
     def add_potential_uprising(self, location, synthetic_type, base_chance):
@@ -448,7 +448,7 @@ class SyntheticEventManager:
                 if building in targets:
                     if random.random() < effect.magnitude:  # destruction chance
                         buildings_to_remove.append(i)
-                        self.game.display_simple_message(
+                        self.game.ui.display_simple_message(
                             f"Synthetic forces have destroyed a {building}!"
                         )
         
@@ -515,13 +515,13 @@ class SyntheticEventManager:
                         del self.active_uprisings[uprising_id]
                         if uprising_id in self.active_effects:
                             del self.active_effects[uprising_id]
-                        self.game.display_simple_message(f"{synthetic_type} uprising resolved successfully!")
+                        self.game.ui.display_simple_message(f"{synthetic_type} uprising resolved successfully!")
                         return True
                     else:
-                        self.game.display_simple_message("Resolution attempt failed! Uprising continues.")
+                        self.game.ui.display_simple_message("Resolution attempt failed! Uprising continues.")
                         return False
                 else:
-                    self.game.display_simple_message("Insufficient funds for resolution attempt!")
+                    self.game.ui.display_simple_message("Insufficient funds for resolution attempt!")
             return False
         
 class InfestationManager:
@@ -563,7 +563,7 @@ class InfestationManager:
             'introduction': content['introduction'],
             'options': " | ".join(f"{i+1}. {opt['label']}" for i, opt in enumerate(content['options']))
         }
-        print(self.game.create_character_box(infestation_content))
+        print(self.game.ui.create_character_box(infestation_content))
 
         # Get player choice
         valid_choices = [str(i+1) for i in range(len(content['options']))]
@@ -580,15 +580,15 @@ class InfestationManager:
             cost = infestation_config['debugratization_cost']
             if self.game.ship.money >= cost:
                 self.game.ship.money -= cost
-                self.game.display_simple_message(f"{infestation_name} threat neutralized!")
+                self.game.ui.display_simple_message(f"{infestation_name} threat neutralized!")
                 return False
             else:
-                self.game.display_simple_message("Insufficient funds! Infestation begins!")
+                self.game.ui.display_simple_message("Insufficient funds! Infestation begins!")
                 self.activate_infestation(infestation_name, infestation_config)
                 return True
         else:
             # Risk option
-            self.game.display_simple_message(f"{infestation_name} spreads!")
+            self.game.ui.display_simple_message(f"{infestation_name} spreads!")
             self.activate_infestation(infestation_name, infestation_config)
             return True
 
@@ -615,14 +615,14 @@ class InfestationManager:
                 if ship.cargo[effect['cargo_type']] > 0:
                     cargo_loss = int(ship.cargo[effect['cargo_type']] * effect['consumption_rate'])
                     ship.cargo[effect['cargo_type']] = max(0, ship.cargo[effect['cargo_type']] - cargo_loss)
-                    self.game.display_simple_message(
+                    self.game.ui.display_simple_message(
                         effect['message'].format(loss=cargo_loss)
                     )
             
             elif effect['type'] == 'ship_damage':
                 if random.random() < effect.get('probability', 1.0):
                     ship.damage += effect['damage_rate']
-                    self.game.display_simple_message(effect['message'])
+                    self.game.ui.display_simple_message(effect['message'])
         
         # Increment turns
         infestation['turns_active'] += 1

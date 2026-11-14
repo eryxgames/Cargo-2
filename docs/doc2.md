@@ -1797,66 +1797,7 @@ Welcome to the dawn of a new era in interstellar commerce and exploration! The U
 *   Appendix T: Glossary of Scientific and Technical Terms (Expanded)
 *   Appendix U: Recommended Reading and Resources for Interstellar Traders and Pilots
 
-**Index:**
 
-(A Comprehensive Index of Key Terms and Concepts would be Included here, with page numbers.)
-(Example)
-*   **Atmospheric Flight:** 10, 25, 32, 54, 57, 102
-*   **Cargo Modules:** 7, 12, 28, 30, 35, 72, 73, 104, 109
-*   **Command/Navigation Module:** 6, 15, 22, 27, 31, 34, 38, 40, 106
-*  **Connecting Modules:** 8, 17, 24, 29, 33, 37, 39, 75, 79, 107
-*  **Docking/Connection Modules:** 9, 18, 26, 31, 36, 39, 77, 105
-*   **Emergency Procedures:** 21, 30, 37, 54, 59, 60, 79, 88
-*  **FTL Travel:** 4, 19, 29, 36, 55, 78, 90, 99, 101
-*   **Life Support Module:** 16, 23, 30, 37, 40, 69, 88, 107
-*  **Maintenance:** 11, 19, 25, 31, 38, 67, 74, 78, 89, 94, 106, 107
-*  **Modularity:** 4, 6, 8, 10, 15, 27, 30, 38
-*   **Navigation Matrix:** 6, 19, 30, 37, 56, 67, 79, 83, 90, 96
-*   **Radiation Shielding:** 16, 29, 37, 75, 88, 105
-*  **Robotic Offloader Module:** 18, 30, 39, 77, 106, 107
-*  **Scanner Module:** 17, 29, 37, 63, 72, 75, 88, 105
-*   **Warp Coil Modules:** 7, 15, 22, 29, 36, 71, 78, 99, 106
-*   **A’shara:** 145
-*   **Abyssal Flux:** 144
-*   **Astro-Cartography:** 144
-*   **Bio-Containment Unit (BCU):** 145
-*  **Chronal Eddy:** 144
-*  **Drakonian Concord:** 144
-*   **Effervescent Nebula:** 144
-*   **Faelan Lament:** 144
-*   **Glarish Murmur:** 144
-*   **Hiloluminous Mucus Oceans:** 144, 145, 146
-*   **Hyperspatial Labyrinth:** 144
-*  **Interstellar Cartel:** 144
-*   **Ionic Storm:** 144
-*  **K’tharian Codex:** 144
-*  **Luminescent Plains:** 144
-*  **Maelstrom Rift:** 144
-*  **Myriad Worlds:** 144
-*   **Nebulous Expanse:** 144
-*   **Oculus Rift:** 144
-*  **Patwar Space Curvy:** 144, 145, 146
-*   **Quiescent Nebula:** 144
-*  **R’thak Trade Pact:** 145
-*   **Synodic Cycle:** 145
-*  **T’laan Dynasty:** 145
-*  **Unbashed Glotarp:** 144
-*   **Void Kraken:** 145
-*  **Ytrovious Bosport:** 145, 146
-*   **Drozoid Maneuver:** 146, 147, 148
-*   **Polyavic Landing:** 147, 148
-*   **Home Run Punch:** 148
-*  **Curveball Cocktail:** 148
-*  **Patwar Drift:** 146
-*  **Mucus Bloom:** 146
-*   **Gulitabrous Jump:** 146
-*  **Gravitic Twerk:** 146
-*   **Hiloluminescent Current:** 146
-*   **Patwar Navigator:** 146
-*  **Mucus Diver:** 146
-*  **Twerk Drive:** 146
-
-(And many more)
 
 ## Part VIII (Continued)
 
