@@ -4,6 +4,8 @@ import json
 import random
 import shutil
 import time
+from core.combat import ClassicCombatSystem  # Import ClassicCombatSystem
+from core.new_combat_system import NewCombatSystem # Import NewCombatSystem
 from core.location import Location #Now only base class
 from core.ship import Ship
 from core.port import Port 
@@ -32,10 +34,19 @@ from core.captain import Captain
 from core.cantina import Cantina
 from ui import UI_Interface
 from core.location_data import LocationTerminology
+from core.game_state import GameState
 
 class Game:
     def __init__(self, settings=None, ui=None):
+        self.state = GameState()
         self.settings = settings if settings else self.load_settings()
+                # Initialize combat system based on settings
+        self.debug_mode = self.settings.get("debug_mode", False) #add        
+        combat_system_name = self.settings.get("combat_system", "classic")
+        if combat_system_name == "new":
+            self.combat_system = NewCombatSystem(self)
+        else:
+            self.combat_system = ClassicCombatSystem(self)  # Default to classic
         self.ui = ui if ui else TextUI()  # Default UI if none passed
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
@@ -50,7 +61,7 @@ class Game:
         self.current_location = random.choice([loc for loc in self.locations if loc.location_type == "Planet"])
         self.shop = Shop(self)
         self.ship = Ship(self)
-        self.turn = 0
+        self.turn = 1
         self.known_locations = [self.current_location.name]
         self.event_log = []
         self.player_name = self.get_player_name()
@@ -69,7 +80,7 @@ class Game:
         self.combat_difficulty = 1.0
         self.pirate_frequency = 1.0
         self.event_risk = 1.0
-        self.event_probability = 0.2
+        self.event_probability = 0.75
         self.crisis_active = False
         self.endgame_active = False
         self.enable_stellar_portal = False
@@ -132,15 +143,71 @@ class Game:
              "nav_beacon_a": 3,
              "mcguffin_beacon": 1
         })
+        #Set default values for active beacon
+        self.state.active_beacon = None
+        self.state.active_beacon_encounter = False
+
+    def trigger_travel_events(self):
+        # Check for travel items
+        for item, quantity in self.ship.items.items():
+            if self.ship.item_data.get(item, {}).get("trigger") == "travel":
+                # Get the item effect
+                effects = self.ship.get_item_effects(item)
+                if not effects:
+                    continue
+                
+                if 'scout_bonus' in effects:
+                  self.ui.display_simple_message("Navigation systems detected resources!", 1)
+                  #call function to add resouce on location
+                
+                if 'auto_repair' in effects and self.ship.damage > 0:
+                  repair = random.randint(5, 15)
+                  self.ship.damage = max(0, self.ship.damage - repair)
+                  self.ui.display_simple_message(
+                      f"Travel repair bot automatically fixed {repair}% damage!",
+                      1, color='32'
+                  )
+                if 'escape_chance' in effects:
+                     if random.random() < 0.4:
+                        # Trigger an escape event - do nothing, just display
+                        self.ui.display_simple_message(
+                           "Travel: You managed to avoid an encounter!", 
+                           1, color='32'
+                       )
+                        
+                if 'stealth_ability' in effects:
+                    if random.random() < 0.2: # reduced
+                        self.ui.display_simple_message(
+                            "Travel: You have used stealth system to hide from patrols!",
+                            1, color='32'
+                        )
+                 # beacon specific
+                #event_id = self.ship.item_data[item].get("start_event") #remove this line
+                #if event_id: #remove this line
+                #   if self.game_events.check_event_cooldown(event_id): #remove this line
+                #     self.game_events.handle_event(event_id, is_beacon=True) #remove this line
+                   #else:
+                       #if on cooldown, do not use it
+                       #continue
+
 
 # endofturn
 
     def end_turn_actions(self):
         """Handles all turn-ending actions"""
-         # Update passenger satisfaction at end of turn if port is available
+        self.ui.display_simple_message("End turn Triggered.") # Add this line
+        # Update passenger satisfaction at end of turn if port is available
         if hasattr(self, 'port_system') and hasattr(self.port_system, 'update_passenger_satisfaction'):
             self.port_system.update_passenger_satisfaction()
-
+        
+        # Trigger items with "end_of_turn" trigger
+        for item, quantity in self.ship.items.items():
+            if self.ship.item_data.get(item, {}).get("trigger") == "end_of_turn":
+                event_id = self.ship.item_data[item].get("start_event")
+                if event_id:
+                    if self.game_events.check_event_cooldown(event_id):
+                        self.game_events.handle_event(event_id, is_beacon=True)
+        
         # Increment turn after processing everything
         self.turn += 1
         self.shop.reset_turn()  # Reset shop state at end of each turn
@@ -154,7 +221,7 @@ class Game:
         self.character_system.check_character_triggers()
         self.story_manager.check_chapter_progress()
     
-    #check quests and contracts and update before turn is incremented
+        #check quests and contracts and update before turn is incremented
         self.quest_system.check_active_quests()
         self.contract_manager.update_contract_progress({
             "action": "",
@@ -218,6 +285,7 @@ class Game:
                    elif action_key == 'build_mining_platform':
                        if not self.current_location.mineral_deposits:
                            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
+                           time.sleep(1)
                            return
                      
                        available_deposits = list(self.current_location.mineral_deposits.keys())
@@ -234,6 +302,7 @@ class Game:
         except (ValueError, KeyError):
            self.ui.display_simple_message("Invalid action selected!")
            
+# refining beacon use
     def handle_use_item(self):
         """Handle usage of consumable items, including beacons."""
         
@@ -291,26 +360,30 @@ class Game:
         item_data = self.ship.item_data.get(chosen_item, {})
         
         if item_data.get("type") == "beacon":
-            beacon_type = item_data.get("beacon_type")
-            if beacon_type == "mcguffin":
-               if self.handle_travel():
-                   # Start boss fight
-                  success = self.game_events.trigger_boss_battle()
-                  if success:
-                      self.ship.items[chosen_item] -= 1  # Remove consumable after use
-                      if self.ship.items[chosen_item] <= 0:
-                        del self.ship.items[chosen_item]
-                      return True
-                  else:
-                      return False
-            elif beacon_type:
-                # store beacon to be triggered later
-                setattr(self, 'active_beacon', chosen_item)
-                self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
-                return True
+            trigger = item_data.get("trigger")
+            event_id = item_data.get("start_event")
+            
+            if not event_id:
+                self.ui.display_simple_message("Not a valid beacon!")
+                return False
+
+            if trigger == 'use':
+                if self.game_events.check_event_cooldown(event_id):
+                    success = self.game_events.handle_event(event_id, is_beacon=True)
+                    if success:
+                        self.ship.items[chosen_item] -= 1
+                        if self.ship.items[chosen_item] <= 0:
+                            del self.ship.items[chosen_item]
+                        return True
+                    else:
+                        return False #if unsuccess skip to prevent error
+                else:
+                     return False  #if on cooldown skip
             else:
-               self.ui.display_simple_message("Not a valid beacon!")
-               return False
+                self.state.active_beacon = chosen_item
+                self.ui.display_simple_message(f"Activated {item_data.get('name')}!", 1)
+                self.state.active_beacon_encounter = event_id
+                return True
         elif item_data.get("type") == "consumable":
             # Remove item
              self.ship.items[chosen_item] -= 1
@@ -321,88 +394,54 @@ class Game:
         
         self.ui.display_simple_message("Not a usable item") # default message if nothing was triggered.
         return False
-    
-# core/game.py
+
     def handle_travel(self):
-        """Handle travelling to a new location"""
-        
-        available_planets = [loc for loc in self.locations
-                            if loc.name != self.current_location.name and 
-                               loc.location_type in self.unlocked_location_types]
+            """Handle travelling to a new location"""
+            
+            available_planets = [loc for loc in self.locations
+                                if loc.name != self.current_location.name and 
+                                loc.location_type in self.unlocked_location_types]
 
-        if not available_planets:
-            self.ui.display_simple_message("No other locations available to travel!", 1)
-            return False
-        
-        available_names = [loc.name.lower() for loc in available_planets]
-        location_choice = self.validate_input(
-            f"Choose location to travel to: ",
-            available_names
-        )
-        if not location_choice:
-            return False
+            if not available_planets:
+                self.ui.display_simple_message("No other locations available to travel!", 1)
+                return False
+            
+            available_names = [loc.name.lower() for loc in available_planets]
+            location_choice = self.validate_input(
+                f"Choose location to travel to: ",
+                available_names
+            )
+            if not location_choice:
+                return False
 
-        # Find actual Location object with chosen name
-        chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
-        if chosen_location:
-            self.current_location = chosen_location
-            self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
-            self.record_activity('travel') #record travel activity
-            self.location_manager.handle_location_discovery(self.current_location)
-            # Clear the research message
-            if hasattr(self, "_new_research_effects"):
-               delattr(self, "_new_research_effects")
-           
-            if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
-                # Start boss battle if activated
-                self.game.game_events.trigger_boss_battle()
-                self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
-                if self.ship.items[self.active_mcguffin_beacon] <= 0:
-                     del self.ship.items[self.active_mcguffin_beacon]
-                delattr(self, 'active_mcguffin_beacon')
-            # Check for activated beacon
-            if hasattr(self, 'active_beacon'):
-                beacon_item = getattr(self, 'active_beacon')
-                beacon_type = self.ship.item_data[beacon_item].get("beacon_type")
-                if beacon_type:
-                    if hasattr(self,'active_beacon_encounter') and self.active_beacon_encounter:
-                        if self.active_beacon_encounter == True:
-                            character = self.game.character_system.character_encounters.generate_character("merchant")
-                            if character:
-                                self.game.character_system.character_encounters.handle_merchant_encounter(character)
-                            self.ship.items[self.active_beacon] -= 1
-                            if self.ship.items[self.active_beacon] <= 0:
-                                del self.ship.items[self.active_beacon]
-                            delattr(self, 'active_beacon_encounter')
-                            delattr(self, 'active_beacon')
-                        else:
-                           
-                           enemy_id = self.game.game_events.handle_beacon_encounter(beacon_type)
-                           if enemy_id:
-                               # Start the combat using combat class instead of resolve
-                               combat_result = self.game.combat.resolve_combat(enemy_id)
-                               if combat_result.is_victory():
-                                   self.game.ui.display_simple_message(combat_result.get_message(), 3, color='32')
-                               elif combat_result.is_defeat():
-                                    self.game.ui.display_simple_message(combat_result.get_message(), 3, color='31')
-                               
-                               self.ship.items[self.active_beacon] -= 1
-                               if self.ship.items[self.active_beacon] <= 0:
-                                   del self.ship.items[self.active_beacon]
-                               delattr(self, 'active_beacon_encounter')
-                               delattr(self, 'active_beacon')
-                           else:
-                               print("Error: Enemy ID not defined for beacon type:" + beacon_type )
-                    else:
-                         # Clear if beacon used and no encounter
-                         delattr(self, 'active_beacon')
+            # Find actual Location object with chosen name
+            chosen_location = next((loc for loc in self.locations if loc.name.lower() == location_choice), None)
+            if chosen_location:
+                self.current_location = chosen_location
+                self.ui.display_simple_message(f"Traveling to: {self.current_location.name}!", 1)
+                self.record_activity('travel') #record travel activity
+                self.location_manager.handle_location_discovery(self.current_location)
+                # Clear the research message
+                if hasattr(self, "_new_research_effects"):
+                    delattr(self, "_new_research_effects")
 
-            # Perform turn ending logic here - IMPORTANT CALL
-            self.end_turn_actions()
-            return True
-        else:
-            self.ui.display_simple_message("Invalid location selected!")
-            return False
+                if hasattr(self, 'active_mcguffin_beacon') and self.active_mcguffin_beacon:
+                    # Start boss battle if activated
+                    self.game_events.trigger_boss_battle()
+                    self.ship.items[self.active_mcguffin_beacon] -= 1  # Consume
+                    if self.ship.items[self.active_mcguffin_beacon] <= 0:
+                        del self.ship.items[self.active_mcguffin_beacon]
+                    delattr(self, 'active_mcguffin_beacon')
+                
+                # Trigger travel events
+                self.trigger_travel_events()
+                
+                # Perform turn ending logic here - IMPORTANT CALL
+                self.end_turn_actions()
+                return True
+            else:
+                self.ui.display_simple_message("Invalid location selected!")
+                return False
             
     def handle_upgrade(self):
          """Handle ship upgrade selection from available unlocks"""
@@ -587,8 +626,12 @@ class Game:
         success, message = self.action.build_mining_platform(self.current_location, deposit_type)
         if success:
             self.ui.display_simple_message(message)
+            delay = min(len(message) / 50, 3)  # Adjust the divisor and maximum as needed
+            time.sleep(delay)
         else:
             self.ui.display_simple_message(message)
+            delay = min(len(message) / 50, 3)  # Adjust the divisor and maximum as needed
+            time.sleep(delay)
 
     def display_action_result(self, result):
         """Display results of an action in a unified way."""
@@ -1050,7 +1093,7 @@ class Game:
                 total_capacity += module.capacity
 
         status_content = [
-            ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
+            ["CΔRGΩ ][", "Ship", f"{self.current_location.location_type}"],
             [f"Turn: {self.turn}", f"ATK: {self.ship.attack} {f'({self.ship.attack - 1})' if (self.ship.attack - 1) < 0 else ''}", f"Name: {self.current_location.name}"],
             [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense} {f'({self.ship.defense - 1})' if (self.ship.defense - 1) < 0 else ''}", f"Tech LVL: {self.current_location.tech_level}"],
             [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed} {f'({self.ship.speed - 1})' if (self.ship.speed - 1) < 0 else ''}", f"Agri LVL: {self.current_location.agri_level}"],
@@ -1238,32 +1281,6 @@ class Game:
         print(self.ui.create_box(content, 'double'))
         input("Press Enter to continue...")
 
-    def build_mining_platform(self):
-        """Build a new mining platform on the current planet"""
-        if not self.current_location.mineral_deposits:
-            self.ui.display_simple_message("No mineral deposits found! Use geoscan first.")
-            return
-            
-        available_deposits = list(self.current_location.mineral_deposits.keys())
-        deposit_type = self.validate_input(
-            f"Choose deposit type to mine ({', '.join(available_deposits)}): ",
-            available_deposits
-        )
-        
-        if deposit_type is None:
-            return
-            
-        cost = 10000
-        if self.ship.money >= cost:
-            self.ship.money -= cost
-            self.current_location.mining_platforms.append({
-                'type': deposit_type,
-                'efficiency': self.current_location.exogeology,
-                'capacity': random.randint(100, 200)
-            })
-            self.ui.display_simple_message(f"Mining platform for {deposit_type} built!")
-        else:
-            self.ui.display_simple_message("Not enough money to build mining platform.")
 
     def format_buildings(self):
         building_counts = {}
@@ -1629,41 +1646,7 @@ class Game:
 
     def random_event(self):
             """Handles random game events"""
-            if random.random() < self.event_probability:
-                # Select a random event type
-                event_type = random.choice(
-                    ["combat", "trade", "exploration", "disaster", "passenger"]
-                )
-                
-                # Filter events by type
-                events_of_type = [
-                    event_id for event_id, event_data in self.game_events.event_data.items()
-                    if event_data.get("type") == event_type
-                ]
-                
-                # Try to select a random event of this type
-                if events_of_type:
-                    event_id = random.choice(events_of_type)
-                    event_data = self.game_events.event_data[event_id]
-                    
-                    # If any event has requirements, check those first
-                    if not self.game_events.check_event_conditions(event_data):
-                        return #If conditions are not met, cancel
-
-                    # Handle different event types
-                    if event_type == "combat":
-                        self.game_events.handle_combat_event(event_id)
-                    elif event_type == "trade":
-                        self.game_events.handle_trade_event(event_id)
-                    elif event_type == "exploration":
-                        self.game_events.handle_exploration_event(event_id)
-                    elif event_type == "disaster":
-                        self.game_events.handle_disaster_event(event_id)
-                    elif event_type == "passenger":
-                        self.handle_passenger_event(event_id)
-
-                    # Check for story events
-                    self.story_manager.check_event_trigger(event_id, self)
+            self.game_events.random_event()
 
     def handle_passenger_event(self, event_id):
         """Handle specific passenger related events."""

@@ -8,4 +8,4 @@ neuroengineering,Neuroengineering Guild,"Boosts tech prices",research,7000,"tech
 mining,Mining Facility,"Improves mining efficiency",mining,10000,"mining_efficiency:10",Planet,"m"
 salt_refinery,Halide Extraction Refinery,"Processes raw salts",mining,15000,"salt_production:1",AsteroidBase,"sr"
 fuel_refinery,Plasma Catalysis Refinery,"Processes raw fuels",mining,15000,"fuel_production:1",AsteroidBase,"fr"
-combined_refinery,Elemental Fusion Refinery,"Processes all raw resources",mining,25000,"tech_price:1.3,agri_price:1.3",, "cr"
+combined_refinery,Elemental Fusion Refinery,"Processes all raw resources",mining,25000,"tech_price:1.3,agri_price:1.3",Planet,"cr"

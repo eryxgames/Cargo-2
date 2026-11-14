@@ -1,4 +1,15 @@
 # data/enemies.yml
+merchant_trader:
+  name: "Merchant Trader Freighter"
+  type: "merchant"
+  attack: 1
+  defense: 3
+  speed: 2
+  rewards:
+    money: [100, 300]
+    loot_chance: 0.2
+    loot_items: ["scanner", "probe"]
+
 pirate_scout:
   name: "Pirate Scout"
   type: "pirate"

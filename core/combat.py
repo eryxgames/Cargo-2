@@ -1,38 +1,18 @@
 # core/combat.py
 import random
+import yaml
+from core.combat_system import CombatSystem, CombatResult #CombatResult is in combat_system
 from core.utils import format_money
 
-class CombatResult:
-    def __init__(self, result_type, message="", rewards=None):
-        self.result_type = result_type
-        self.message = message
-        self.rewards = rewards or {}
-
-    def is_victory(self):
-        return self.result_type == "victory"
-    
-    def is_defeat(self):
-        return self.result_type == "defeat"
-    
-    def is_escape(self):
-        return self.result_type == "escape"
-    
-    def get_message(self):
-        return self.message
-    
-    def get_rewards(self):
-         return self.rewards
-
-class Combat:
+class ClassicCombatSystem(CombatSystem):  # Renamed class to ClassicCombatSystem
     def __init__(self, game):
-        self.game = game
+        super().__init__(game)
         self.enemy_data = self.load_enemy_data()
 
     def load_enemy_data(self):
         """Load enemy data from data/enemies.yml"""
         try:
             with open("data/enemies.yml", 'r') as f:
-                import yaml
                 return yaml.safe_load(f)
         except FileNotFoundError:
             print("Error: enemies.yml not found. Using default enemy data.")
@@ -41,144 +21,172 @@ class Combat:
             print(f"Error loading enemies from YAML: {e}")
             return {}
 
-    def resolve_combat(self, enemy_id):
+    def resolve_combat(self, attacker, defender, combat_data=None):
         """Resolve combat encounter"""
+        enemy_id = combat_data.get("enemy_id")
         enemy = self.enemy_data.get(enemy_id)
+
+        if enemy is None:
+            print(f"Error: No enemy data found for enemy ID: {enemy_id}")
+            return CombatResult("defeat", "Unknown enemy encountered.")  # Return a default combat result to avoid crashing
+
         enemy_type = enemy.get("type", "pirate")
 
         # Check for automatic defense
-        if "turrets" in self.game.ship.items and random.random() < 0.4:
+        if "turrets" in attacker.items and random.random() < 0.4:
             self.game.ui.display_simple_message(f"Event! {enemy.get('name', 'Unknown')} repelled by defense systems!", 3, color='32')
             # Count automatic defense as a victory and add reputation
-            self.game.ship.record_combat_victory(enemy_type)
+            attacker.record_combat_victory(enemy_type)
             if enemy_type == "pirate":
                 rep_gain = random.randint(1, 3)  # Smaller gain for automated defense
                 self.game.reputation += rep_gain
-                self.game.ship.passenger_reputation += rep_gain
+                attacker.passenger_reputation += rep_gain
                 self.game.ui.display_simple_message(f"Gained {rep_gain} reputation for automated pirate defense!")
             # Gain some experience even when automatically defending
-            self.game.ship.research_points += int(5 * enemy.get("reward_mult", 1))
+            attacker.research_points += int(5 * enemy.get("reward_mult", 1))
             return CombatResult("victory", message="Encounter repelled by defense systems")
-        
+
         # Calculate base damage
-        damage = random.randint(10, 25) * enemy.get("attack", 2) / self.game.ship.defense
+        damage = self.calculate_damage(attacker, enemy)
+        
         damage *= (1 + self.game.difficulty)
-        
-        # Apply defensive equipment effects
-        if "shield" in self.game.ship.items:
-            damage *= 0.7  # 30% damage reduction
-        if "armor" in self.game.ship.items:
-            damage *= 0.8  # 20% damage reduction
-        
+
         # Ensure damage doesn't exceed 99%
-        final_damage = min(99, int(self.game.ship.damage + damage))
-        damage_dealt = final_damage - self.game.ship.damage
-        self.game.ship.damage = final_damage
-        
+        final_damage = min(99, int(attacker.damage + damage))
+        damage_dealt = final_damage - attacker.damage
+        attacker.damage = final_damage
+
         # Handle cargo/money loss
         losses = []
-        
-        if self.game.ship.money > 0:
-            stolen = random.randint(1, max(1, int(self.game.ship.money // 2)))
-            self.game.ship.money -= stolen
+
+        if attacker.money > 0:
+            stolen = random.randint(1, max(1, int(attacker.money // 2)))
+            attacker.money -= stolen
             losses.append(f"{self.game.format_money(stolen)} credits")
-        
+
         # Only steal cargo that exists
         for cargo_type in ['tech', 'agri', 'salt', 'fuel']:
-            if self.game.ship.cargo[cargo_type] > 0:
-                stolen_cargo = random.randint(1, max(1, int(self.game.ship.cargo[cargo_type] // 3)))
-                self.game.ship.cargo[cargo_type] -= stolen_cargo
+            if attacker.cargo[cargo_type] > 0:
+                stolen_cargo = random.randint(1, max(1, int(attacker.cargo[cargo_type] // 3)))
+                attacker.cargo[cargo_type] -= stolen_cargo
                 if stolen_cargo > 0:
                     losses.append(f"{stolen_cargo} {cargo_type}")
-        
+
         # Check for counter-attack opportunity
-        if self.game.ship.attack > enemy.get("defense", 1):
+        if attacker.attack > enemy.get("defense", 1):
             # Counter-attack successful - record victory
-            self.game.ship.record_combat_victory(enemy_type)
-            
+            attacker.record_combat_victory(enemy_type)
+
             reward_mult = enemy.get("reward_mult", 1)
             rewards = {
                 "money": int(random.randint(100, 500) * reward_mult),
                 "research": int(random.randint(10, 25) * reward_mult)
             }
-            
-            self.game.ship.money += rewards["money"]
-            self.game.ship.research_points += rewards["research"]
-            
+
+            attacker.money += rewards["money"]
+            attacker.research_points += rewards["research"]
+
             # Add reputation gains for pirate victories
             if enemy_type == "pirate":
                 rep_gain = random.randint(2, 5)
                 self.game.reputation += rep_gain
-                self.game.ship.passenger_reputation += rep_gain
+                attacker.passenger_reputation += rep_gain
                 rep_message = f"\nReputation increased by {rep_gain} for defeating pirates!"
             else:
                 rep_message = ""
-            
+
             if losses:
                 loss_text = ", ".join(losses)
-                message = f"Event! {enemy.get('message')} caused {damage_dealt}% damage and stole {loss_text}!\n" + \
+                message = f"Event! {enemy.get('message', 'Unknown enemy')} caused {damage_dealt}% damage and stole {loss_text}!\n" + \
                           f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" + \
-                           rep_message
+                          rep_message
             else:
-                message = f"Event! {enemy.get('message')} caused {damage_dealt}% damage!\n" + \
-                            f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" + \
-                            rep_message
-                            
+                message = f"Event! {enemy.get('message', 'Unknown enemy')} caused {damage_dealt}% damage!\n" + \
+                          f"Counter-attack successful! Gained {self.game.format_money(rewards['money'])} credits and {rewards['research']} research points!" + \
+                          rep_message
+
             return CombatResult("victory", message=message, rewards=rewards)
         else:
             # Combat defeat - record defeat with enemy type
-            self.game.ship.record_combat_defeat(enemy_type)
-            
+            attacker.record_combat_defeat(enemy_type)
+
             # Lose reputation on pirate defeats
             if enemy_type == "pirate":
                 rep_loss = random.randint(1, 3)
                 self.game.reputation = max(0, self.game.reputation - rep_loss)
-                self.game.ship.passenger_reputation = max(0, self.game.ship.passenger_reputation - rep_loss)
+                attacker.passenger_reputation = max(0, attacker.passenger_reputation - rep_loss)
                 rep_message = f"\nLost {rep_loss} reputation from pirate defeat!"
             else:
                 rep_message = ""
-                
+
             if losses:
                 loss_text = ", ".join(losses)
-                message = f"Event! {enemy.get('message')} caused {damage_dealt}% damage and stole {loss_text}!" + rep_message
+                message = f"Event! {enemy.get('message', 'Unknown enemy')} caused {damage_dealt}% damage and stole {loss_text}!" + rep_message
             else:
-                message = f"Event! {enemy.get('message')} caused {damage_dealt}% damage!" + rep_message
-                
+                message = f"Event! {enemy.get('message', 'Unknown enemy')} caused {damage_dealt}% damage!" + rep_message
+
             return CombatResult("defeat", message=message)
-        
+
+    def calculate_damage(self, attacker, enemy):
+          # Calculate base damage
+         damage = random.randint(10, 25) * enemy.get("attack", 2) / attacker.defense
+         
+         # Apply defensive equipment effects
+         if "shield" in attacker.items:
+            damage *= 0.7  # 30% damage reduction
+         if "armor" in attacker.items:
+            damage *= 0.8  # 20% damage reduction
+         return damage
+    
+    def apply_status_effects(self, attacker, defender, combat_data=None):
+         """
+         Apply different status effects on attacker or defender.
+         """
+         # TODO later.
+         pass
+    
     def handle_boss_battle(self, boss_id):
-         """Handle special boss battle encounter"""
-         enemy = self.enemy_data.get(boss_id)
-         
-         # Set special properties for boss fight
-         if not enemy:
+        """Handle special boss battle encounter"""
+        enemy = self.enemy_data.get(boss_id)
+
+        # Set special properties for boss fight
+        if not enemy:
             return CombatResult("defeat", "Boss not defined correctly.")
-         
-         boss_type = enemy.get("type", "boss")
-         
-         # Display special message for this boss battle
-         self.game.ui.display_simple_message([
+
+        boss_type = enemy.get("type", "boss")
+
+        # Display special message for this boss battle
+        self.game.ui.display_simple_message([
             "WARNING! Encountering a significant enemy presence:",
             f"Battle against: {enemy.get('name', 'Unknown')}"
-         ], 3, color='31')
-         
-         # Use core resolve_combat and add special rewards
-         combat_result = self.resolve_combat(boss_id)
-         if combat_result.is_victory():
-             rewards = combat_result.get_rewards()
-             if rewards:
-                rewards['money'] = int(rewards['money'] * 3) # triple
-                rewards['research'] = int(rewards['research'] * 2) # double
-             
-                
-             # Give special message for boss victory
-             self.game.ui.display_simple_message([
-                 "Victory! Defeated the Boss: " + enemy.get("name"),
-                 f"Credits: {self.game.format_money(rewards['money'])}",
-                  f"Research Points: {rewards['research']}"
-             ], 3, color='32')
-             return CombatResult("victory", combat_result.get_message(), rewards=rewards)
-         elif combat_result.is_defeat():
+        ], 3, color='31')
+
+        # Use core resolve_combat and add special rewards
+        combat_data = {"enemy_id": boss_id}
+        combat_result = self.resolve_combat(self.game.ship, enemy, combat_data)
+        if combat_result.is_victory():
+            rewards = combat_result.get_rewards()
+            if rewards:
+                rewards['money'] = int(rewards['money'] * 3)  # triple
+                rewards['research'] = int(rewards['research'] * 2)  # double
+
+            # Give special message for boss victory
+            self.game.ui.display_simple_message([
+                "Victory! Defeated the Boss: " + enemy.get("name"),
+                f"Credits: {self.game.format_money(rewards['money'])}",
+                f"Research Points: {rewards['research']}"
+            ], 3, color='32')
+            return CombatResult("victory", combat_result.get_message(), rewards=rewards)
+        elif combat_result.is_defeat():
             self.game.ui.display_simple_message("Defeated by the boss: " + enemy.get("name"), 3, color='31')
             return CombatResult("defeat", combat_result.get_message())
-         return combat_result
+        return combat_result
+
+    def get_combat_message(self, message_id, data=None):
+         """
+         Return message for combat
+         """
+         return "generic_message"
+
+# Remove any code that is not part of combat system, for example messages etc.
+# messages should come from game ui

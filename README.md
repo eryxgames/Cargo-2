@@ -1,10 +1,12 @@
 # Cargo-2
-The Cargo saga continues! Navigate treacherous space lanes and pilot customizable cargo haulers in this event-packed text strategic RPG sequel. Manage your cargo efficiently and face off against new enemies and environmental hazards in thrilling new chapters that follow the original story.
+The Cargo saga continues! Navigate treacherous space lanes and pilot customizable cargo haulers in this event-packed text strategic RPG sequel. Manage your cargo efficiently and face off against new enemies and environmental hazards in thrilling new chapters that follow the original story. [Eryxian Universe Wiki](https://github.com/eryxgames/eryxian/wiki) 
 - [ ] Improved game system
 - [ ] Improved tactical system
 - [ ] Evolving story lines
-- [ ] New ships and items
-- [ ] Evolving story lines
+- [ ] New enemy ships and items
+- [ ] Technology research trees
+- [ ] Captain achievements
+- [ ] Color themes and settings
 - [ ] Original music and sounds
 
 ```console
@@ -17,14 +19,16 @@ The Cargo saga continues! Navigate treacherous space lanes and pilot customizabl
 ```
 
 Refactoring notes:
-You are professional game developer and you are refactoring Cargo text rpg strategy game to Cargo 2, with goal to refactor its structure to data driven approach. I will present a structure of the project so far, several refactored files and the original code. You will analyze the data and find necessary adjustments. 
+We are refactoring Cargo text rpg strategy game to Cargo 2, with goal to refactor its structure to a more data driven approach. This is a structure of the project so far. We will analyze the data of the original gameplay, improve the system, add more features, and find necessary adjustments. 
 
+```
 cargo-2/
 ├── core/
 │   ├── __init__.py
 │   ├── game.py
 │   ├── gameplay.py    
 │   ├── game_events.py    
+│   ├── game_state.py    
 │   ├── location.py
 │   ├── location_data.py
 │   ├── location_manager.py
@@ -35,6 +39,8 @@ cargo-2/
 │   ├── quest.py
 │   ├── contract.py
 │   ├── combat.py
+│   ├── combat_system.py
+│   ├── new_combat_system.py
 │   ├── ship.py
 │   ├── shop.py
 │   ├── cantina.py
@@ -95,3 +101,4 @@ cargo-2/
 │   ├── save1.json
 │   └── ...
 └── requirements.txt
+```

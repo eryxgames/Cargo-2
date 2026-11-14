@@ -147,47 +147,48 @@ class SpecialCharacterEncounters:
             self.game.ui.display_simple_message("Insufficient funds!")
 
     def handle_rogue_captain_encounter(self, character):
-        """Handle interaction with rogue captain"""
-        content = [
-            [f"Encounter: {character.full_name}"],
-            ["Your cargo or your ship..."],
-            [""],
-            [f"Demands {self.game.format_money(random.randint(5000, 15000))} credits"],
-            [""],
-            ["Options:"],
-            ["1. Pay demand"],
-            ["2. Attempt to flee"],
-            ["3. Stand and fight"]
-        ]
-        print(self.game.ui.create_box(content, 'double'))
-        
-        choice = self.game.validate_input("Choose action (1/2/3): ", ['1', '2', '3'])
-        
-        if choice == '1':
-            if self.game.ship.money >= character.demand:
-                self.game.ship.money -= character.demand
-                self.game.ui.display_simple_message("Demand paid. Rogue captain lets you pass.")
-                return True
-            else:
-                self.game.ui.display_simple_message("Can't pay! Prepare for combat!")
-                return False
-        elif choice == '2':
-            # Chance to escape based on speed
-            escape_chance = min(0.8, self.game.ship.speed * 0.2)
-            if random.random() < escape_chance:
-                self.game.ui.display_simple_message("Successfully evaded the rogue captain!")
-                return True
-            else:
-                self.game.ui.display_simple_message("Failed to escape! Prepare for combat!")
-                return False
-        else:
-            self.game.ui.display_simple_message("Preparing for combat with rogue captain...")
+            """Handle interaction with rogue captain"""
+            content = [
+                [f"Encounter: {character.full_name}"],
+                ["Your cargo or your ship..."],
+                [""],
+                [f"Demands {self.game.format_money(random.randint(5000, 15000))} credits"],
+                [""],
+                ["Options:"],
+                ["1. Pay demand"],
+                ["2. Attempt to flee"],
+                ["3. Stand and fight"]
+            ]
+            print(self.game.ui.create_box(content, 'double'))
             
-            # Start combat using Combat class
-            enemy_id = 'pirate_scout'
-            self.combat.resolve_combat(enemy_id)
+            choice = self.game.validate_input("Choose action (1/2/3): ", ['1', '2', '3'])
             
-            return False
+            if choice == '1':
+                if self.game.ship.money >= character.demand:
+                    self.game.ship.money -= character.demand
+                    self.game.ui.display_simple_message("Demand paid. Rogue captain lets you pass.")
+                    return True
+                else:
+                    self.game.ui.display_simple_message("Can't pay! Prepare for combat!")
+                    return False
+            elif choice == '2':
+                # Chance to escape based on speed
+                escape_chance = min(0.8, self.game.ship.speed * 0.2)
+                if random.random() < escape_chance:
+                    self.game.ui.display_simple_message("Successfully evaded the rogue captain!")
+                    return True
+                else:
+                    self.game.ui.display_simple_message("Failed to escape! Prepare for combat!")
+                    return False
+            else:
+                self.game.ui.display_simple_message("Preparing for combat with rogue captain...")
+
+                # Start combat with new combat system, using combat_data
+                enemy_id = 'pirate_scout'
+                combat_data = {"enemy_id": enemy_id}
+                result = self.game.combat_system.resolve_combat(self.game.ship, self.game.ship, combat_data)
+                
+                return False
 
     def trigger_random_encounter(self, location_type="Space"):
         """Trigger a random character encounter"""

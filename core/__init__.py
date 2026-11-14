@@ -19,3 +19,4 @@ from core.location_data import LocationCommands, LocationCapabilities, LocationT
 from core.story_requirements import MilestoneRequirements
 from core.shop import Shop
 from core.reputation import PassengerReputationManager
+from core.combat_system import CombatSystem, CombatResult #added
