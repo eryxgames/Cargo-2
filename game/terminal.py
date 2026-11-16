@@ -1,9 +1,9 @@
 """The terminal: its width, narrow layouts, wrapping, and the box every screen is drawn in."""
-import os
 import re
 import shutil
 import sys
 import unicodedata
+from . import look
 
 # Define your logo data ONCE, at the module level:
 logo_data = [
@@ -24,12 +24,7 @@ RULE = object()         # a row that draws a horizontal rule inside a box
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
-BOX_STYLES = {
-    'single': {'tl': '┌', 'tr': '┐', 'bl': '└', 'br': '┘', 'h': '─', 'v': '│', 'sep': '│', 'l': '├', 'r': '┤'},
-    'double': {'tl': '╔', 'tr': '╗', 'bl': '╚', 'br': '╝', 'h': '═', 'v': '║', 'sep': '║', 'l': '╟', 'r': '╢', 'rule': '─'},
-    'round':  {'tl': '╭', 'tr': '╮', 'bl': '╰', 'br': '╯', 'h': '─', 'v': '│', 'sep': '│', 'l': '├', 'r': '┤'},
-    'ascii':  {'tl': '+', 'tr': '+', 'bl': '+', 'br': '+', 'h': '-', 'v': '|', 'sep': '|', 'l': '+', 'r': '+'},
-}
+# The frames of the boxes come from the theme in use: see game/look.py.
 
 
 def safe_output():
@@ -44,11 +39,9 @@ def safe_output():
 
 
 def plain_terminal():
-    """True when the terminal cannot be trusted with box-drawing characters."""
-    if os.environ.get("CARGO_ASCII"):
-        return True
-    encoding = (getattr(sys.stdout, "encoding", None) or "").lower()
-    return bool(encoding) and "utf" not in encoding
+    """True when the terminal cannot be trusted with box-drawing characters (CARGO_ASCII, or
+    an output that cannot encode them); CLIo's terminal layer decides (game/look.py)."""
+    return not look.unicode()
 
 
 def terminal_columns():
@@ -141,7 +134,7 @@ def flow_cells(cells, width, gap="  "):
     return lines
 
 
-def render_box(rows, style='single', inner=None, narrow='auto'):
+def render_box(rows, style='single', inner=None, narrow='auto', color=None):
     """Draw a box around `rows` and return it as one string.
 
     rows    a list of rows; a row is a list of cells (one cell = plain text that is
@@ -155,9 +148,11 @@ def render_box(rows, style='single', inner=None, narrow='auto'):
                     cells flow left to right, blocks separated by a rule
             'stack' for side-by-side lists: each column becomes a block with
                     one cell per line, blocks separated by a rule
-    Nothing is ever cut off and no line is wider than the box.
+    color   a raw colour code for the text ('31' red), instead of the theme's text colour.
+    Nothing is ever cut off and no line is wider than the box. The frame and the colours
+    come from the theme in use (game/look.py); with no colour the box is plain text.
     """
-    chars = BOX_STYLES['ascii'] if plain_terminal() else BOX_STYLES.get(style, BOX_STYLES['single'])
+    chars = look.box_chars(style)
     if inner is None:
         inner = box_inner_width()
     text_width = max(1, inner - 2)
@@ -246,13 +241,15 @@ def render_box(rows, style='single', inner=None, narrow='auto'):
                             body.append("  " + line)
 
     rule_char = chars.get('rule', chars['h'])
-    lines = [chars['tl'] + chars['h'] * inner + chars['tr']]
+    edge, ink = look.border_spec(style), look.text_spec(color)
+    left, right = look.paint(chars['v'] + " ", edge), look.paint(" " + chars['v'], edge)
+    lines = [look.paint(chars['tl'] + chars['h'] * inner + chars['tr'], edge)]
     for line in body:
         if line is RULE:
-            lines.append(chars['l'] + rule_char * inner + chars['r'])
+            lines.append(look.paint(chars['l'] + rule_char * inner + chars['r'], edge))
         else:
-            lines.append(chars['v'] + " " + pad_to(line, text_width) + " " + chars['v'])
-    lines.append(chars['bl'] + chars['h'] * inner + chars['br'])
+            lines.append(left + look.paint(pad_to(line, text_width), ink) + right)
+    lines.append(look.paint(chars['bl'] + chars['h'] * inner + chars['br'], edge))
     return "\n".join(lines)
 
 
@@ -265,14 +262,16 @@ def say(text=""):
 def display_logo(logo, centered=True):
     """Displays the logo, optionally centered."""
     terminal_width = terminal_columns()
+    shown = []
     for line in logo:
         if plain_terminal():
-            line = line.translate(str.maketrans("╔╗╚╝═║", "++++-|"))
+            line = line.translate(str.maketrans("╔╗╚╝═║Δ", "++++-|A")).replace("Ω", "O")
         if centered:
             padding = max(0, (terminal_width - visible_len(line)) // 2)
-            print(" " * padding + line)
-        else:
-            print(line)  # Just print without centering
+            line = " " * padding + line
+        shown.append(line)
+    for line in look.gradient(shown):       # in the theme's title colours, where there are any
+        print(line)
 
 def print_centered_text(text):
     print(text.center(terminal_columns() - 1))

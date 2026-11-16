@@ -20,7 +20,11 @@ own world and story. What works now:
 - a new game, or one started as any captain whose record is in the shared folder; a captain from
   Cargo 1 comes in with their name, ranks and choices;
 - travel, trade, fights, quests, crew, the Hansa's dues, saves, autosave and continue;
-- every screen from 36 columns up, in Termux too; standard library only.
+- every screen from 36 columns up, in Termux too; standard library only;
+- styles: `style` picks one of twelve (CLIo's seven, and five from Cargo 2's first version:
+  cargo, hercules, dark, blue, green); frames and colours follow it, and it is kept for later
+  games. `CARGO_STYLE=name` picks one for a single run; `NO_COLOR=1` turns colour off and
+  `CARGO_ASCII=1` draws in plain ASCII.
 
 The story of Cargo 2 is still to be written: for now there is one opening chapter, and the map
 and the endings are still Cargo 1's. The plan (world in 2460, the convoy needles, factions and
@@ -46,6 +50,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   world.py        Game: its state and the turn loop; inherits the mixins of the modules below
   start.py        continue a save, or a new game (fresh or as a recorded captain)
   terminal.py     width, narrow layouts, wrapping, boxes;  screens.py: the Game's screens
+  look.py         CLIo's terminal detection and themes, applied to the boxes
   saves.py  captain.py      saves; the captain's record carried between the parts
   story.py  chapters.py     the storykit runtime; chapters, milestones, endings
   ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
@@ -53,6 +58,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   ranks.py  commands.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story (cargo2.story.json; storykit sources to come)
+themes/         Cargo 2's own styles (CLIo theme files), beside CLIo's in kit/style/
 tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit
 legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, items and texts
 ```

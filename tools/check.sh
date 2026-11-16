@@ -13,6 +13,9 @@ $PY $T/sync_kit.py --check || fail=1
 echo "== each module of the game imports on its own"
 $PY $T/modules.py || fail=1
 
+echo "== every style at every width, with and without colour and Unicode"
+$PY $T/looks.py || fail=1
+
 echo "== wrong-object references"
 $PY $T/attrlint.py $G | tail -1
 

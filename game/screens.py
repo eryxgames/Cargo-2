@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import time
+from . import look
 
 class ScreensMixin:
     """The Game's screens and input checks. Game inherits it (game/world.py)."""
@@ -47,17 +48,14 @@ class ScreensMixin:
         else:
             box_content = [message]
 
-        box = self.create_simple_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        print(box)
+        print(self.create_simple_box(box_content, style, color=color))
         if pause > 0:
             time.sleep(pause)
 
 
-    def create_simple_box(self, content, style='single'):
-        """A full-width box around lines of text, each word-wrapped."""
-        return render_box([[str(row)] for row in content], style)
+    def create_simple_box(self, content, style='single', color=None):
+        """A full-width box around lines of text, each word-wrapped; `color` a raw colour code."""
+        return render_box([[str(row)] for row in content], style, color=color)
 
 
     def validate_input(self, default_prompt, valid_options, prompt=None):
@@ -317,11 +315,32 @@ class ScreensMixin:
         'save': "save the game (it also saves itself every turn)",
         'load': "load a saved game",
         'captain': "your captain's record: carry it to another part of the saga",
+        'style': "the look: colours and frames (themes from CLIo and from Cargo 2)",
         'help': "this screen",
         'version': "the game's version",
         'resign': "end this game and see the score",
         'quit': "leave (the autosave keeps your progress)",
     }
+
+    def choose_style(self):
+        """The `style` command: pick a theme; it is kept in the settings for every later game."""
+        state = look.current()
+        choices = look.styles()
+        rows = [["Styles"], RULE]
+        for number, (name, about) in enumerate(choices, 1):
+            mark = "  (in use)" if name == state["style"] else ""
+            rows.append(["%d. %s%s: %s" % (number, name, mark, about)])
+        print(self.create_box(rows, 'double'))
+        answer = self.validate_input("Type a number, or press Enter to keep this one.",
+                                     [str(n) for n in range(1, len(choices) + 1)])
+        if answer is None:
+            return
+        name = choices[int(answer) - 1][0]
+        look.setup(style=name)
+        kept = look.write_settings({"style": name})
+        self.display_simple_message(["Style: %s." % name,
+                                     "Kept for later games." if kept else "For this game only: the settings could "
+                                     "not be written."], 1)
 
     def here_commands(self):
         """(long, short) for every command accepted at this location, its own first."""
@@ -406,10 +425,7 @@ class ScreensMixin:
         else:
             box_content = [message]
 
-        box = self.create_simple_box(box_content, style)
-        if color:
-            box = f"\033[{color}m{box}\033[0m"
-        print(box)
+        print(self.create_simple_box(box_content, style, color=color))
         if pause > 0:
             time.sleep(pause)
 

@@ -3,4 +3,4 @@ POOL = (["e"] * 10 + ["b", "s", "tech", "agri", "salt", "fuel", "max", "half", "
         "research", "scout", "geoscan", "status", "bl", "sm", "pc", "u", "attack", "defense", "speed",
         "r", "mine", "y", "n", "accept", "quests", "buy", "sell", "map", "fight", "flee", "f",
         "contracts", "passengers", "modules", "load", "unload", "v", "save", "captain", "export",
-        "alpha", "beta", "gamma", "delta", "epsilon", "navcomp", "scanner", "yes"])
+        "alpha", "beta", "gamma", "delta", "epsilon", "navcomp", "scanner", "yes", "st", "style"])

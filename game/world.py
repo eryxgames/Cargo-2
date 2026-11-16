@@ -615,6 +615,10 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
                 self.show_help()
                 return
 
+            elif action in ['style', 'st']:
+                self.choose_style()
+                return
+
             elif action in ['version', 'v']:
                 display_logo(logo_data, centered=True)
                 print_centered_text("")
@@ -898,7 +902,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
 # Every name of the game's modules, for the tools, which load game/world.py and reach the
 # whole game through it.
 from .terminal import (  # noqa: E402,F401
-    BOX_STYLES, MIN_COLUMNS, NARROW_COLUMNS, RULE, _ANSI_RE, box_inner_width,
+    MIN_COLUMNS, NARROW_COLUMNS, RULE, _ANSI_RE, box_inner_width,
     display_logo, flow_cells, is_narrow, logo_data, pad_to, plain_terminal,
     print_centered_text, render_box, safe_output, say, terminal_columns, visible_len,
     wrap_text)
