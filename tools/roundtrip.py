@@ -77,7 +77,7 @@ try:
         # find first difference for the report
         i = next(k for k in range(min(len(a), len(b))) if a[k] != b[k])
         result["diff_at"] = [a[max(0, i - 120):i + 80], b[max(0, i - 120):i + 80]]
-    result["classes"] = sorted({type(v).__name__ for v in vars(loaded).values() if type(v).__module__ == cargo.__name__})[:3]
+    result["classes"] = sorted({type(v).__name__ for v in vars(loaded).values() if headless.is_game_object(v, cargo)})[:3]
     # every object in the loaded world must point at the loaded game, not the old one
     stale = 0
     seen = set()
@@ -94,7 +94,7 @@ try:
             stack.extend(v.keys()); stack.extend(v.values())
         elif isinstance(v, (list, tuple, set, frozenset)):
             stack.extend(v)
-        elif hasattr(v, "__dict__") and type(v).__module__ == cargo.__name__:
+        elif hasattr(v, "__dict__") and headless.is_game_object(v, cargo):
             stack.extend(vars(v).values())
     result["stale_refs_to_old_game"] = stale
     # captain record round trip

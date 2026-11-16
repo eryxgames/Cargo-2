@@ -1,2 +1,4 @@
-"""Cargo 2's game: the core of Cargo 1.2 (world.py), being split into modules by what each
-part does, on CLIo's screen and sound layer (kit/)."""
+"""Cargo 2's game: Cargo 1.2's core, split into modules by what each part does (game/world.py
+holds Game and reaches every other module), on CLIo's screen and sound layer (kit/)."""
+
+VERSION = "2.0.0-dev"

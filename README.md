@@ -14,8 +14,8 @@ of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames
 ## Status
 
 Being rebuilt (November 2026). The first milestone is the skeleton: Cargo 1.2's game running as
-Cargo 2, with CLIo's screen and sound layer alongside, ready to be split into modules and given
-its own world and story. What works now:
+Cargo 2, split into modules, with CLIo's screen and sound layer alongside, ready to be given its
+own world and story. What works now:
 
 - a new game, or one started as any captain whose record is in the shared folder; a captain from
   Cargo 1 comes in with their name, ranks and choices;
@@ -42,7 +42,15 @@ Python 3.8 or newer, nothing to install. Saves and captain records are shared wi
 
 ```
 cargo2.py       launcher
-game/           the game: Cargo 1.2's core (world.py), being split into modules
+game/           the game, Cargo 1.2's core split by what each part does:
+  world.py        Game: its state and the turn loop; inherits the mixins of the modules below
+  start.py        continue a save, or a new game (fresh or as a recorded captain)
+  terminal.py     width, narrow layouts, wrapping, boxes;  screens.py: the Game's screens
+  saves.py  captain.py      saves; the captain's record carried between the parts
+  story.py  chapters.py     the storykit runtime; chapters, milestones, endings
+  ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
+  actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
+  ranks.py  commands.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story (cargo2.story.json; storykit sources to come)
 tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit

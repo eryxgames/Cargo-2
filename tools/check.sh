@@ -10,6 +10,9 @@ fail=0
 echo "== CLIo's layer in kit/ is as copied"
 $PY $T/sync_kit.py --check || fail=1
 
+echo "== each module of the game imports on its own"
+$PY $T/modules.py || fail=1
+
 echo "== wrong-object references"
 $PY $T/attrlint.py $G | tail -1
 

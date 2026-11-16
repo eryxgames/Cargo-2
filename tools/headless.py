@@ -27,11 +27,26 @@ class IO:
 
 
 def load(path, name="cargo"):
+    """The game as a module. A file inside a package (Cargo 2's game/world.py) is imported as
+    part of its package, which also loads every module of the game; a single file (Cargo 1's
+    cargo.py) is loaded on its own under `name`."""
+    folder = os.path.dirname(os.path.abspath(path))
+    if os.path.exists(os.path.join(folder, "__init__.py")):
+        sys.path.insert(0, os.path.dirname(folder))
+        module = os.path.basename(folder) + "." + os.path.splitext(os.path.basename(path))[0]
+        return importlib.import_module(module)
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+def is_game_object(value, game_module):
+    """True for an object of one of the game's own classes (in any of its modules)."""
+    package = game_module.__name__.rpartition(".")[0] or game_module.__name__
+    module = type(value).__module__
+    return module == package or module.startswith(package + ".") or module == game_module.__name__
 
 
 def patch(cargo, io):
