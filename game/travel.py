@@ -102,7 +102,7 @@ class TravelMixin:
             total_gain = base_research + max(1, int(research_bonus * rank_multiplier * (1 + self.difficulty)))
 
             # Add research points to the ship (a research module and an analyzer add a share)
-            total_gain = int(total_gain * (1 + self.ship.research_bonus()))
+            total_gain = int(total_gain * (1 + self.ship.research_bonus()) * self.concord_research_factor())
             self.ship.research_points += total_gain
 
             # After successful travel for quest

@@ -150,6 +150,18 @@
   },
   "discovered.ResearchColony": {
    "about": "ResearchColony locations visited"
+  },
+  "standing.hansa": {
+   "about": "standing with the Hauler Hansa, -100 to 100 (an effect moves it)"
+  },
+  "standing.mandate": {
+   "about": "standing with the Terran Mandate, -100 to 100 (an effect moves it)"
+  },
+  "standing.concord": {
+   "about": "standing with the Stellar Concord, -100 to 100 (an effect moves it)"
+  },
+  "dawn_trust": {
+   "about": "the Binary Dawn's trust, -100 to 100, hidden from the player (an effect moves it)"
   }
  },
  "sets": {

@@ -15,15 +15,19 @@ from .research import ResearchMixin
 from .actions import ActionsMixin
 from .port import PortMixin
 from .ranks import RanksMixin
+from .factions import FactionsMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
-           ResearchMixin, ActionsMixin, PortMixin, RanksMixin):
+           ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
+           FactionsMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
     def __init__(self, difficulty=None, player_name=None, intro=True, origin=None, voyage=None):
+        self.standing = {name: 0 for name in FACTIONS}     # with the Hansa, the Mandate, the Concord
+        self.dawn_trust = 0                                 # the Binary Dawn's, hidden until it speaks
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         asked = difficulty is None
@@ -126,9 +130,12 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             "hull_class": ship.hull,
             "hold_free": ship.hold_room("tech"),
             "dues_arrears": getattr(self, "dues_arrears", 0),
+            "dawn_trust": getattr(self, "dawn_trust", 0),
         }
         for good in ('tech', 'agri', 'salt', 'fuel'):
             stats["cargo." + good] = ship.cargo[good]
+        for faction in FACTIONS:
+            stats["standing." + faction] = self.standing_of(faction)
         for kind in STORY_VICTORY_TYPES[1:]:
             stats["combat_victories." + kind] = ship.combat_victories.get(kind, 0)
         for building in STORY_BUILDINGS:
@@ -205,6 +212,11 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
         self.discovered_locations = {RENAMED_PLACES.get(n, n) for n in self.discovered_locations}
         if not isinstance(getattr(self, "story", None), StoryRuntime):
             self.story = StoryRuntime(self)
+        if not isinstance(getattr(self, "standing", None), dict):
+            self.standing = {}
+        for name in FACTIONS:
+            self.standing.setdefault(name, 0)
+        self.dawn_trust = getattr(self, "dawn_trust", 0)
         self.story_manager.apply_story_text()
 
     def count_discovered(self, location_type=None):
@@ -947,5 +959,7 @@ from .port import (  # noqa: E402,F401
 from .places import (  # noqa: E402,F401
     AsteroidBase, DeepSpaceOutpost, Location, LocationCapabilities, LocationManager, Planet,
     ResearchColony)
+from .factions import (  # noqa: E402,F401
+    FACTIONS, HIGH, LOW, WORDS, standing_word)
 from .start import (  # noqa: E402,F401
     choose_captain, choose_saved_game, main, new_game, start_game)

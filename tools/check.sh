@@ -18,6 +18,9 @@ grep -q "baseline: 0 new" /tmp/cargo2-validate.txt || fail=1
 $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
 
+echo "== Cargo 2's systems, one by one"
+$PY $T/systems.py || fail=1
+
 echo "== each module of the game imports on its own"
 $PY $T/modules.py || fail=1
 

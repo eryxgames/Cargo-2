@@ -403,6 +403,8 @@ class StoryRuntime:
                 game.reputation_manager.total_passengers += value
             elif key == "combat_rating":
                 ship.attack = max(1, ship.attack + value)
+            elif key.startswith("standing.") or key == "dawn_trust":
+                game.change_standing("dawn" if key == "dawn_trust" else key[9:], value)
             elif key.startswith("cargo.") and key[6:] in ship.cargo:
                 good = key[6:]
                 ship.cargo[good] = max(0, ship.cargo[good] + (min(value, ship.hold_room(good)) if value > 0 else value))
@@ -494,7 +496,9 @@ class StoryRuntime:
             rows.append(["Aboard"])
             rows.extend([["- %s (%d units of hold)" % (labels.get(name, name), units)] for name, units in aboard.items()])
             rows.append([""])
-        rows.append(["People"])
+        rows.append(["Standing"])
+        rows.extend(game.standing_rows())
+        rows.extend([[""], ["People"]])
         people = [c for c in self.met if c in chars and not chars[c].get("generated")]
         for cid in people or []:
             info = chars[cid]

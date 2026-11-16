@@ -288,6 +288,10 @@ class EncountersMixin:
         enemy = ENEMIES[enemy_id]
         ship = self.ship
         power = enemy["power"]
+        if not hunted and not edge and self.waved_through(enemy["kind"]):
+            self.display_simple_message("A %s hails you, reads your transponder, and waves you on: the Mandate "
+                                        "knows your name." % enemy["name"].lower(), 2)
+            return "talked"
         options = [("fight", "Fight (%s)" % odds_word(self.fight_chance(power, edge)))]
         used = self.__dict__.setdefault("allies_called", {})
         for ally, (flag, who, help_, every) in self.ALLIES.items():
