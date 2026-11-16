@@ -1,0 +1,24 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "The main story's frame.",
+ "characters": {
+  "captain": {
+   "about": "the player"
+  }
+ },
+ "nodes": {
+  "ch1": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 1,
+   "title": "Forty Years On",
+   "text": [
+    "Forty years after the Hansa was founded, the needles still leave on schedule.",
+    "You have a ship, a loan and a slot in the next convoy. The rest of the story is being written."
+   ],
+   "requires": {},
+   "start": true
+  }
+ }
+}

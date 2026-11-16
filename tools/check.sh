@@ -10,6 +10,14 @@ fail=0
 echo "== CLIo's layer in kit/ is as copied"
 $PY $T/sync_kit.py --check || fail=1
 
+echo "== the story: copied tools unchanged, built file current, no new findings, every scene plays"
+$PY $T/sync_story.py --check || fail=1
+$PY $T/build_story.py --check || fail=1
+$PY storykit/validate.py story/saga.json --baseline story/findings-baseline.json > /tmp/cargo2-validate.txt; tail -2 /tmp/cargo2-validate.txt
+grep -q "baseline: 0 new" /tmp/cargo2-validate.txt || fail=1
+$PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
+grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
+
 echo "== each module of the game imports on its own"
 $PY $T/modules.py || fail=1
 

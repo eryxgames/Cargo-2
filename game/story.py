@@ -15,7 +15,7 @@ import re
 # --- story data ---
 # Cargo 2 reads its story from story/cargo2.story.json next to the game (built from the
 # storykit files in story/cargo2/ as they are written). CARGO_STORY=path plays another file.
-STORY_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "story", "cargo2.story.json")
+STORY_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "story", "cargo2.game.json")
 with open(STORY_FILE, encoding="utf-8") as _story_file:
     STORY_JSON = _story_file.read()
 # --- end of story data ---

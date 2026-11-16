@@ -57,7 +57,9 @@ game/           the game, Cargo 1.2's core split by what each part does:
   actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
   ranks.py  commands.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
-story/          the story (cargo2.story.json; storykit sources to come)
+story/          the story: cargo2.story.json and the files in story/cargo2/, built into
+                cargo2.game.json for the game; saga.json and Cargo 1's story, copied
+storykit/       the trilogy's story tools (format, validator, map), copied
 themes/         Cargo 2's own styles (CLIo theme files), beside CLIo's in kit/style/
 tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit
 legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, items and texts
@@ -66,6 +68,21 @@ legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, it
 `kit/` is never edited here: change the files in CLIo and copy them again with
 `python3 tools/sync_kit.py ../CLIo`. `tools/check.sh` (or `tools/check.sh quick`) runs every
 check, including one that fails if a copied file was changed.
+
+## Writing the story
+
+The story is data in the storykit format (`storykit/FORMAT.md`): scenes, choices, conditions and
+effects in `story/cargo2/*.json`, listed in `story/cargo2.story.json`. Characters who span the
+trilogy are named once, in `story/saga.json`. After a change:
+
+```bash
+python3 tools/build_story.py                     # builds story/cargo2.game.json
+python3 storykit/validate.py story/saga.json     # unknown names, broken links, unpaid promises
+python3 tools/scenes.py                          # plays every scene with every choice
+```
+
+`storykit/`, `story/saga.json` and Cargo 1's story are copies from the Cargo repository
+(`python3 tools/sync_story.py ../Cargo`); change them there.
 
 ## Credits
 

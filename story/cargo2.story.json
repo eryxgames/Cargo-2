@@ -1,184 +1,206 @@
 {
- "game": "cargo2",
- "about": "Cargo 2's story. M0: the Cargo 1 map and one opening chapter; the story is written in M1 and M2.",
- "characters": {
-  "captain": {
-   "name": "The captain"
+ "format": "storykit",
+ "version": 1,
+ "game": {
+  "id": "cargo2",
+  "title": "Cargo 2",
+  "part": 2
+ },
+ "about": "Cargo 2's story: about 2460, forty years after the Hauler Hansa was founded. Written in the files under cargo2/; tools/build_story.py builds them, with the names from saga.json, into cargo2.game.json, which the game reads.",
+ "saga": "saga.json",
+ "placeholders": [
+  "player_name",
+  "rank",
+  "money",
+  "trades_completed",
+  "combat_victories",
+  "research_points",
+  "discoveries",
+  "place",
+  "turn",
+  "visitor.name",
+  "visitor.rank",
+  "visitor.game",
+  "visitor.ending",
+  "origin.name",
+  "origin.rank",
+  "origin.game",
+  "origin.ending",
+  "origin.turns"
+ ],
+ "include": [
+  "cargo2/places.json",
+  "cargo2/main.json"
+ ],
+ "stats": {
+  "money": {
+   "about": "credits on hand"
+  },
+  "plot_points": {
+   "about": "story points (StoryManager.plot_points)"
+  },
+  "research_points": {
+   "about": "research points on hand"
+  },
+  "trades_completed": {
+   "about": "buy and sell actions completed"
+  },
+  "trade_profit": {
+   "about": "total trade profit, all goods"
+  },
+  "passengers_transported": {
+   "about": "passengers delivered"
+  },
+  "passenger_reputation": {
+   "about": "passenger reputation"
+  },
+  "combat_rating": {
+   "about": "attack + defence + speed"
+  },
+  "combat_victories": {
+   "about": "battles won (all kinds)"
+  },
+  "discovered": {
+   "about": "locations visited at least once"
+  },
+  "mining_platforms": {
+   "about": "mining platforms built, all locations"
+  },
+  "stockmarket_everywhere": {
+   "about": "1 when every planet, asteroid base and outpost has a stock market"
+  },
+  "controlled_locations": {
+   "about": "locations marked controlled_by_player (nothing in the game sets this)",
+   "produced": false
+  },
+  "milestones_done": {
+   "about": "story milestones completed (StoryManager.completed_story_beats)"
+  },
+  "best_cabin": {
+   "about": "comfort level of the best passenger cabin aboard"
+  },
+  "turns_since_vip": {
+   "about": "turns since the last VIP passenger appeared"
+  },
+  "crew_size": {
+   "about": "helpers hired (the ship has bunks for four)"
+  },
+  "hansa_bonds": {
+   "about": "Hansa bonds held (each lowers the convoy dues)"
+  },
+  "dues_arrears": {
+   "about": "convoy dues owed and not yet paid"
+  },
+  "hull_class": {
+   "about": "the ship's hull: 0 the old hauler, 1 Ironback, 2 Farstrider"
+  },
+  "hold_free": {
+   "about": "free room in the hold for dry goods, after special cargo"
+  },
+  "cargo.tech": {
+   "about": "tech in the hold (an effect adds or takes it)"
+  },
+  "cargo.agri": {
+   "about": "agri in the hold (an effect adds or takes it)"
+  },
+  "cargo.salt": {
+   "about": "salt in the hold (an effect adds or takes it)"
+  },
+  "cargo.fuel": {
+   "about": "fuel in the hold (an effect adds or takes it)"
+  },
+  "combat_victories.pirate": {
+   "about": "battles won against pirate"
+  },
+  "combat_victories.militia": {
+   "about": "battles won against militia"
+  },
+  "combat_victories.raider": {
+   "about": "battles won against raider"
+  },
+  "combat_victories.machine": {
+   "about": "battles won against machine"
+  },
+  "combat_victories.rogue_captain": {
+   "about": "battles won against rogue_captain"
+  },
+  "combat_victories.uprising": {
+   "about": "battles won against uprising"
+  },
+  "buildings.stockmarket": {
+   "about": "stockmarket buildings, all locations"
+  },
+  "buildings.Neuroengineering Guild": {
+   "about": "Neuroengineering Guild buildings, all locations"
+  },
+  "buildings.Agrobot Assembly Line": {
+   "about": "Agrobot Assembly Line buildings, all locations"
+  },
+  "buildings.mining_platform": {
+   "about": "mining_platform buildings, all locations"
+  },
+  "discovered.Planet": {
+   "about": "Planet locations visited"
+  },
+  "discovered.AsteroidBase": {
+   "about": "AsteroidBase locations visited"
+  },
+  "discovered.DeepSpaceOutpost": {
+   "about": "DeepSpaceOutpost locations visited"
+  },
+  "discovered.ResearchColony": {
+   "about": "ResearchColony locations visited"
+  }
+ },
+ "sets": {
+  "researched": {
+   "about": "research unlocked",
+   "members": [
+    "chronopolitics",
+    "exogeology",
+    "geophysics",
+    "psychodynamics",
+    "telemetry",
+    "xenoeconomy"
+   ]
+  },
+  "items": {
+   "about": "items carried"
+  },
+  "crew": {
+   "about": "helpers aboard",
+   "members": [
+    "loader",
+    "steward",
+    "mechanic",
+    "gunner",
+    "navigator",
+    "broker"
+   ]
+  },
+  "unlocked_types": {
+   "about": "hidden location types revealed",
+   "members": [
+    "Planet",
+    "AsteroidBase",
+    "DeepSpaceOutpost",
+    "ResearchColony"
+   ]
+  }
+ },
+ "effects": {
+  "code": {
+   "about": "game code the tools cannot read"
+  }
+ },
+ "arcs": {
+  "main": {
+   "title": "Main story",
+   "order": 0
   }
  },
  "flags": {},
- "places": {
-  "Alpha": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Alpha Centauri",
-   "ly": 4.4
-  },
-  "Beta": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Barnard's Star",
-   "ly": 6.0
-  },
-  "Gamma": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Ross 154",
-   "ly": 9.7
-  },
-  "Delta": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Teegarden's Star",
-   "ly": 12.5
-  },
-  "Epsilon": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Epsilon Eridani",
-   "ly": 10.5
-  },
-  "Omega XIV": {
-   "kind": "location",
-   "type": "AsteroidBase",
-   "system": "Tau Ceti",
-   "ly": 11.9
-  },
-  "Sigma VII": {
-   "kind": "location",
-   "type": "AsteroidBase",
-   "system": "Epsilon Indi",
-   "ly": 11.9
-  },
-  "Theta III": {
-   "kind": "location",
-   "type": "AsteroidBase",
-   "system": "Fomalhaut",
-   "ly": 25
-  },
-  "DSO-Alpha": {
-   "kind": "location",
-   "type": "DeepSpaceOutpost",
-   "system": "Luhman 16",
-   "ly": 6.5
-  },
-  "DSO-Beta": {
-   "kind": "location",
-   "type": "DeepSpaceOutpost",
-   "system": "WISE 0855-0714",
-   "ly": 7.4
-  },
-  "DSO-Gamma": {
-   "kind": "location",
-   "type": "DeepSpaceOutpost",
-   "system": "Scholz's Star",
-   "ly": 20
-  },
-  "Nova Labs": {
-   "kind": "location",
-   "type": "ResearchColony",
-   "system": "Wolf 359",
-   "ly": 7.9
-  },
-  "Quantum Center": {
-   "kind": "location",
-   "type": "ResearchColony",
-   "system": "YZ Ceti",
-   "ly": 12
-  },
-  "Stellar Institute": {
-   "kind": "location",
-   "type": "ResearchColony",
-   "system": "TRAPPIST-1",
-   "ly": 40
-  },
-  "Ancient Ruins Alpha": {
-   "kind": "location",
-   "type": "Ancient Ruins",
-   "system": "Tau Ceti, in the debris disk"
-  },
-  "Ancient Ruins Beta": {
-   "kind": "location",
-   "type": "Ancient Ruins",
-   "system": "Epsilon Indi, a moon of the cold giant Ab"
-  },
-  "Alien Signal Research Outpost X": {
-   "kind": "location",
-   "type": "Alien Signal Research Outpost",
-   "system": "Sol, far outer system"
-  },
-  "Alien Signal Research Outpost Y": {
-   "kind": "location",
-   "type": "Alien Signal Research Outpost",
-   "system": "pointed at Lyra, past HD 178911"
-  },
-  "Zeta": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Zeta Reticuli",
-   "ly": 39
-  },
-  "Eta": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Eta Corvi",
-   "ly": 59
-  },
-  "Theta": {
-   "kind": "location",
-   "type": "Planet",
-   "system": "Gliese 667 C",
-   "ly": 23.6
-  },
-  "Omega-1": {
-   "kind": "location",
-   "type": "AsteroidBase",
-   "system": "Vega",
-   "ly": 25
-  },
-  "DSO-Delta": {
-   "kind": "location",
-   "type": "DeepSpaceOutpost",
-   "system": "Gliese 229 B",
-   "ly": 19
-  },
-  "Stator Field Megastructure": {
-   "kind": "location",
-   "type": "Megastructure",
-   "system": "Sol, near Sedna's orbit",
-   "made": {
-    "tech": 15,
-    "agri": 1,
-    "research": 80,
-    "economy": "Mysterious"
-   }
-  },
-  "Builder Site": {
-   "kind": "location",
-   "type": "Builder Site",
-   "system": "Scholz's Star's wake",
-   "made": {
-    "tech": 18,
-    "agri": 1,
-    "research": 90,
-    "economy": "Mysterious"
-   }
-  }
- },
- "nodes": {
-  "ch1": {
-   "kind": "chapter",
-   "arc": "main",
-   "act": 1,
-   "title": "Forty Years On",
-   "text": [
-    "Forty years after the Hansa was founded, the needles still leave on schedule.",
-    "You have a ship, a loan and a slot in the next convoy. The rest of the story is being written."
-   ],
-   "requires": {}
-  }
- },
- "order": [
-  "ch1"
- ]
+ "places": {},
+ "characters": {},
+ "nodes": {}
 }
