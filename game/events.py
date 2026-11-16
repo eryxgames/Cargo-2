@@ -880,7 +880,8 @@ class EventsMixin:
 
         # Select event category based on modifiers
         categories = list(events.keys())
-        weights = [modifiers[cat] for cat in categories]
+        weights = [modifiers[cat] * (getattr(self, "needle_risk", 1.0) if cat == "combat" else 1)
+                   for cat in categories]
         category = random.choices(categories, weights=weights)[0]
         event = random.choice(events[category])
 

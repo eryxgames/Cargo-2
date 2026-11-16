@@ -309,7 +309,7 @@ class ScreensMixin:
         'info': "this location in detail",
         'hunt': "the bounty board: pick a wanted ship and go after it (takes the turn)",
         'end': "end the turn and wait here",
-        'hansa': "Hansa terminal: convoy dues, bonds that lower them, the price board",
+        'hansa': "Hansa terminal: needle fares, bonds that lower them, the price board, what you owe",
         'log': "story progress: what the next chapter needs",
         'journal': "people met, choices remembered, places",
         'save': "save the game (it also saves itself every turn)",
@@ -364,11 +364,11 @@ class ScreensMixin:
                  "The bounty board (hunt/hu) pays for wanted ships. Cantinas have rumours, people, and "
                  "crew for hire (four bunks). Plot points move the story: earn them by doing things."],
                 [""],
-                ["The Hansa's convoys carry you between the stars and charge dues every %d turns, more each time; "
-                 "Hansa bonds lower them (hansa/ha). Big loads move prices and markets take a while to recover: "
-                 "the Hansa price board and the port's broker robot guess prices elsewhere, closer for docks you "
-                 "saw lately. Inside a star system you fly on your own fuel: science missions burn it, or you buy "
-                 "the burn from the depot." % self.DUES_EVERY],
+                ["Between the stars you ride the Hansa's needles: book a place in the file when you travel. "
+                 "The front is safe and dear, the tail cheap and cold, and the Cargolytes work the tail. Fares "
+                 "grow as the routes get busier; Hansa bonds and the Hansa's good opinion lower them (hansa/ha). "
+                 "Inside a star system you fly free, on your own fuel. Big loads move prices and markets take a "
+                 "while to recover: the Hansa price board and the port's broker robot guess prices elsewhere."],
                 [""],
                 ["Outposts, ruins and listening posts are rough going for an old hull, and the far edge of the "
                  "system is worse: a planet's shipyard (upgrade/u, hull) rebuilds you as an Ironback or a "

@@ -9,7 +9,9 @@ class TravelMixin:
             self.display_simple_message("Choose a location to travel to:")
             # Display known locations with numbers
             for i, location in enumerate(self.known_locations, 1):
-                print(f"{i}. {location}")
+                hop = " (this system: a hop on your own fuel)" if self.same_system(self.current_location, location) \
+                    and location != self.current_location.name else ""
+                print(f"{i}. {location}{hop}")
 
             self.display_simple_message("Enter the number or name of the location (or 'cancel'): ", 0)
             choice = input(">>> ").strip()
@@ -51,6 +53,10 @@ class TravelMixin:
 
         if found_location:
             old_location = self.current_location
+            if self.same_system(old_location, found_location):
+                self.fly_in_system(found_location)
+            elif self.book_needle(found_location) is None:
+                return False                  # stayed: no needle, no turn
             self.current_location = found_location
 
             # Initialize and update discovered locations
@@ -122,6 +128,8 @@ class TravelMixin:
             self.turn += 1
             self.shop.reset_turn()
             self.random_event()
+            self.after_needle()
+            self.needle_risk = 1.0
             self.autosave()
             return True
         else:

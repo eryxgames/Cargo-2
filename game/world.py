@@ -16,12 +16,13 @@ from .actions import ActionsMixin
 from .port import PortMixin
 from .ranks import RanksMixin
 from .factions import FactionsMixin
+from .needles import NeedlesMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin):
+           FactionsMixin, NeedlesMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -732,8 +733,8 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
                 self.display_simple_message(f"Major disaster has affected {location.name}'s economy!")
 
     def new_turn(self):
-        """Things that happen once a turn, whatever the captain does: markets recover,
-        prices here are noted, the Hansa's dues fall due."""
+        """Things that happen once a turn, whatever the captain does: markets recover, prices
+        here are noted. (The Hansa's fares are paid per jump, at the needle office.)"""
         if getattr(self, "ticked_turn", None) == self.turn:
             return
         first = getattr(self, "ticked_turn", None) is None
@@ -742,9 +743,6 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             for loc in self.locations:
                 loc.recover()
         self.note_prices()
-        if self.turn and self.turn % self.DUES_EVERY == 0 and getattr(self, "dues_turn", None) != self.turn:
-            self.dues_turn = self.turn
-            self.collect_dues()
 
     def story_flag(self, *flags):
         states = self.story_manager.story_states
@@ -961,5 +959,7 @@ from .places import (  # noqa: E402,F401
     ResearchColony)
 from .factions import (  # noqa: E402,F401
     FACTIONS, HIGH, LOW, WORDS, standing_word)
+from .needles import (  # noqa: E402,F401
+    ACCOUNT_LIMIT, FUEL_PRICE, HOP_FUEL, POSITIONS, system_of)
 from .start import (  # noqa: E402,F401
     choose_captain, choose_saved_game, main, new_game, start_game)

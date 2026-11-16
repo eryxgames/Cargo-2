@@ -395,6 +395,11 @@ class Bot:
                 return self.main_action(options)
             if p.startswith(("buy which", "sell which")):
                 return self.item
+            if "your place in the needle" in p:      # the needle office (Cargo 2)
+                fare = g.needle_fare("middle")
+                if g.ship.money > 60 * fare:
+                    return "1"
+                return "2" if g.ship.money > 2 * fare else "3"
             if "property to upgrade" in p:
                 return self.upgrade
             if "overhaul the hull" in p:

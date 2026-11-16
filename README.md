@@ -21,6 +21,8 @@ own world and story. What works now:
   Cargo 1 comes in with their name, ranks and choices;
 - travel, trade, fights, quests, crew, the Hansa's dues, saves, autosave and continue;
 - every screen from 36 columns up, in Termux too; standard library only;
+- the needles: between the stars you book a place in a Hansa convoy (front: safe and dear; tail:
+  cheap and cold, and the Cargolytes work the tail); inside a star system you fly on your own fuel;
 - standing with the Hansa, the Mandate and the Concord, in the journal: the Hansa's fares follow
   it, Mandate cutters wave a trusted captain through, the Concord's houses share more research;
 - styles: `style` picks one of twelve (CLIo's seven, and five from Cargo 2's first version:
@@ -57,7 +59,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   story.py  chapters.py     the storykit runtime; chapters, milestones, endings
   ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
   actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
-  ranks.py  commands.py  factions.py
+  ranks.py  commands.py  factions.py  needles.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story: cargo2.story.json and the files in story/cargo2/, built into
                 cargo2.game.json for the game; saga.json and Cargo 1's story, copied
