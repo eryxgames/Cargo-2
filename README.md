@@ -1,104 +1,59 @@
-# Cargo-2
-The Cargo saga continues! Navigate treacherous space lanes and pilot customizable cargo haulers in this event-packed text strategic RPG sequel. Manage your cargo efficiently and face off against new enemies and environmental hazards in thrilling new chapters that follow the original story. [Eryxian Universe Wiki](https://github.com/eryxgames/eryxian/wiki) 
-- [ ] Improved game system
-- [ ] Improved tactical system
-- [ ] Evolving story lines
-- [ ] New enemy ships and items
-- [ ] Technology research trees
-- [ ] Captain achievements
-- [ ] Color themes and settings
-- [ ] Original music and sounds
+# Cargo 2
+
+The Cargo saga continues, about forty years after the Hauler Hansa was founded. The second part
+of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames/eryxian/wiki).
 
 ```console
->>> 
+>>>
         ╔═══════ C Δ R G Ω ][ ══════╗
         ║     Space Trading Saga    ║
         ╚═══════════════════════════╝
-               Version 0.1.0-a
-
+                Version 2.0.0-dev
 ```
 
-Refactoring notes:
-We are refactoring Cargo text rpg strategy game to Cargo 2, with goal to refactor its structure to a more data driven approach. This is a structure of the project so far. We will analyze the data of the original gameplay, improve the system, add more features, and find necessary adjustments. 
+## Status
+
+Being rebuilt (November 2026). The first milestone is the skeleton: Cargo 1.2's game running as
+Cargo 2, with CLIo's screen and sound layer alongside, ready to be split into modules and given
+its own world and story. What works now:
+
+- a new game, or one started as any captain whose record is in the shared folder; a captain from
+  Cargo 1 comes in with their name, ranks and choices;
+- travel, trade, fights, quests, crew, the Hansa's dues, saves, autosave and continue;
+- every screen from 36 columns up, in Termux too; standard library only.
+
+The story of Cargo 2 is still to be written: for now there is one opening chapter, and the map
+and the endings are still Cargo 1's. The plan (world in 2460, the convoy needles, factions and
+the ring, the modular ship, tactical convoy combat, research trees) is in the project's design
+document.
+
+## Playing
+
+```bash
+git clone https://github.com/eryxgames/Cargo-2.git
+cd Cargo-2
+python3 cargo2.py
+```
+
+Python 3.8 or newer, nothing to install. Saves and captain records are shared with Cargo 1
+(1.2.1 and later) in `~/.cargo-saga`; set `CARGO_SAGA_HOME` to keep them elsewhere.
+
+## Layout
 
 ```
-cargo-2/
-├── core/
-│   ├── __init__.py
-│   ├── game.py
-│   ├── gameplay.py    
-│   ├── game_events.py    
-│   ├── game_state.py    
-│   ├── location.py
-│   ├── location_data.py
-│   ├── location_manager.py
-│   ├── captain.py
-│   ├── character.py
-│   ├── character_encounters.py
-│   ├── dynamic_character_system.py
-│   ├── quest.py
-│   ├── contract.py
-│   ├── combat.py
-│   ├── combat_system.py
-│   ├── new_combat_system.py
-│   ├── ship.py
-│   ├── shop.py
-│   ├── cantina.py
-│   ├── research.py
-│   ├── reputation.py
-│   ├── audio.py
-│   ├── action.py
-│   ├── port.py
-│   ├── event.py
-│   ├── uprising.py
-│   ├── utils.py
-│   ├── template.py
-│   ├── uprising.py
-│   ├── story_requirements.py
-│   └── story.py
-├── data/
-│   ├── items.csv
-│   ├── locations.csv
-│   ├── buildings.csv
-│   ├── enemies.yml
-│   ├── events.yml
-│   ├── characters.yml
-│   ├── quests.yml
-│   ├── contracts.yml
-│   ├── story.yml
-│   ├── actions.yml
-│   ├── research.yml
-│   ├── infestations.json
-│   ├── ranks.json
-│   ├── reputation.json
-│   ├── settings.json
-│   ├── themes.json
-│   ├── music.json
-│   └── sound.json
-├── assets/
-│   ├── music/
-│   │   ├── theme1.mp3
-│   │   ├── theme2.mp3
-│   │   └── ...
-│   ├── sound/
-│   │   ├── click.wav
-│   │   ├── explosion.wav
-│   │   └── ...
-│   └── themes/
-│       ├── default.json
-│       ├── dark.json
-│       └── ...
-├── backend/
-│   ├── __init__.py
-│   ├── api.py
-│   └── auth.py
-├── ui/
-│   ├── __init__.py
-│   ├── text_ui.py
-│   └── theme_manager.py
-├── cargo.py
-├── savegames/
-│   ├── save1.json
-│   └── ...
-└── requirements.txt
+cargo2.py       launcher
+game/           the game: Cargo 1.2's core (world.py), being split into modules
+kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
+story/          the story (cargo2.story.json; storykit sources to come)
+tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit
+legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, items and texts
 ```
+
+`kit/` is never edited here: change the files in CLIo and copy them again with
+`python3 tools/sync_kit.py ../CLIo`. `tools/check.sh` (or `tools/check.sh quick`) runs every
+check, including one that fails if a copied file was changed.
+
+## Credits
+
+Eryx Games. The `kit/` folder is from [CLIo](https://github.com/eryxgames/CLIo) by Daniel
+Sandner, under the Apache License 2.0 (`kit/LICENSE`, `kit/NOTICE`).
