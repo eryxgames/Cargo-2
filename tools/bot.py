@@ -76,7 +76,7 @@ def write_trace(g, final=False):
 
 home = tempfile.mkdtemp(prefix="cargo-bot-")
 os.environ["CARGO_SAGA_HOME"] = home
-size = os.terminal_size((80, 40))
+size = os.terminal_size((int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cols=")), 80)), 40))
 shutil.get_terminal_size = lambda fallback=(80, 24): size
 cargo = headless.load(path)
 if ledger_on:
@@ -475,7 +475,9 @@ class Bot:
                     return "half"
                 return ""
             return "max"
-        t = tail.lower()
+        # a phrase may be wrapped across the lines of a narrow box: match it with the frames
+        # taken out and the lines joined
+        t = " ".join(re.sub("[\u2500-\u259f|]", " ", tail).split()).lower()
         if "save as" in t:
             return "botsave"
         if "type a number to load it" in t:

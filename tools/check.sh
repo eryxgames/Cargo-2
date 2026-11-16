@@ -41,8 +41,8 @@ ok=not r['traceback'] and not r['overflow_kinds']
 print('  cols', r['cols'], 'seed', r['seed'], 'inputs', r['inputs'], 'ok' if ok else 'FAIL', (r['traceback'] or '')[-300:], r['overflow'][:2] if r['overflow_kinds'] else '')
 sys.exit(0 if ok else 1)" || fail=1; done; done
 
-echo "== long games through the real prompts, with saves and loads"
-for goal in trade combat; do for s in $SEEDS; do $PY $T/bot.py $G $goal $s 400 --save-every=9 | $PY -c "
+echo "== long games through the real prompts at 36 columns, with saves and loads"
+for goal in trade combat; do for s in $SEEDS; do $PY $T/bot.py $G $goal $s 400 --save-every=9 --cols=36 | $PY -c "
 import json,sys
 r=json.load(sys.stdin)
 crash='traceback' in r
