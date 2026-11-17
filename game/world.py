@@ -19,12 +19,13 @@ from .factions import FactionsMixin
 from .needles import NeedlesMixin
 from .modules import ModulesMixin
 from .tactics import TacticsMixin
+from .achievements import AchievementsMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin):
+           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin, AchievementsMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -32,6 +33,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
         self.standing = {name: 0 for name in FACTIONS}     # with the Hansa, the Mandate, the Concord
         self.dawn_trust = 0                                 # the Binary Dawn's, hidden until it speaks
         self.front_berths = 0                               # front places owed at the middle's fare
+        self.achievements = {}                              # earned: {id: turn} (game/achievements.py)
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         asked = difficulty is None
@@ -132,6 +134,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             "crew_size": len(ship.crew),
             "hansa_bonds": getattr(self, "hansa_bonds", 0),
             "hull_class": ship.hull,
+            "modules_fitted": len(ship.modules),
             "hold_free": ship.hold_room("tech"),
             "dues_arrears": getattr(self, "dues_arrears", 0),
             "dawn_trust": getattr(self, "dawn_trust", 0),
@@ -222,6 +225,8 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             self.standing.setdefault(name, 0)
         self.dawn_trust = getattr(self, "dawn_trust", 0)
         self.front_berths = getattr(self, "front_berths", 0)
+        if not isinstance(getattr(self, "achievements", None), dict):
+            self.achievements = {}
         if not isinstance(self.ship.__dict__.get("modules"), list):
             self.ship.__dict__["modules"] = []      # a save from before the ship had modules
         sm = getattr(self, "story_manager", None)
@@ -764,6 +769,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             for loc in self.locations:
                 loc.recover()
             self.mend_on_the_way()
+            self.check_achievements()
         self.note_prices()
 
     def story_flag(self, *flags):
@@ -986,5 +992,7 @@ from .needles import (  # noqa: E402,F401
 from .modules import (  # noqa: E402,F401
     CONTAINER_UNITS, FULL, MODULES, SCANNER_RISK, condition_word, mend_cost, module_name)
 from .tactics import MARKS, TACTICAL_FROM  # noqa: E402,F401
+from .achievements import ACHIEVEMENTS  # noqa: E402,F401
+from .research import BRANCHES  # noqa: E402,F401
 from .start import (  # noqa: E402,F401
     choose_captain, choose_saved_game, main, new_game, start_game)

@@ -49,7 +49,7 @@ class TacticsMixin:
         power = enemy["power"]
         convoy = bool(getattr(self, "in_needle", False))
         theirs, yours = MARKS, MARKS
-        used = set()
+        used, counters = set(), 0
         convoy_hits, screened_rounds = 0, 0
         hit_total = 0.0
         hurt = False
@@ -57,11 +57,11 @@ class TacticsMixin:
         story = list(lines)
         while theirs > 0 and yours > 0:
             round_no += 1
-            base = round_chance(self.fight_chance(power, edge))
+            base = round_chance(self.fight_chance(power, edge)) + (0.05 if ship.researched("fire_control") else 0)
             options = [("focus", "Focus fire (%s)" % odds_word(base))]
             if convoy:
                 options.append(("screen", "Screen the convoy (%s)" % odds_word(max(0.05, base - 0.1))))
-            if ship.working("shield") and "counter" not in used:
+            if ship.working("shield") and counters < (2 if ship.researched("countermeasure_suite") else 1):
                 options.append(("counter", "Countermeasures: chaff and flares"))
             if ship.working("hangar") and "drones" not in used:
                 options.append(("drones", "Drones in first (%s)" % odds_word(min(0.95, base + 0.2))))
@@ -91,7 +91,7 @@ class TacticsMixin:
             elif move == "board":
                 chance = base - 0.15
             elif move == "counter":
-                used.add("counter")
+                counters += 1
             chance = max(0.05, min(0.95, chance))
             unit = power / ship.fight_defense() * (1 + self.difficulty) * shield
             hit_total += random.randint(1, 2) * unit           # the round's glancing fire, whoever wins it

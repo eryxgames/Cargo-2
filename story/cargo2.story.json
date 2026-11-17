@@ -168,6 +168,9 @@
   },
   "dawn_trust": {
    "about": "the Binary Dawn's trust, -100 to 100, hidden from the player (an effect moves it)"
+  },
+  "modules_fitted": {
+   "about": "modules on the ship's grips (game/modules.py)"
   }
  },
  "sets": {

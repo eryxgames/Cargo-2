@@ -43,6 +43,8 @@ class NeedlesMixin:
         base = 60 + 60 * (self.turn / 10.0) ** 1.35
         hike = getattr(self, "dues_hike", 1.0) if self.turn <= getattr(self, "dues_hike_until", 0) else 1.0
         fare = base * POSITIONS[position][0] * hike * self.hansa_fare_factor() * 0.88 ** getattr(self, "hansa_bonds", 0)
+        if self.ship.researched("fast_turnaround"):
+            fare *= 0.9
         return max(10, int(fare))
 
     def needle_wait(self):

@@ -102,7 +102,7 @@ class Ship:
         base = self.HOLD_BASE
         general = base * (1 + sum(b for item, b in self.HOLD_BONUS.items() if self.items.get(item))
                           + (0.1 if "loader" in self.crew else 0) + self.hull_info()["hold"]) \
-            + CONTAINER_UNITS * self.working("container")
+            + (CONTAINER_UNITS + (50 if self.researched("bulk_logistics") else 0)) * self.working("container")
         special = base * sum(b for item, b in self.SPECIAL_HOLD_BONUS.items() if self.items.get(item))
         return int(general), int(special)
 
@@ -132,6 +132,11 @@ class Ship:
         """How many modules the hull's spine carries."""
         return GRIPS[min(self.hull, len(GRIPS) - 1)]
 
+    def researched(self, option):
+        """Whether the captain has researched this (the Game's research, when the ship has a game)."""
+        research = getattr(getattr(self, "game", None), "research", None)
+        return option in getattr(research, "unlocked_options", ())
+
     def working(self, kind):
         """How many modules of this kind are fitted and not broken."""
         return sum(1 for m in self.modules if m["kind"] == kind and m["condition"] > 0)
@@ -152,7 +157,7 @@ class Ship:
     def fight_attack(self):
         return self.attack + sum(g[0] for item, g in self.FIGHT_GEAR.items() if self.items.get(item)) \
             + (1 if "gunner" in self.crew else 0) + self.hull_info()["attack"] \
-            + self.working("turret") + self.working("hangar")
+            + self.working("turret") + self.working("hangar") * (2 if self.researched("drone_autonomy") else 1)
 
     def fight_defense(self):
         return max(1, self.defense + sum(g[1] for item, g in self.FIGHT_GEAR.items() if self.items.get(item))

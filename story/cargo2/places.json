@@ -7,105 +7,123 @@
    "kind": "location",
    "type": "Planet",
    "system": "Alpha Centauri",
-   "ly": 4.4
+   "ly": 4.4,
+   "about": "The Hansa's oldest needle office, with the founders' wall. Every needle in the near systems is scheduled from here."
   },
   "Beta": {
    "kind": "location",
    "type": "Planet",
    "system": "Barnard's Star",
-   "ly": 6.0
+   "ly": 6.0,
+   "about": "Farm drums, retirement drums and the busiest departure buoy in the near systems."
   },
   "Gamma": {
    "kind": "location",
    "type": "Planet",
    "system": "Ross 154",
-   "ly": 9.7
+   "ly": 9.7,
+   "about": "The mining world. Its underground farms feed three systems now, whoever owns them."
   },
   "Delta": {
    "kind": "location",
    "type": "Planet",
    "system": "Teegarden's Star",
-   "ly": 12.5
+   "ly": 12.5,
+   "about": "A capital grown up around Geod's Row. The Kraal family keeps a sarcophagus here, on a schedule."
   },
   "Epsilon": {
    "kind": "location",
    "type": "Planet",
    "system": "Epsilon Eridani",
-   "ly": 10.5
+   "ly": 10.5,
+   "about": "Where the Concord's assembly meets, and where a vote once made the Mark law."
   },
   "Omega XIV": {
    "kind": "location",
    "type": "AsteroidBase",
    "system": "Tau Ceti",
-   "ly": 11.9
+   "ly": 11.9,
+   "about": "An asteroid base in Tau Ceti's debris disk: a Hansa yard, and Mandate cutters on patrol. Needles call every third turn."
   },
   "Sigma VII": {
    "kind": "location",
    "type": "AsteroidBase",
    "system": "Epsilon Indi",
-   "ly": 11.9
+   "ly": 11.9,
+   "about": "An asteroid the colony has hollowed into galleries. It talks in text, when it talks. Needles call every third turn."
   },
   "Theta III": {
    "kind": "location",
    "type": "AsteroidBase",
    "system": "Fomalhaut",
-   "ly": 25
+   "ly": 25,
+   "about": "Far out and cold. Needles call every third turn, and not always on time."
   },
   "DSO-Alpha": {
    "kind": "location",
    "type": "DeepSpaceOutpost",
    "system": "Luhman 16",
-   "ly": 6.5
+   "ly": 6.5,
+   "about": "An outpost by the brown dwarfs of Luhman 16. The forecast is iron rain."
   },
   "DSO-Beta": {
    "kind": "location",
    "type": "DeepSpaceOutpost",
    "system": "WISE 0855-0714",
-   "ly": 7.4
+   "ly": 7.4,
+   "about": "The coldest water anywhere, bottled at the outpost with the labels already printed."
   },
   "DSO-Gamma": {
    "kind": "location",
    "type": "DeepSpaceOutpost",
    "system": "Scholz's Star",
-   "ly": 20
+   "ly": 20,
+   "about": "The Mandate's garrison at Scholz's Star still guards something under the ice."
   },
   "Nova Labs": {
    "kind": "location",
    "type": "ResearchColony",
    "system": "Wolf 359",
-   "ly": 7.9
+   "ly": 7.9,
+   "about": "A research colony that took Concord money, and Concord rules with it."
   },
   "Quantum Center": {
    "kind": "location",
    "type": "ResearchColony",
    "system": "YZ Ceti",
-   "ly": 12
+   "ly": 12,
+   "about": "The Concord's radio astronomers still listen to the planet ringing its star like a bell."
   },
   "Stellar Institute": {
    "kind": "location",
    "type": "ResearchColony",
    "system": "TRAPPIST-1",
-   "ly": 40
+   "ly": 40,
+   "about": "Rebuilt after the fire. It sold its old archive to pay for the roof."
   },
   "Ancient Ruins Alpha": {
    "kind": "location",
    "type": "Ancient Ruins",
-   "system": "Tau Ceti, in the debris disk"
+   "system": "Tau Ceti, in the debris disk",
+   "about": "Ruins in the debris disk, older than anyone's records."
   },
   "Ancient Ruins Beta": {
    "kind": "location",
    "type": "Ancient Ruins",
-   "system": "Epsilon Indi, a moon of the cold giant Ab"
+   "system": "Epsilon Indi, a moon of the cold giant Ab",
+   "about": "Ruins on a moon of a cold giant, older than anyone's records."
   },
   "Alien Signal Research Outpost X": {
    "kind": "location",
    "type": "Alien Signal Research Outpost",
-   "system": "Sol, far outer system"
+   "system": "Sol, far outer system",
+   "about": "A listening post in Sol's far outer system, mostly listening to itself."
   },
   "Alien Signal Research Outpost Y": {
    "kind": "location",
    "type": "Alien Signal Research Outpost",
-   "system": "Sol, the outer system: a dish pointed at Lyra, past HD 178911"
+   "system": "Sol, the outer system: a dish pointed at Lyra, past HD 178911",
+   "about": "A dish pointed at Lyra. The chirps have not stopped in forty years."
   },
   "Zeta": {
    "kind": "location",
@@ -146,7 +164,8 @@
     "agri": 1,
     "research": 80,
     "economy": "Mysterious"
-   }
+   },
+   "about": "Forty kilometres of grey alloy past Sedna's orbit, turning once every eleven minutes."
   },
   "Builder Site": {
    "kind": "location",

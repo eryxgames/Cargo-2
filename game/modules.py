@@ -85,10 +85,11 @@ class ModulesMixin:
         ship = self.ship
         if not ship.working("repair"):
             return
-        ship.damage = max(0, ship.damage - 2)
+        swarm = 2 if ship.researched("repair_swarm") else 1
+        ship.damage = max(0, ship.damage - 2 * swarm)
         for module in ship.modules:
             if module["kind"] != "repair" and module["condition"] > 0:
-                module["condition"] = min(FULL, module["condition"] + 5)
+                module["condition"] = min(FULL, module["condition"] + 5 * swarm)
 
     def module_rows(self):
         """The ship's train, one line per grip."""

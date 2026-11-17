@@ -63,6 +63,7 @@ def clean_captain(record):
     ship = record.get("ship") if isinstance(record.get("ship"), dict) else {}
     hold = record.get("hold") if isinstance(record.get("hold"), dict) else {}
     log = record.get("log") if isinstance(record.get("log"), list) else []
+    standing = record.get("standing") if isinstance(record.get("standing"), dict) else {}
 
     def texts(values, limit=24, most=40):
         if not isinstance(values, (list, tuple)):
@@ -89,6 +90,10 @@ def clean_captain(record):
             "plot_points": _clean_number(story.get("plot_points"), 0, 10 ** 6),
         },
         "hold": {_clean_text(k, 24): _clean_number(v, 0, 999) for k, v in list(hold.items())[:40]},
+        # Cargo 2 adds these; a record from Cargo 1 has none, and Cargo 1 drops them on reading
+        "achievements": texts(record.get("achievements"), limit=32, most=60),
+        "standing": {key: _clean_number(standing.get(key, 0), -100, 100) if isinstance(standing.get(key, 0), (int, float))
+                     and not isinstance(standing.get(key), bool) else 0 for key in ("hansa", "mandate", "concord")},
         "log": [{"game": _clean_text(e.get("game"), 12), "event": _clean_text(e.get("event"), 24),
                  "turn": _clean_number(e.get("turn"), 0, 10 ** 9), "at": _clean_text(e.get("at"), 24)}
                 for e in log[-20:] if isinstance(e, dict)],
@@ -186,6 +191,8 @@ class CaptainMixin:
             },
             "hold": {str(item): int(count) for item, count in self.ship.items.items()
                      if isinstance(count, int) and count > 0},
+            "achievements": sorted(getattr(self, "achievements", {})),
+            "standing": {faction: self.standing_of(faction) for faction in ("hansa", "mandate", "concord")},
             "log": list(self.captain_log) + [entry],
         }
         record["check"] = _captain_check(record)

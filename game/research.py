@@ -2,6 +2,30 @@
 import random
 import time
 
+# The second tier (Cargo 2): branches that grow from the first six. Each pair excludes the other:
+# researching one closes its twin for good. "story" names a scene that must have happened first.
+BRANCHES = {
+    "bulk_logistics": {"name": "Bulk logistics", "cost": 300, "requires": ["xenoeconomy"], "excludes": "fast_turnaround",
+                       "about": "every container module holds 150 units, not 100"},
+    "fast_turnaround": {"name": "Fast turnaround", "cost": 300, "requires": ["xenoeconomy"], "excludes": "bulk_logistics",
+                        "about": "needle fares are 10% lower: you are always first at the buoy"},
+    "fire_control": {"name": "Fire control", "cost": 350, "requires": ["telemetry"], "excludes": "countermeasure_suite",
+                     "about": "better odds every round of a convoy fight"},
+    "countermeasure_suite": {"name": "Countermeasure suite", "cost": 350, "requires": ["telemetry"],
+                             "excludes": "fire_control", "about": "a shield module's countermeasures work twice a fight"},
+    "drone_autonomy": {"name": "Drone autonomy", "cost": 400, "requires": ["telemetry", "geophysics"],
+                       "excludes": "repair_swarm", "about": "a drone hangar is worth two points of attack, not one"},
+    "repair_swarm": {"name": "Repair swarm", "cost": 400, "requires": ["telemetry", "geophysics"],
+                     "excludes": "drone_autonomy", "about": "a repair bay mends twice as fast"},
+    "segment_acoustics": {"name": "Segment acoustics", "cost": 450, "requires": ["chronopolitics"], "story": "ring.expedition",
+                          "excludes": "throw_dynamics", "about": "hear a segment turn from a system away, as the machines do "
+                                                                "(the Binary Dawn notices)"},
+    "throw_dynamics": {"name": "Throw dynamics", "cost": 450, "requires": ["chronopolitics"], "story": "ring.expedition",
+                       "excludes": "segment_acoustics", "about": "the mathematics of a segment's throw (House Rostrom "
+                                                                 "wants it)"},
+}
+
+
 class Research:
     def __init__(self):
         self.unlocked_options = set()
@@ -26,6 +50,26 @@ class Research:
     def unlock(self, option):
         self.unlocked_options.add(option)
 
+    def cost_of(self, option):
+        return BRANCHES[option]["cost"] if option in BRANCHES else self.research_costs[option]
+
+    def closed(self, option):
+        """A branch whose twin was researched."""
+        twin = BRANCHES.get(option, {}).get("excludes")
+        return bool(twin and twin in self.unlocked_options)
+
+    def open_options(self, done=()):
+        """What can be researched now: the first six, then branches whose roots are researched,
+        whose story has happened and whose twin has not been chosen."""
+        options = [opt for opt in self.research_costs if opt not in self.unlocked_options]
+        for opt, branch in BRANCHES.items():
+            if opt in self.unlocked_options or self.closed(opt):
+                continue
+            if all(r in self.unlocked_options for r in branch["requires"]) and \
+                    (not branch.get("story") or branch["story"] in done):
+                options.append(opt)
+        return options
+
 
 class ResearchMixin:
     """The Game's research screens. Game inherits it (game/world.py)."""
@@ -46,6 +90,8 @@ class ResearchMixin:
 
     def get_research_benefit_description(self, research):
         """Get description of research benefit"""
+        if research in BRANCHES:
+            return BRANCHES[research]["about"]
         benefits = {
             'xenoeconomy': "Trading tax reduced by 2%",
             'telemetry': "Scout success +20%",

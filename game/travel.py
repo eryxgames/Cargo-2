@@ -69,7 +69,9 @@ class TravelMixin:
             self.arrive_through_hazard(found_location)
             if first_visit:
                 self.story_manager.plot_points += 3
-                self.display_simple_message(f"Traveled to {found_location.name}. First visit: +3 plot points.")
+                about = (story_data()["places"].get(found_location.name) or {}).get("about")
+                self.display_simple_message(f"Traveled to {found_location.name}. First visit: +3 plot points."
+                                            + (" " + about if about else ""))
             else:
                 self.display_simple_message(f"Traveled to {found_location.name}.")
 
@@ -185,3 +187,7 @@ class TravelMixin:
         lines.append("An %s hull (planet shipyards, upgrade/u, hull) would ride it out." % (
             "Ironback or Farstrider" if need == 1 else "Farstrider"))
         self.display_simple_message([line for text in lines for line in self.word_wrap(text)], 3, color='31')
+
+
+# The game's other modules, imported last so that the modules can refer to each other.
+from .story import story_data  # noqa: E402

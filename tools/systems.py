@@ -234,6 +234,59 @@ del loaded.ship.__dict__["modules"]
 loaded.bring_up_to_date()
 expect(loaded.ship.modules == [] and loaded.ship.grips() == 3, "an old save gets an empty spine")
 
+# ---- research branches -------------------------------------------------------------------------
+game, io = headless.new_game(cargo)
+research = game.research
+expect("bulk_logistics" not in research.open_options(), "a branch waits for its root")
+research.unlock("xenoeconomy")
+expect({"bulk_logistics", "fast_turnaround"} <= set(research.open_options()), "a researched root opens both branches")
+research.unlock("bulk_logistics")
+expect("fast_turnaround" not in research.open_options() and research.closed("fast_turnaround"),
+       "choosing one branch closes its twin")
+game.ship.modules.append({"kind": "container", "condition": 100})
+expect(game.ship.hold_sizes()[0] == headless.new_game(cargo)[0].ship.hold_sizes()[0] + 150,
+       "bulk logistics: a container module holds 150")
+research.unlock("chronopolitics")
+expect("segment_acoustics" not in research.open_options(game.story.done), "ring science waits for the expedition")
+expect("segment_acoustics" in research.open_options({"ring.expedition": 1}), "ring science opens after the expedition")
+research.unlock("drone_autonomy")
+attack = game.ship.fight_attack()
+game.ship.modules.append({"kind": "hangar", "condition": 100})
+expect(game.ship.fight_attack() == attack + 2, "drone autonomy: a hangar is worth two")
+fare = game.needle_fare("middle")
+research.unlock("fast_turnaround")
+expect(game.needle_fare("middle") < fare, "fast turnaround lowers the fares")
+
+# ---- achievements ----------------------------------------------------------------------------------
+game, io = headless.new_game(cargo)
+game.trades_completed = 26
+game.ticked_turn = game.turn - 1
+with headless.quiet() as buf:
+    game.new_turn()
+expect("no_more_deadheads" in game.achievements and "No more deadheads" in buf.getvalue(), "an achievement is announced")
+with headless.quiet() as buf:
+    game.check_achievements()
+expect("No more deadheads" not in buf.getvalue(), "an achievement is announced once")
+game.story.done["heading.opened"] = game.turn
+with headless.quiet():
+    game.check_achievements()
+record = game.captain_record()
+expect(record["achievements"] == ["lot_1187", "no_more_deadheads"], "achievements go into the captain record: %s"
+       % record["achievements"])
+expect(cargo.clean_captain(record)["achievements"] == record["achievements"], "and come back out of it")
+old = dict(record)
+old.pop("achievements"); old.pop("standing")
+old["check"] = cargo._captain_check(old)
+back = cargo.clean_captain(old)
+expect(back["achievements"] == [] and back["standing"] == {"hansa": 0, "mandate": 0, "concord": 0},
+       "a record without them (Cargo 1's) reads as none, standing 0")
+expect(all(isinstance(t[2], dict) for t in cargo.ACHIEVEMENTS.values()), "every achievement is a story condition")
+
+# ---- the map of 2460 ---------------------------------------------------------------------------------
+places = cargo.story_data()["places"]
+expect(all(places[p].get("about") for p in ("Alpha", "Gamma", "Delta", "Stator Field Megastructure")),
+       "the places of 2460 have their texts")
+
 # ---- needles from outposts wait at the buoy ---------------------------------------------------
 game, io = headless.new_game(cargo)
 game.ship.money = 10 ** 6

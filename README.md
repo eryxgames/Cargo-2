@@ -51,6 +51,13 @@ own world and story. What works now:
   often as Cargo 1's one-roll fight did (tools/fights.py checks every difficulty);
 - needles leave planets every turn and other docks every third turn: from an outpost you may
   wait at the buoy;
+- research in two tiers: the first six as in Cargo 1, then four pairs of branches (bulk
+  logistics or fast turnaround, fire control or a countermeasure suite, drone autonomy or a repair
+  swarm, and, after the expedition, segment acoustics or throw dynamics); choosing one branch
+  closes its twin for good;
+- fourteen achievements, announced when earned, listed in the journal and written into the
+  captain's record with the standings, for Cargo 3 (Cargo 1 still reads the record);
+- the places of 2460 describe themselves on a first visit;
 - standing with the Hansa, the Mandate and the Concord, in the journal: the Hansa's fares follow
   it, Mandate cutters wave a trusted captain through, the Concord's houses share more research;
 - styles: `style` picks one of twelve (CLIo's seven, and five from Cargo 2's first version:
@@ -59,7 +66,7 @@ own world and story. What works now:
   `CARGO_ASCII=1` draws in plain ASCII.
 
 The story is written through to its four endings, and every promise Cargo 1 made to Cargo 2 is
-kept. Still to come: research trees, achievements, the map of 2460, sound, and balance. The plan (world in 2460, the convoy needles, factions and
+kept. Still to come: sound, balance, and the release. The plan (world in 2460, the convoy needles, factions and
 the ring, the modular ship, tactical convoy combat, research trees) is in the project's design
 document.
 
@@ -87,7 +94,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   story.py  chapters.py     the storykit runtime; chapters, milestones, endings
   ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
   actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
-  ranks.py  commands.py  factions.py  needles.py  modules.py  tactics.py
+  ranks.py  commands.py  factions.py  needles.py  modules.py  tactics.py  achievements.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story: cargo2.story.json and the files in story/cargo2/, built into
                 cargo2.game.json for the game; saga.json and Cargo 1's story, copied

@@ -508,6 +508,9 @@ class StoryRuntime:
             rows.append([""])
         rows.append(["Standing"])
         rows.extend(game.standing_rows())
+        earned = game.achievement_rows()
+        if earned:
+            rows.extend([[""], ["Achievements"]] + earned)
         rows.extend([[""], ["People"]])
         people = [c for c in self.met if c in chars and not chars[c].get("generated")]
         for cid in people or []:

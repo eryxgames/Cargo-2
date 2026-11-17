@@ -285,8 +285,7 @@ class ActionsMixin:
 
         if action == 'research':
             # Get available research options
-            options = [opt for opt, cost in self.research.research_costs.items()
-                    if opt not in self.research.unlocked_options]
+            options = self.research.open_options(self.story.done)
 
             if not options:
                 self.display_simple_message("All research options are unlocked!")
@@ -304,8 +303,10 @@ class ActionsMixin:
             }
 
             for opt in options:
-                cost = self.research.research_costs[opt]
-                desc = research_descriptions.get(opt, "No description available")
+                cost = self.research.cost_of(opt)
+                desc = research_descriptions.get(opt) or self.get_research_benefit_description(opt)
+                if opt in BRANCHES:
+                    desc += "; closes %s for good" % BRANCHES[BRANCHES[opt]["excludes"]]["name"].lower()
                 research_content.append([opt, str(cost), desc])
 
             print(self.create_box(research_content, 'single'))
@@ -316,15 +317,19 @@ class ActionsMixin:
             )
 
             if option:
-                if self.ship.research_points >= self.research.research_costs[option]:
-                    self.ship.research_points -= self.research.research_costs[option]
+                if self.ship.research_points >= self.research.cost_of(option):
+                    self.ship.research_points -= self.research.cost_of(option)
                     success, message = self.action.research(self.current_location, option, self.research)
                     if success:
                         self.story_manager.plot_points += 4
                         message += " +4 plot points."
+                        if option == "segment_acoustics":
+                            self.change_standing("dawn", 10)
+                        elif option == "throw_dynamics":
+                            self.change_standing("concord", 15)
                     self.display_simple_message(message)
                 else:
-                    self.display_simple_message(f"Not enough research points! Need: {self.research.research_costs[option]}")
+                    self.display_simple_message(f"Not enough research points! Need: {self.research.cost_of(option)}")
 
         elif action == 'scout':
             if self.ship.research_points >= self.action.action_costs['scout']:
@@ -535,3 +540,4 @@ class ActionsMixin:
                 content.append([f"{deposit.capitalize()}: {amount} units"])
 
         print(self.create_box(content, 'double'))
+from .research import BRANCHES  # noqa: E402

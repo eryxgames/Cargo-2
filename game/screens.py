@@ -387,7 +387,9 @@ class ScreensMixin:
                 ["Behind the command module the hull's spine has grips for modules: three on the old hauler, five "
                  "on an Ironback, seven on a Farstrider. Yards at planets and asteroid bases (upgrade/u, modules) "
                  "fit containers, turrets, shields, scanners, a repair bay and more. Modules wear in fights and on "
-                 "rough lanes; a broken one does nothing until it is mended."],
+                 "rough lanes; a broken one does nothing until it is mended. Research colonies (action/a) research "
+                 "in two tiers: each branch of the second closes its twin. The journal (log/l) lists your "
+                 "standings and achievements."],
                 [""],
                 ["Type a command or its shortcut and press Enter. In any menu, Enter on its own goes back. "
                  "Amounts: a number, max/m or half/h. Each 'end' or journey is one turn; the game saves "
