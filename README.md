@@ -29,6 +29,13 @@ own world and story. What works now:
   segment of the ring past Sedna's orbit, and loses it when it throws a needle eleven years into
   the past. On the way Conte Ottavine wakes, the other captain books your needle, the Binary Dawn
   speaks and the colony at Sigma VII hears the ring turning: each as your Cargo 1 captain left it;
+- act 3, four roads, each with a crisis, a low point and a climax that decides who holds the
+  segments when Cargo 3 begins: the open road (the Hansa: the closed buoys, the licence, the vote
+  on the drive), the lighthouse (the Mandate: decoys, Serac's list, the taking), the door (House
+  Rostrom: the second turn, two clocks, and through the door to an outpost bar forty years ago),
+  and a quiet fourth road for captains the machines trust, which nobody mentions until it opens;
+- Dharr Santor comes back for the name on the drive; an expedition to Lyra goes quiet; Meza Voce,
+  the Void Angels, the Cargolytes and some thirty rumours remember what a Cargo 1 captain did;
 - travel, trade, fights, quests, crew, saves, autosave and continue;
 - every screen from 36 columns up, in Termux too; standard library only;
 - the needles: between the stars you book a place in a Hansa convoy (front: safe and dear; tail:
@@ -51,9 +58,8 @@ own world and story. What works now:
   games. `CARGO_STYLE=name` picks one for a single run; `NO_COLOR=1` turns colour off and
   `CARGO_ASCII=1` draws in plain ASCII.
 
-Acts 1 and 2 are written. Act 3's three roads and their endings have their titles and a first
-text, and still ask for what Cargo 1's chapters asked; they are written next, with the modular ship,
-the convoy fights and the map of 2460. The plan (world in 2460, the convoy needles, factions and
+The story is written through to its four endings, and every promise Cargo 1 made to Cargo 2 is
+kept. Still to come: research trees, achievements, the map of 2460, sound, and balance. The plan (world in 2460, the convoy needles, factions and
 the ring, the modular ship, tactical convoy combat, research trees) is in the project's design
 document.
 

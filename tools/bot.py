@@ -95,7 +95,11 @@ PATH_CHOICE = {   # which follow-up chapter to pick, by goal
     "combat": ["ch2b", "ch3b", "ending_combat"],
     "discovery": ["ch2a", "ch3c", "ending_discovery"],
     "discovery2": ["ch2b", "ch3c", "ending_discovery"],
+    "dawn": ["ch2a", "ch3d", "ending_dawn"],          # Cargo 2's hidden road
 }[goal]
+# whose good opinion a road needs, so story choices can lean that way (Cargo 2)
+ROAD_STAT = {"trade": "standing.hansa", "combat": "standing.mandate", "discovery": "standing.concord",
+             "discovery2": "standing.concord", "dawn": "dawn_trust"}[goal]
 
 
 class Done(Exception):
@@ -238,7 +242,7 @@ class Bot:
                     return "s"
 
         # passengers
-        if "port" in options and "port" not in self.flags and goal in ("trade", "discovery") and \
+        if "port" in options and "port" not in self.flags and goal in ("trade", "discovery", "dawn") and \
                 ("passengers_transported" in need or "passenger_reputation" in need or
                  any(m.passengers for m in getattr(ship, "passenger_modules", []))):
             self.flags.add("port")
@@ -475,6 +479,13 @@ class Bot:
                 return self.move(options)
             if p.startswith("your choice"):           # a story scene's choice
                 self.story_choices += 1
+                offered = getattr(getattr(g, "story", None), "offered", None) or []
+                if offered and options:
+                    gain = [(c.get("effects") or {}).get(ROAD_STAT, 0) for c in offered]
+                    if max(gain) > 0:
+                        return str(gain.index(max(gain)) + 1)
+                    safe = [i for i, c in enumerate(offered) if (c.get("effects") or {}).get(ROAD_STAT, 0) >= 0]
+                    return str(random.choice(safe or list(range(len(offered)))) + 1)
                 return random.choice(options) if options else ""
             if "choose action (1/2/3)" in p or "choose action" in p or "your response" in p:
                 self.unknown[("choice", tuple(options)[:6])] += 1

@@ -224,7 +224,16 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
         self.front_berths = getattr(self, "front_berths", 0)
         if not isinstance(self.ship.__dict__.get("modules"), list):
             self.ship.__dict__["modules"] = []      # a save from before the ship had modules
-        for cid, chapter in getattr(getattr(self, "story_manager", None), "chapters", {}).items():
+        sm = getattr(self, "story_manager", None)
+        if sm is not None and isinstance(getattr(sm, "chapters", None), dict):
+            for cid, chapter in sm.initialize_chapters().items():      # chapters added since the save
+                if cid not in sm.chapters:
+                    sm.chapters[cid] = chapter
+                else:
+                    for nxt in chapter.next_chapters:
+                        if nxt not in sm.chapters[cid].next_chapters:
+                            sm.chapters[cid].next_chapters.append(nxt)
+        for cid, chapter in getattr(sm, "chapters", {}).items():
             for milestone in chapter.milestones.values():
                 milestone.chapter_id = cid          # the story file may state its condition
         self.story_manager.apply_story_text()

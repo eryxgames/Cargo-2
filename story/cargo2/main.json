@@ -78,7 +78,8 @@
    },
    "next": [
     "ch3a",
-    "ch3c"
+    "ch3c",
+    "ch3d"
    ],
    "choose": true
   },
@@ -122,7 +123,8 @@
    },
    "next": [
     "ch3b",
-    "ch3c"
+    "ch3c",
+    "ch3d"
    ],
    "choose": true
   },
@@ -162,13 +164,11 @@
      "ring.lost"
     ],
     "plot_points": 80,
-    "trade_profit": 150000
+    "trade_profit": 150000,
+    "standing.hansa": 20
    },
    "next": [
     "ending_trade"
-   ],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
    ]
   },
   "ch3a.market_control": {
@@ -201,13 +201,11 @@
      "ring.lost"
     ],
     "plot_points": 80,
-    "combat_victories": 25
+    "combat_victories": 25,
+    "standing.mandate": 20
    },
    "next": [
     "ending_combat"
-   ],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
    ]
   },
   "ch3b.fleet_commander": {
@@ -239,13 +237,11 @@
      "ring.lost"
     ],
     "plot_points": 80,
-    "research_points": 300
+    "research_points": 300,
+    "standing.concord": 20
    },
    "next": [
     "ending_discovery"
-   ],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
    ]
   },
   "ch3c.alien_artifacts": {
@@ -275,14 +271,23 @@
    ],
    "requires": {
     "done": [
-     "ch3a"
+     "ch3a",
+     "road.hansa.vote"
     ],
     "plot_points": 120,
     "trade_profit": 400000
    },
    "next": [],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   "variants": [
+    {
+     "requires": {
+      "flag": "segments_hansa"
+     },
+     "text": [
+      "The vote goes the Hansa's way: the segments are the league's. Its lead haulers no longer need asteroids, and the needles are a road the Hansa owns outright.",
+      "Your name goes on another wall. You are getting used to it."
+     ]
+    }
    ]
   },
   "ending_trade.trade_ending": {
@@ -308,14 +313,23 @@
    ],
    "requires": {
     "done": [
-     "ch3b"
+     "ch3b",
+     "road.mandate.taking"
     ],
     "plot_points": 120,
     "combat_victories": 50
    },
    "next": [],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   "variants": [
+    {
+     "requires": {
+      "flag": "segments_hansa"
+     },
+     "text": [
+      "You turned the Mandate's own tug towards the Hansa's buoy, and the segments are the league's. The lighthouses still see every jump; they just cannot stop any.",
+      "{serac} sends a note: 'Well flown.' He does not sign it, and he does not need to."
+     ]
+    }
    ]
   },
   "ending_combat.combat_ending": {
@@ -340,14 +354,23 @@
    ],
    "requires": {
     "done": [
-     "ch3c"
+     "ch3c",
+     "road.door.through"
     ],
     "plot_points": 120,
     "research_points": 1500
    },
    "next": [],
-   "notes": [
-    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   "variants": [
+    {
+     "requires": {
+      "flag": "segments_common"
+     },
+     "text": [
+      "You flew through the door and back, and left the turn written in a bar's ledger forty years ago. By the time you are home, everybody already knows: the segments are common ground, because they always were.",
+      "House Rostrom files your logs the same day. Somebody reads them."
+     ]
+    }
    ]
   },
   "ending_discovery.discovery_ending": {
@@ -368,6 +391,52 @@
     "discovered.ResearchColony": 3,
     "discovered.AsteroidBase": 2
    }
+  },
+  "ch3d": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 3,
+   "title": "The Quiet Node",
+   "secret": true,
+   "text": [
+    "The machines have never asked you for anything they could not do without. Now they ask you to keep one thing from being owned: the segments, and themselves.",
+    "Nobody else knows this road is here. That is the point."
+   ],
+   "requires": {
+    "done_any": [
+     "ch2a",
+     "ch2b"
+    ],
+    "done": [
+     "ring.lost"
+    ],
+    "plot_points": 80,
+    "dawn_trust": 30
+   },
+   "next": [
+    "ending_dawn"
+   ]
+  },
+  "ending_dawn": {
+   "kind": "ending",
+   "arc": "main",
+   "act": 4,
+   "title": "The Quiet Node",
+   "text": [
+    "The segments turn when they turn, and nothing comes out of them that the machines did not let through.",
+    "The Mandate blames the Hansa, the Hansa blames House Rostrom, and House Rostrom publishes a paper. Your console says 'thank you' once, in lower case, and never again."
+   ],
+   "requires": {
+    "done": [
+     "ch3d",
+     "road.dawn.quiet"
+    ],
+    "plot_points": 120,
+    "dawn_trust": 50,
+    "trades_completed": 45,
+    "research_points": 600
+   },
+   "next": []
   }
  }
 }

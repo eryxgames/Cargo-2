@@ -22,7 +22,7 @@ SOURCE = os.path.join(ROOT, "story", "cargo2.story.json")
 BUILT = os.path.join(ROOT, "story", "cargo2.game.json")
 
 NODE_FIELDS = ("kind", "arc", "act", "title", "text", "variants", "requires", "effects", "choices", "next",
-               "choose", "in", "who", "where", "chance", "repeat", "status", "handled_by", "sound")
+               "choose", "in", "who", "where", "chance", "repeat", "status", "handled_by", "sound", "secret")
 CHARACTER_FIELDS = ("name", "short", "full", "title", "kind", "generated")
 PLACE_FIELDS = ("kind", "type", "system", "ly", "made", "open", "about")
 

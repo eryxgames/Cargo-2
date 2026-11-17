@@ -1,7 +1,7 @@
 {
  "format": "storykit",
  "version": 1,
- "about": "Cargo 1's promises paid in acts 1 and 2: the sleeper wakes, the other captain, the seed, the hollow rock.",
+ "about": "Cargo 1's promises paid in acts 1 to 3: the sleeper wakes, the other captain, the seed, the hollow rock, the name on the drive, Lyra.",
  "arcs": {
   "debts": {
    "title": "Old debts",
@@ -42,6 +42,42 @@
   },
   "rock_listening": {
    "about": "the captain kept the colony's news to themselves and kept listening",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_with_rostrom": {
+   "about": "{santor} went to House Rostrom after he came back",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_with_hansa": {
+   "about": "{santor} went to the Hansa after he came back",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_hidden": {
+   "about": "the captain hid {santor} from the Mandate",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_log_given": {
+   "about": "the captain gave the Lyra expedition the old signal log",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_warned": {
+   "about": "the captain told the Lyra expedition the Maud Kettle's story",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_probe_sent": {
+   "about": "the captain's own probe went quiet near the cold moon in Lyra",
    "carries_to": [
     "cargo3"
    ]
@@ -1286,6 +1322,205 @@
        "rock_listening"
       ]
      }
+    }
+   ]
+  },
+  "santor.returns": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 3,
+   "title": "The name on the drive",
+   "requires": {
+    "done": [
+     "ring.lost"
+    ],
+    "at_type": "Planet"
+   },
+   "chance": 0.3,
+   "who": [
+    "santor"
+   ],
+   "pays": [
+    "the_fourth_test"
+   ],
+   "text": [
+    "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+    "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_copy"
+      }
+     },
+     "text": [
+      "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+      "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares.",
+      "You have a copy of the recording of his test, kept for forty years in a locker. He asks to see it. Nobody else alive has."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_to_rostrom"
+      }
+     },
+     "text": [
+      "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+      "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares.",
+      "You gave the only recording of his test to House Rostrom forty years ago. He wants it back, and he wants you to ask for it."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "rostrom",
+     "say": "Take him to House Rostrom",
+     "effects": {
+      "standing.concord": 10,
+      "set": [
+       "santor_with_rostrom"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "hansa",
+     "say": "Take him to the Hansa: the name on the drive is the league's",
+     "effects": {
+      "standing.hansa": 10,
+      "set": [
+       "santor_with_hansa"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "show",
+     "say": "Show him the recording, and let him decide",
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_copy"
+      }
+     },
+     "effects": {
+      "standing.concord": 5,
+      "standing.hansa": 5,
+      "plot_points": 8
+     }
+    },
+    {
+     "id": "hide",
+     "say": "Hide him from the Mandate's officers on the dock",
+     "effects": {
+      "standing.mandate": -10,
+      "set": [
+       "santor_hidden"
+      ],
+      "plot_points": 5
+     }
+    }
+   ]
+  },
+  "lyra.expedition": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "title": "Lyra",
+   "requires": {
+    "act_min": 2,
+    "done": [
+     "ring.expedition"
+    ],
+    "at_type": [
+     "Planet",
+     "ResearchColony"
+    ]
+   },
+   "chance": 0.25,
+   "pays": [
+    "the_lyra_rumour"
+   ],
+   "text": [
+    "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+    "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "logged_the_lyra_signal"
+      }
+     },
+     "text": [
+      "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+      "Before it leaves, the survey office asks whether it is true that you have a copy of the old signal log from the listening post.",
+      "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "heard_the_lyra_story"
+      }
+     },
+     "text": [
+      "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+      "You heard how the Maud Kettle went down out there, forty years ago, from the one who lived. The expedition has not.",
+      "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "log",
+     "say": "Sell them your copy of the signal log first (30,000)",
+     "requires": {
+      "player_origin": {
+       "flag": "logged_the_lyra_signal"
+      }
+     },
+     "effects": {
+      "money": 30000,
+      "standing.concord": 10,
+      "set": [
+       "lyra_log_given"
+      ]
+     }
+    },
+    {
+     "id": "kettle",
+     "say": "Tell them what the Maud Kettle's survivor told you",
+     "requires": {
+      "player_origin": {
+       "flag": "heard_the_lyra_story"
+      }
+     },
+     "effects": {
+      "standing.concord": 5,
+      "set": [
+       "lyra_warned"
+      ]
+     }
+    },
+    {
+     "id": "probe",
+     "say": "Pay for a probe of your own in their hold (10,000)",
+     "requires": {
+      "money": 10000
+     },
+     "effects": {
+      "money": -10000,
+      "research_points": 300,
+      "set": [
+       "lyra_probe_sent"
+      ]
+     }
+    },
+    {
+     "id": "listen",
+     "say": "Read the news and go back to work"
     }
    ]
   }

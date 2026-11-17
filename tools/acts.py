@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Acts 1 and 2 of Cargo 2: the frame and its turning points, and Cargo 1's promises paid.
+"""Acts 1 to 3 of Cargo 2: the frame and its turning points, and Cargo 1's promises paid.
 - the chapters, milestones and endings take their titles and conditions from story/cargo2/;
 - act 1 does not end before the heading file is opened, act 3 does not open before the first
   segment is lost; every way through the auction, the expedition and the loss;
 - the sleeper wakes, the other captain books your needle, the Binary Dawn speaks, the colony at
-  Sigma VII hears the ring: each with the variant and the choices its Cargo 1 flags call for.
+  Sigma VII hears the ring: each with the variant and the choices its Cargo 1 flags call for;
+- the four roads of act 3, each to the holder of the segments its climax decides; the fourth
+  stays secret until it opens.
 Usage: python3 tools/acts.py"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -64,7 +66,9 @@ sm.plot_points = 500
 game.ship.trade_profits["contracts"] = 10 ** 6
 expect(not cargo.chapter_requirements_met(sm.chapters["ch3a"], game), "act 3 does not open before the segment is lost")
 game.story.done["ring.lost"] = game.turn
-expect(cargo.chapter_requirements_met(sm.chapters["ch3a"], game), "act 3 opens after the segment is lost")
+expect(not cargo.chapter_requirements_met(sm.chapters["ch3a"], game), "the open road needs the Hansa's trust")
+game.change_standing("hansa", 25)
+expect(cargo.chapter_requirements_met(sm.chapters["ch3a"], game), "act 3 opens after the segment is lost, with the Hansa's trust")
 
 # an old save: milestones learn their chapter again
 for chapter in sm.chapters.values():
@@ -167,6 +171,76 @@ for flags, words in ROCK:
     text = play(game, io, "rock.receiver", "3")
     expect(words in flat(text) and "ONCE EVERY ELEVEN MINUTES" in flat(text), "the rock with %s: %r" % (flags or "no history", words))
     expect(game.story_manager.story_states.get("rock_listening") and game.dawn_trust == 5, "keeping the colony's news")
+
+# ---- act 3: the four roads --------------------------------------------------------------------------
+ROADS = [   # chapter, crisis, low point, climax, answers, the segments' holder it leads to
+    ("ch3a", "road.hansa.blockade", "road.hansa.licence", "road.hansa.vote", ["1", "1", "1"], "segments_common"),
+    ("ch3b", "road.mandate.decoys", "road.mandate.list", "road.mandate.taking", ["2", "1", "1"], "segments_mandate"),
+    ("ch3c", "road.door.second_turn", "road.door.clocks", "road.door.through", ["1", "1", "1"], "segments_rostrom"),
+    ("ch3d", "road.dawn.census", "road.dawn.price", "road.dawn.quiet", ["1", "1", "1"], "segments_dawn"),
+]
+ENDING = {"ch3a": "ending_trade", "ch3b": "ending_combat", "ch3c": "ending_discovery", "ch3d": "ending_dawn"}
+for cid, crisis, low, climax, answers, holder in ROADS:
+    game, io, _ = start(None)
+    sm = game.story_manager
+    sm.current_chapter = cid
+    sm.completed_chapters.update(["ch1", "ch2a", "ch2b", cid])
+    sm.plot_points = 500
+    game.ship.money = 200000
+    for nid, answer in zip((crisis, low, climax), answers):
+        game.turn += 10
+        play(game, io, nid, answer)
+    expect(game.story_manager.story_states.get(holder), "%s: the climax leaves the segments with %s" % (cid, holder))
+    cond = game.story.condition_for(ENDING[cid])
+    expect(cond and climax in cond.get("done", []), "%s's ending waits for %s" % (cid, climax))
+game, io, _ = start(record("cargo1", "trade", ["kept_the_pellet", "met_the_stranger"]))
+game.story_manager.current_chapter = "ch3c"
+game.story_manager.plot_points = 500
+game.story.done.update({"road.door.clocks": 1})
+game.turn = 20
+text = play(game, io, "road.door.through", "1")
+expect("worn smooth" in flat(text) and game.story_manager.story_states.get("paid_with_the_pellet"),
+       "the captain who kept the pellet closes the loop at the bar")
+
+# the fourth road is secret until it opens; old saves learn of it
+game, io, _ = start(None)
+sm = game.story_manager
+sm.current_chapter = "ch2a"
+sm.chapters["ch2a"].completed = True
+io.queue.clear(); io.feed([""] * 4)
+with quiet() as buf:
+    sm.present_chapter_choice([sm.chapters["ch3c"]])
+expect("Quiet Node" not in buf.getvalue() and "Open Road" in buf.getvalue(), "the quiet node is not listed while it is shut")
+del sm.chapters["ch3d"]
+sm.chapters["ch2a"].next_chapters.remove("ch3d")
+with quiet():
+    game.bring_up_to_date()
+expect("ch3d" in sm.chapters and "ch3d" in sm.chapters["ch2a"].next_chapters, "an old save learns the fourth road")
+expect(cargo.ending_title(record("cargo2", "dawn")) == "the Quiet Node", "a Cargo 2 dawn ending is the Quiet Node")
+
+# ---- the last promises, and old acquaintances ---------------------------------------------------------
+ECHOES = [   # scene, record flags, words, answer, where
+    ("santor.returns", ["fourth_test_copy"], "kept for forty years in a locker", "3", None),
+    ("santor.returns", ["fourth_test_to_rostrom"], "He wants it back", "1", None),
+    ("santor.returns", [], "eleven minutes", "4", None),
+    ("lyra.expedition", ["logged_the_lyra_signal"], "copy of the old signal log", "1", None),
+    ("lyra.expedition", ["heard_the_lyra_story"], "Maud Kettle", "1", None),
+    ("lyra.expedition", [], "no signal, no wreck, no answer", "1", None),
+    ("rootstock.voce", ["rootstock_family"], "We kept your place at the table", "2", None),
+    ("rootstock.voce", ["sold_the_exoparts"], "Our loaders still wear them", "1", None),
+    ("rootstock.voce", ["met_rootstock"], "feeds three systems", "3", None),
+    ("mraz.angels", ["mraz_spared"], "Same hauler", "1", None),
+    ("mraz.angels", ["mraz_hired"], "The rate has gone up", "2", None),
+    ("mraz.angels", ["mraz_handed"], "remembers who put her there", "3", None),
+    ("cargolytes.sect", ["met_cargolytes"], "apparent good order", "3", None),
+]
+for nid, flags, words, answer, where in ECHOES:
+    game, io, _ = start(record("cargo1", "trade", flags) if flags else None)
+    game.story_manager.current_chapter = "ch2a"
+    game.story.done.update({"ring.lost": 1, "ring.expedition": 1})
+    game.turn, game.ship.money = 30, 100000
+    text = play(game, io, nid, answer, where)
+    expect(words.lower() in flat(text).lower(), "%s with %s: %r" % (nid, flags or "no history", words))
 
 print("acts: frame, turning points and promises, %d problems" % problems[0])
 sys.exit(1 if problems[0] else 0)

@@ -89,7 +89,8 @@ def record_matches(record, want, player=None):
 GAME_TITLES = {"cargo1": "Cargo", "cargo2": "Cargo 2", "cargo3": "Cargo 3"}
 ENDING_TITLES = {"trade": "the Hauler Hansa", "combat": "the First Legion", "discovery": "the Heading",
                  "tycoon": "Galactic Tycoon", "": "no ending yet"}
-GAME_ENDING_TITLES = {"cargo2": {"trade": "the Open Road", "combat": "the Lighthouse", "discovery": "the Door"}}
+GAME_ENDING_TITLES = {"cargo2": {"trade": "the Open Road", "combat": "the Lighthouse", "discovery": "the Door",
+                                 "dawn": "the Quiet Node"}}
 
 
 def ending_title(record):
@@ -349,7 +350,9 @@ class StoryRuntime:
             box.extend([""] if number == 1 else [])
             box.extend(self.game.option_lines(number, self.fill(choice.get("say", choice.get("id", "")))))
         self.game.display_story_message(box, pause=0)
+        self.offered = choices              # what a reader of the screen sees (tools/bot.py)
         picked = self.ask(len(choices))
+        self.offered = None
         choice = choices[picked]
         self.done["%s:%s" % (nid, choice.get("id", picked))] = self.game.turn
         self.apply(choice.get("effects"))

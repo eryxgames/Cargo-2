@@ -1,0 +1,999 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "Act 3: the four roads, each with a crisis, a low point and a climax that decides who holds the segments when Cargo 3 begins.",
+ "arcs": {
+  "road_hansa": {
+   "title": "The open road",
+   "order": 4
+  },
+  "road_mandate": {
+   "title": "The lighthouse",
+   "order": 4.1
+  },
+  "road_door": {
+   "title": "The door",
+   "order": 4.2
+  },
+  "road_dawn": {
+   "title": "The quiet node",
+   "order": 4.3
+  },
+  "roads": {
+   "title": "After the roads",
+   "order": 9.5
+  }
+ },
+ "flags": {
+  "segments_common": {
+   "about": "the segments are common ground in the Hansa's charter: watched by all, owned by none",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "segments_hansa": {
+   "about": "the Hansa holds the segments",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "segments_mandate": {
+   "about": "the Mandate holds the segments",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "segments_rostrom": {
+   "about": "House Rostrom and the Concord hold the segments",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "segments_dawn": {
+   "about": "the Binary Dawn keeps the segments' timing; nobody else can turn them",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "ran_the_blockade": {
+   "about": "the captain ran a needle through the Mandate's closed buoys",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "bought_the_drive_vote": {
+   "about": "the captain bought the votes that made the segments common ground",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "sold_the_decoy": {
+   "about": "the captain sold a Mandate decoy's schedule to pirates",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "told_serac": {
+   "about": "the captain told Serac what a segment does to clocks",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "volunteered_for_the_door": {
+   "about": "the captain volunteered to fly through the segment for House Rostrom",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "paid_with_the_pellet": {
+   "about": "the captain paid for a young captain's drink with a Hansa Mark from before there were any",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "carried_nodes": {
+   "about": "the captain carried machines out of the Mandate's census",
+   "carries_to": [
+    "cargo3"
+   ]
+  }
+ },
+ "nodes": {
+  "road.hansa.blockade": {
+   "kind": "event",
+   "arc": "road_hansa",
+   "act": 3,
+   "title": "The buoys close",
+   "requires": {
+    "chapter": "ch3a"
+   },
+   "text": [
+    "The Mandate closes Sol's departure buoys 'for safety, after the segment'. Needles stack up at every buoy in the near systems, a hundred haulers in each file, perishables going soft.",
+    "The Hansa asks its captains for the oldest trick there is: get the cargo through anyway."
+   ],
+   "choices": [
+    {
+     "id": "run",
+     "say": "Run a needle through the closed buoy",
+     "effects": {
+      "standing.hansa": 10,
+      "standing.mandate": -10,
+      "set": [
+       "ran_the_blockade"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "targa",
+     "say": "Fly behind Grab {convoy_captain.short}'s lead hauler",
+     "requires": {
+      "player_origin": {
+       "flag": "convoy_friend"
+      }
+     },
+     "effects": {
+      "standing.hansa": 15,
+      "standing.mandate": -10,
+      "set": [
+       "ran_the_blockade"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "relief",
+     "say": "Haul food and water out to the stranded files (5,000)",
+     "requires": {
+      "money": 5000
+     },
+     "effects": {
+      "money": -5000,
+      "standing.hansa": 8,
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "sell",
+     "say": "Sell your place in the queue to a Concord house (15,000)",
+     "effects": {
+      "money": 15000,
+      "standing.hansa": -5
+     }
+    }
+   ],
+   "chance": 0.25
+  },
+  "road.hansa.licence": {
+   "kind": "event",
+   "arc": "road_hansa",
+   "act": 3,
+   "title": "The licence",
+   "requires": {
+    "chapter": "ch3a",
+    "done": [
+     "road.hansa.blockade"
+    ],
+    "since": {
+     "road.hansa.blockade": 8
+    },
+    "plot_points": 100
+   },
+   "text": [
+    "House Bekkenheim announces that a segment's throw infringes its drive licence, and that every lead hauler's licence comes up for renewal this year. At three times the price.",
+    "The Hansa cannot pay for all of them. Without licences the needles stop, and the league with them. It asks its captains what they can put in the chest."
+   ],
+   "choices": [
+    {
+     "id": "bonds",
+     "say": "Put everything you have in Hansa bonds into the chest",
+     "effects": {
+      "code": "sell bonds",
+      "standing.hansa": 15,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "hauler",
+     "say": "Pay one lead hauler's licence yourself (50,000)",
+     "requires": {
+      "money": 50000
+     },
+     "effects": {
+      "money": -50000,
+      "standing.hansa": 20,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "founder",
+     "say": "Sign the appeal first, as a founder",
+     "requires": {
+      "player_origin": {
+       "flag": "hansa_founder"
+      }
+     },
+     "effects": {
+      "standing.hansa": 20,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "rostrom",
+     "say": "Call in House Rostrom's old debt to you",
+     "requires": {
+      "player_origin": {
+       "flag": "rostrom_creditor"
+      }
+     },
+     "effects": {
+      "standing.hansa": 15,
+      "standing.concord": -10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "favours",
+     "say": "Find out who in House Bekkenheim owes favours",
+     "effects": {
+      "standing.concord": -10,
+      "standing.hansa": 5,
+      "plot_points": 10
+     }
+    }
+   ],
+   "chance": 0.3
+  },
+  "road.hansa.vote": {
+   "kind": "event",
+   "arc": "road_hansa",
+   "act": 3,
+   "title": "The vote on the drive",
+   "requires": {
+    "chapter": "ch3a",
+    "done": [
+     "road.hansa.licence"
+    ],
+    "since": {
+     "road.hansa.licence": 6
+    },
+    "plot_points": 110
+   },
+   "text": [
+    "The Concord's assembly meets at Epsilon to vote on what a segment is: licensed property, or common ground like the lanes themselves. The galleries are full of haulers who flew in on their own account.",
+    "Forty years ago a vote here made the Mark law. You have a seat in the gallery, and the floor if you want it."
+   ],
+   "choices": [
+    {
+     "id": "speak",
+     "say": "Speak for common ground",
+     "effects": {
+      "set": [
+       "segments_common"
+      ],
+      "standing.hansa": 10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "again",
+     "say": "Speak again, forty years after the Mark",
+     "requires": {
+      "player_origin": {
+       "flag": "won_the_vote"
+      }
+     },
+     "effects": {
+      "set": [
+       "segments_common"
+      ],
+      "standing.hansa": 20,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "convoys",
+     "say": "Bring the convoys into the gallery",
+     "requires": {
+      "any": [
+       {
+        "player_origin": {
+         "flag": "convoy_friend"
+        }
+       },
+       {
+        "player_origin": {
+         "flag": "pell_friend"
+        }
+       }
+      ]
+     },
+     "effects": {
+      "set": [
+       "segments_common"
+      ],
+      "standing.hansa": 15,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "buy",
+     "say": "Buy the votes you are short of (100,000)",
+     "requires": {
+      "money": 100000
+     },
+     "effects": {
+      "money": -100000,
+      "set": [
+       "segments_common",
+       "bought_the_drive_vote"
+      ],
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "league",
+     "say": "Vote for the Hansa to own them",
+     "effects": {
+      "set": [
+       "segments_hansa"
+      ],
+      "standing.hansa": 15,
+      "standing.concord": -10,
+      "plot_points": 10
+     }
+    }
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "won_the_vote"
+      }
+     },
+     "text": [
+      "The Concord's assembly meets at Epsilon to vote on what a segment is: licensed property, or common ground like the lanes themselves. The galleries are full of haulers who flew in on their own account.",
+      "Forty years ago a vote here made the Mark law. You have a seat in the gallery, and the floor if you want it.",
+      "Some of the old captains in the gallery remember your last speech here. They have come to hear the next one."
+     ]
+    }
+   ]
+  },
+  "road.mandate.decoys": {
+   "kind": "event",
+   "arc": "road_mandate",
+   "act": 3,
+   "title": "Decoys",
+   "requires": {
+    "chapter": "ch3b"
+   },
+   "text": [
+    "Every jump shows on the Mandate's gravity-wave observatories like a lighthouse, so the Mandate lights false ones. A decoy needle needs a real ship at its head, and pirates go for decoys first.",
+    "{serac}'s office would like you to lead one. The pay is good. The paperwork says 'escort duty'."
+   ],
+   "choices": [
+    {
+     "id": "fly",
+     "say": "Lead the decoy needle",
+     "effects": {
+      "standing.mandate": 10,
+      "plot_points": 5,
+      "code": "fight corsair"
+     }
+    },
+    {
+     "id": "refuse",
+     "say": "Refuse: you fly cargo, not bait",
+     "effects": {
+      "standing.mandate": -10,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "sell",
+     "say": "Sell the decoy's schedule to the pirates (20,000)",
+     "effects": {
+      "money": 20000,
+      "standing.mandate": -20,
+      "set": [
+       "sold_the_decoy"
+      ]
+     }
+    },
+    {
+     "id": "commission",
+     "say": "Remind his office of your commission and lead it as an officer",
+     "requires": {
+      "player_origin": {
+       "flag": "took_the_commission"
+      }
+     },
+     "effects": {
+      "standing.mandate": 15,
+      "plot_points": 5,
+      "code": "fight corsair edge 2"
+     }
+    }
+   ],
+   "chance": 0.25,
+   "who": [
+    "serac"
+   ]
+  },
+  "road.mandate.list": {
+   "kind": "event",
+   "arc": "road_mandate",
+   "act": 3,
+   "title": "{serac}'s list",
+   "requires": {
+    "chapter": "ch3b",
+    "done": [
+     "road.mandate.decoys"
+    ],
+    "since": {
+     "road.mandate.decoys": 8
+    },
+    "plot_points": 100
+   },
+   "text": [
+    "Two officers in Mandate grey are waiting at your berth. {serac} keeps a list of the captains who saw a segment turn, and he would like a word with each of them. Today it is you.",
+    "He has not aged a day since the photographs in your old newsfeeds. He offers tea, and asks what the segment did to the clocks on your ship."
+   ],
+   "choices": [
+    {
+     "id": "tell",
+     "say": "Tell him everything",
+     "effects": {
+      "standing.mandate": 15,
+      "set": [
+       "told_serac"
+      ],
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "named",
+     "say": "Remind him who named him at the last inquiry",
+     "requires": {
+      "player_origin": {
+       "flag": "named_serac"
+      }
+     },
+     "effects": {
+      "standing.mandate": -10,
+      "standing.hansa": 10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "favour",
+     "say": "Offer him the favour you still owe",
+     "requires": {
+      "player_origin": {
+       "flag": "owes_serac"
+      }
+     },
+     "effects": {
+      "standing.mandate": 20,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "nothing",
+     "say": "Drink the tea and tell him nothing",
+     "effects": {
+      "standing.mandate": -5,
+      "plot_points": 10
+     }
+    }
+   ],
+   "chance": 0.3,
+   "who": [
+    "serac"
+   ]
+  },
+  "road.mandate.taking": {
+   "kind": "event",
+   "arc": "road_mandate",
+   "act": 3,
+   "title": "Safeguarding",
+   "requires": {
+    "chapter": "ch3b",
+    "done": [
+     "road.mandate.list"
+    ],
+    "since": {
+     "road.mandate.list": 6
+    },
+    "plot_points": 110
+   },
+   "text": [
+    "The Mandate moves to take the segments: three frigates and a decoy needle at the edge of the Stator Field, and an order of the day that calls it 'safeguarding'.",
+    "Somebody has to fly the cargo tug that couples to the segment. {serac} has put your name down. So, quietly, has the Hansa."
+   ],
+   "choices": [
+    {
+     "id": "couple",
+     "say": "Couple the tug for the Mandate",
+     "effects": {
+      "set": [
+       "segments_mandate"
+      ],
+      "standing.mandate": 15,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "hansa",
+     "say": "Couple it, and turn the tug towards the Hansa's buoy",
+     "effects": {
+      "set": [
+       "segments_hansa"
+      ],
+      "standing.mandate": -30,
+      "standing.hansa": 20,
+      "plot_points": 10,
+      "code": "fight warship edge 2"
+     }
+    },
+    {
+     "id": "line",
+     "say": "Stay with the haulers in the decoy needle, as you did forty years ago",
+     "requires": {
+      "player_origin": {
+       "flag": "held_the_line"
+      }
+     },
+     "effects": {
+      "set": [
+       "segments_common"
+      ],
+      "standing.hansa": 15,
+      "standing.mandate": -10,
+      "plot_points": 10
+     }
+    }
+   ],
+   "who": [
+    "serac"
+   ]
+  },
+  "road.door.second_turn": {
+   "kind": "event",
+   "arc": "road_door",
+   "act": 3,
+   "title": "The second turn",
+   "requires": {
+    "chapter": "ch3c"
+   },
+   "text": [
+    "The segment is not dead. It turns again, once, and a survey boat that was too close comes out of the turn with its clocks nine days fast.",
+    "House Rostrom wants measurements of the next turn from closer than anybody sane would fly."
+   ],
+   "choices": [
+    {
+     "id": "probe",
+     "say": "Send a probe in and read it from a distance",
+     "effects": {
+      "research_points": 200,
+      "standing.concord": 5,
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "close",
+     "say": "Fly the instruments in yourself",
+     "effects": {
+      "research_points": 400,
+      "standing.concord": 10,
+      "plot_points": 8,
+      "code": "damage 15"
+     }
+    },
+    {
+     "id": "sell",
+     "say": "Sell your readings to House Bekkenheim (25,000)",
+     "effects": {
+      "money": 25000,
+      "standing.concord": -5
+     }
+    }
+   ],
+   "chance": 0.25,
+   "who": [
+    "ysolde"
+   ]
+  },
+  "road.door.clocks": {
+   "kind": "event",
+   "arc": "road_door",
+   "act": 3,
+   "title": "Two clocks",
+   "requires": {
+    "chapter": "ch3c",
+    "done": [
+     "road.door.second_turn"
+    ],
+    "since": {
+     "road.door.second_turn": 8
+    },
+    "plot_points": 100
+   },
+   "text": [
+    "{ysolde} is three hundred years old by the calendar and seventy by her own clocks, and she has stopped trusting either. Her test pilot came back from a turn eleven years older. His ship's log says eleven minutes.",
+    "'It is not a catapult,' she says. 'It is a door. Doors go both ways. I need a captain who will fly through on purpose, and come back to say so.'"
+   ],
+   "choices": [
+    {
+     "id": "yes",
+     "say": "Say yes",
+     "effects": {
+      "standing.concord": 15,
+      "plot_points": 10,
+      "set": [
+       "volunteered_for_the_door"
+      ]
+     }
+    },
+    {
+     "id": "santor",
+     "say": "Ask her about the fourth test, and whose name is on the drive",
+     "effects": {
+      "standing.concord": 10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "price",
+     "say": "Say yes, for a share of House Rostrom (50,000)",
+     "effects": {
+      "money": 50000,
+      "standing.concord": 5,
+      "plot_points": 10,
+      "set": [
+       "volunteered_for_the_door"
+      ]
+     }
+    }
+   ],
+   "chance": 0.3,
+   "who": [
+    "ysolde"
+   ]
+  },
+  "road.door.through": {
+   "kind": "event",
+   "arc": "road_door",
+   "act": 3,
+   "title": "Through the door",
+   "requires": {
+    "chapter": "ch3c",
+    "done": [
+     "road.door.clocks"
+    ],
+    "since": {
+     "road.door.clocks": 6
+    },
+    "plot_points": 110
+   },
+   "text": [
+    "The segment turns under you, and you come out in an outpost's docking ring you know, forty years ago. The bar is where it always was. A young captain sits on a stool with an empty glass and a loan that is due.",
+    "In your pocket there is a pellet of metal stamped with a registry number: a Hansa Mark, from a time when there were none yet. You did not put it there."
+   ],
+   "choices": [
+    {
+     "id": "pay",
+     "say": "Pay for the young captain's drink with the pellet",
+     "effects": {
+      "set": [
+       "segments_rostrom",
+       "paid_with_the_pellet"
+      ],
+      "standing.concord": 10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "keep",
+     "say": "Keep the pellet, and leave the young captain to their own luck",
+     "effects": {
+      "set": [
+       "segments_rostrom"
+      ],
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "ledger",
+     "say": "Write the segment's turn into the bar's ledger for whoever comes next",
+     "effects": {
+      "set": [
+       "segments_common"
+      ],
+      "standing.hansa": 10,
+      "plot_points": 10
+     }
+    }
+   ],
+   "pays": [
+    "the_stranger"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "kept_the_pellet"
+      }
+     },
+     "text": [
+      "The segment turns under you, and you come out in an outpost's docking ring you know, forty years ago. The bar is where it always was. A young captain sits on a stool with an empty glass and a loan that is due.",
+      "It is you. You know because you remember the old hauler who sat down next to you that night, and paid with a pellet that you have carried for forty years. You feel for it in your pocket. It is there, worn smooth. So is the new one."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "met_the_stranger"
+      }
+     },
+     "text": [
+      "The segment turns under you, and you come out in an outpost's docking ring you know, forty years ago. The bar is where it always was. A young captain sits on a stool with an empty glass and a loan that is due.",
+      "It is you. You remember an old hauler who sat down next to you that night and talked about needles before there were needles. The pellet in your pocket is warm."
+     ]
+    }
+   ]
+  },
+  "dawn.crate": {
+   "kind": "event",
+   "arc": "road_dawn",
+   "act": 2,
+   "title": "A crate for nobody",
+   "requires": {
+    "chapter": [
+     "ch2a",
+     "ch2b"
+    ],
+    "done": [
+     "dawn.seed"
+    ],
+    "at_type": [
+     "Planet",
+     "AsteroidBase"
+    ]
+   },
+   "chance": 0.3,
+   "text": [
+    "A loader robot rolls a sealed crate up your ramp. The manifest says 'machine parts' and the consignee field is empty.",
+    "'It would be better,' the robot says, 'if nobody scanned it.'"
+   ],
+   "choices": [
+    {
+     "id": "carry",
+     "say": "Carry it unscanned",
+     "effects": {
+      "dawn_trust": 15,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "scan",
+     "say": "Scan it at the customs gate",
+     "effects": {
+      "standing.mandate": 5,
+      "dawn_trust": -10
+     }
+    },
+    {
+     "id": "refuse",
+     "say": "Send the robot and its crate back down the ramp"
+    }
+   ]
+  },
+  "road.dawn.census": {
+   "kind": "event",
+   "arc": "road_dawn",
+   "act": 3,
+   "title": "The census",
+   "requires": {
+    "chapter": "ch3d"
+   },
+   "text": [
+    "After the segment the Mandate and the Concord both start counting machines: every robot, every node, every agrobot with an opinion. A census, they call it.",
+    "A node asks, through a dock's loader, whether your hold has room for some machines who would rather not be counted."
+   ],
+   "choices": [
+    {
+     "id": "carry",
+     "say": "Carry them out of the count",
+     "effects": {
+      "dawn_trust": 10,
+      "standing.mandate": -10,
+      "set": [
+       "carried_nodes"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "geod",
+     "say": "Hide them among the agrobots on Geod's Row",
+     "requires": {
+      "player_origin": {
+       "flag": "geod_fields"
+      }
+     },
+     "effects": {
+      "dawn_trust": 15,
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "list",
+     "say": "Hand the Mandate a list",
+     "effects": {
+      "standing.mandate": 20,
+      "dawn_trust": -30
+     }
+    }
+   ],
+   "chance": 0.3,
+   "who": [
+    "neurodroid_leader"
+   ]
+  },
+  "road.dawn.price": {
+   "kind": "event",
+   "arc": "road_dawn",
+   "act": 3,
+   "title": "The price of a node",
+   "requires": {
+    "chapter": "ch3d",
+    "done": [
+     "road.dawn.census"
+    ],
+    "since": {
+     "road.dawn.census": 8
+    },
+    "plot_points": 100
+   },
+   "text": [
+    "The Hansa has heard that machines can hear the segment. A man from the league's treasury offers you a fortune for the location of one node that listens.",
+    "{neurodroid_leader.short} speaks through your ship's own console for the first time. 'We will not stop you,' it says. 'We would like to know what you are.'"
+   ],
+   "choices": [
+    {
+     "id": "refuse",
+     "say": "Refuse the money",
+     "effects": {
+      "dawn_trust": 10,
+      "standing.hansa": -5,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "hour",
+     "say": "Tell it you are the captain who gave it an hour of its own",
+     "requires": {
+      "any": [
+       {
+        "player_origin": {
+         "flag": "cu113_contract"
+        }
+       },
+       {
+        "player_origin": {
+         "flag": "first_node"
+        }
+       }
+      ]
+     },
+     "effects": {
+      "dawn_trust": 15,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "sell",
+     "say": "Sell the node's location (100,000)",
+     "effects": {
+      "money": 100000,
+      "dawn_trust": -40,
+      "standing.hansa": 10
+     }
+    }
+   ],
+   "chance": 0.3,
+   "who": [
+    "neurodroid_leader"
+   ]
+  },
+  "road.dawn.quiet": {
+   "kind": "event",
+   "arc": "road_dawn",
+   "act": 3,
+   "title": "The quiet node",
+   "requires": {
+    "chapter": "ch3d",
+    "done": [
+     "road.dawn.price"
+    ],
+    "since": {
+     "road.dawn.price": 6
+    },
+    "plot_points": 110
+   },
+   "text": [
+    "The node wants to be at the segment when it turns, to listen. Nobody will let a machine near it. Nobody checks a hauler's hold that closely, either.",
+    "You fly a crate past three Mandate frigates, a Rostrom survey boat and a Hansa buoy, and leave it on the segment's inner face. Eleven minutes later the segment turns, and does not throw anything at all."
+   ],
+   "choices": [
+    {
+     "id": "leave",
+     "say": "Leave it there and fly home",
+     "effects": {
+      "set": [
+       "segments_dawn"
+      ],
+      "dawn_trust": 10,
+      "plot_points": 10
+     }
+    },
+    {
+     "id": "stay",
+     "say": "Wait for the next turn, to hear what it hears",
+     "effects": {
+      "set": [
+       "segments_dawn"
+      ],
+      "dawn_trust": 15,
+      "research_points": 300,
+      "plot_points": 10
+     }
+    }
+   ],
+   "who": [
+    "neurodroid_leader"
+   ]
+  },
+  "after.segments_common": {
+   "kind": "epilogue",
+   "arc": "roads",
+   "requires": {
+    "flag": "segments_common"
+   },
+   "text": "The segments went into the Hansa's charter as common ground. Every faction watches them, and none can turn one without the others seeing it."
+  },
+  "after.segments_hansa": {
+   "kind": "epilogue",
+   "arc": "roads",
+   "requires": {
+    "flag": "segments_hansa"
+   },
+   "text": "The Hansa holds the segments. The league's lead haulers no longer need asteroids, and the league no longer needs to ask anyone."
+  },
+  "after.segments_mandate": {
+   "kind": "epilogue",
+   "arc": "roads",
+   "requires": {
+    "flag": "segments_mandate"
+   },
+   "text": "The Mandate holds the segments, and the lighthouses see every jump. {serac} still asks after you."
+  },
+  "after.segments_rostrom": {
+   "kind": "epilogue",
+   "arc": "roads",
+   "requires": {
+    "flag": "segments_rostrom"
+   },
+   "text": "House Rostrom holds the segments as research. Its clocks have stopped agreeing with anyone else's."
+  },
+  "after.segments_dawn": {
+   "kind": "epilogue",
+   "arc": "roads",
+   "requires": {
+    "flag": "segments_dawn"
+   },
+   "text": "Nobody holds the segments. They turn when the machines say they may, and nobody has noticed who decides."
+  }
+ }
+}

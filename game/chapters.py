@@ -455,7 +455,7 @@ class StoryManager:
                         "rewards": {"money": 30000, "plot_points": 10}
                     }
                 ],
-                next_chapters=["ch3a", "ch3c"]
+                next_chapters=["ch3a", "ch3c", "ch3d"]
             ),
 
             "ch2b": StoryChapter(
@@ -488,7 +488,7 @@ class StoryManager:
                         "rewards": {"money": 30000, "plot_points": 15}
                     }
                 ],
-                next_chapters=["ch3b", "ch3c"]
+                next_chapters=["ch3b", "ch3c", "ch3d"]
             ),
 
             "ch3a": StoryChapter(
@@ -563,7 +563,27 @@ class StoryManager:
                 next_chapters=["ending_discovery"]
             ),
 
+            # Cargo 2's fourth road, for captains the machines trust: its title, text and
+            # conditions come from the story file (story/cargo2/main.json)
+            "ch3d": StoryChapter(
+                chapter_id="ch3d",
+                title="The Quiet Node",
+                description="Keep the machines' network unowned",
+                requirements={"chapters_completed_any": ["ch2a", "ch2b"], "plot_points": 80},
+                milestones=[],
+                next_chapters=["ending_dawn"]
+            ),
+
             # Endings
+            "ending_dawn": StoryChapter(
+                chapter_id="ending_dawn",
+                title="The Quiet Node",
+                description="The machines keep what nobody may own",
+                requirements={"chapters_completed": ["ch3d"], "plot_points": 120},
+                milestones=[],
+                next_chapters=[]
+            ),
+
             "ending_trade": StoryChapter(
                 chapter_id="ending_trade",
                 title="Galactic Trade Mogul",
@@ -757,7 +777,9 @@ class StoryManager:
                 [f"{i}. {chapter.title}"],
                 [chapter.description]
             ])
-        waiting = [self.chapters[cid] for cid in current.next_chapters if cid not in open_ids]
+        nodes = story_data()["nodes"]
+        waiting = [self.chapters[cid] for cid in current.next_chapters
+                   if cid not in open_ids and not (nodes.get(cid) or {}).get("secret")]
         for chapter in waiting:
             content.extend([
                 [""],

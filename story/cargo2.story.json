@@ -34,7 +34,9 @@
   "cargo2/main.json",
   "cargo2/hansa.json",
   "cargo2/heading.json",
-  "cargo2/debts.json"
+  "cargo2/debts.json",
+  "cargo2/roads.json",
+  "cargo2/echoes.json"
  ],
  "stats": {
   "money": {
