@@ -44,11 +44,20 @@ class NeedlesMixin:
         fare = base * POSITIONS[position][0] * hike * self.hansa_fare_factor() * 0.88 ** getattr(self, "hansa_bonds", 0)
         return max(10, int(fare))
 
+    def fare_for(self, position):
+        """The fare this captain pays: a berth owed by the needle office puts the front at the middle's fare."""
+        if position == "front" and getattr(self, "front_berths", 0) > 0:
+            return self.needle_fare("middle")
+        return self.needle_fare(position)
+
     def book_needle(self, destination):
         """The needle office: pick a place in the file and pay. Returns the place, or None."""
         lines = [["Needle to %s (%s)" % (destination.name, system_of(destination.name))], [""]]
         for number, (position, (_, _, how)) in enumerate(POSITIONS.items(), 1):
-            lines.append(["%d. %s: %s" % (number, how[0].upper() + how[1:], self.format_money(self.needle_fare(position)))])
+            lines.append(["%d. %s: %s" % (number, how[0].upper() + how[1:], self.format_money(self.fare_for(position)))])
+        berths = getattr(self, "front_berths", 0)
+        if berths:
+            lines.extend([[""], ["A berth at the front for the middle's fare: %d jump%s left." % (berths, "" if berths == 1 else "s")]])
         owed = getattr(self, "dues_arrears", 0)
         if owed:
             lines.extend([[""], ["On account with the needle office: %s." % self.format_money(owed)]])
@@ -57,7 +66,7 @@ class NeedlesMixin:
         if answer is None:
             return None
         position = list(POSITIONS)[int(answer) - 1]
-        fare = self.needle_fare(position)
+        fare = self.fare_for(position)
         if self.ship.money >= fare:
             self.ship.money -= fare
             self.display_simple_message("Booked: %s, %s." % (POSITIONS[position][2].split(":")[0], self.format_money(fare)), 1)
@@ -70,6 +79,8 @@ class NeedlesMixin:
                                         "(hansa/ha), sell something, or fly inside this system.", 2, color='31')
             self.convoy_master_takes()
             return None
+        if position == "front" and berths:
+            self.front_berths = berths - 1
         self.needle_risk = POSITIONS[position][1]
         self.needle_position = position
         return position

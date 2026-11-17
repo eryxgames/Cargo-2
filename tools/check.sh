@@ -10,13 +10,15 @@ fail=0
 echo "== CLIo's layer in kit/ is as copied"
 $PY $T/sync_kit.py --check || fail=1
 
-echo "== the story: copied tools unchanged, built file current, no new findings, every scene plays"
+echo "== the story: copied tools unchanged, built file current, no new findings, every scene plays,"
+echo "   every way into the game (fresh, each Cargo 1 ending, Cargo 2 and 3 records) starts right"
 $PY $T/sync_story.py --check || fail=1
 $PY $T/build_story.py --check || fail=1
 $PY storykit/validate.py story/saga.json --baseline story/findings-baseline.json > /tmp/cargo2-validate.txt; tail -2 /tmp/cargo2-validate.txt
 grep -q "baseline: 0 new" /tmp/cargo2-validate.txt || fail=1
 $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
+$PY $T/openings.py || fail=1
 
 echo "== Cargo 2's systems, one by one"
 $PY $T/systems.py || fail=1
@@ -53,11 +55,14 @@ print('  cols', r['cols'], 'seed', r['seed'], 'inputs', r['inputs'], 'ok' if ok 
 sys.exit(0 if ok else 1)" || fail=1; done; done
 
 echo "== long games through the real prompts at 36 columns, with saves and loads"
-for goal in trade combat; do for s in $SEEDS; do $PY $T/bot.py $G $goal $s 400 --save-every=9 --cols=36 | $PY -c "
+echo "   (seed 2 plays a Cargo 1 captain with the same ending; seed 1 a fresh one)"
+for goal in trade combat; do for s in $SEEDS; do
+captain=""; [ $s = 2 ] && captain="--captain=$goal"
+$PY $T/bot.py $G $goal $s 400 --save-every=9 --cols=36 $captain | $PY -c "
 import json,sys
 r=json.load(sys.stdin)
 crash='traceback' in r
-print('  %-7s seed %s: %s at turn %s, %s loads %s' % (r['goal'], r['seed'], r.get('ending') or r.get('end') or 'playing', r.get('turn'), r.get('loads'), 'CRASH '+r['traceback'][-300:] if crash else ''))
+print('  %-7s seed %s%s: %s at turn %s, %s loads %s' % (r['goal'], r['seed'], ' (Cargo 1 captain)' if r.get('captain') else '', r.get('ending') or r.get('end') or 'playing', r.get('turn'), r.get('loads'), 'CRASH '+r['traceback'][-300:] if crash else ''))
 sys.exit(1 if crash else 0)" || fail=1; done; done
 
 if [ $fail = 0 ]; then echo "ALL CHECKS PASSED"; else echo "SOME CHECKS FAILED"; exit 1; fi

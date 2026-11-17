@@ -575,9 +575,10 @@ def story_hook(game, value):
     'crew joins <role>', 'repair <points>', 'damage <points>', 'lose money <share> min <amount>',
     'stow <units> <name> as <words>' (special cargo takes hold room until 'unstow <name>'; the
     words name it on screen and in the journal), 'profit <credits>' (paid, and counted as trade profit),
-    'lose research <share>', 'buy bonds <n>', 'sell bonds', 'crew leaves <role>',
+    'lose research <share>', 'buy bonds <n>', 'give bonds <n>' (free), 'sell bonds', 'crew leaves <role>',
     'dues hike <factor>' (for thirty turns), 'squeeze <good> <factor>' (prices of a good fall at
-    every known dock, then recover like any market)."""
+    every known dock, then recover like any market), 'front berths <n>' (the next n places at the
+    front of a needle cost the middle's fare)."""
     if isinstance(value, list):
         for one in value:
             story_hook(game, one)
@@ -605,6 +606,10 @@ def story_hook(game, value):
         game.display_simple_message("%d research points are gone with the logs." % loss, 2, color='31')
     elif words[:2] == ["buy", "bonds"]:
         game.buy_bonds(int(words[2]))
+    elif words[:2] == ["give", "bonds"] and len(words) == 3:
+        game.hansa_bonds = getattr(game, "hansa_bonds", 0) + int(words[2])
+        game.display_simple_message("The Hansa gives you %s bond%s: needle fares are %d%% lower." % (
+            words[2], "" if words[2] == "1" else "s", round(100 * (1 - 0.88 ** game.hansa_bonds))), 2, color='32')
     elif words[:2] == ["sell", "bonds"]:
         held, value_ = game.sell_bonds()
         game.display_simple_message("The Hansa buys back %d bond%s for %s. Your dues go back up." % (
@@ -627,6 +632,10 @@ def story_hook(game, value):
         if units is not None:
             label = getattr(ship, "special_labels", {}).pop(words[1], words[1])
             game.display_simple_message("Unloaded: %s (%d units of hold free again)." % (label, units), 2)
+    elif words[:2] == ["front", "berths"] and len(words) == 3:
+        game.front_berths = getattr(game, "front_berths", 0) + int(words[2])
+        game.display_simple_message("The needle office owes you %d berth%s at the front, at the middle's fare."
+                                    % (game.front_berths, "" if game.front_berths == 1 else "s"), 2, color='32')
     elif words[0] == "profit" and len(words) == 2:      # contract pay that counts as trade profit
         ship.money += int(words[1])
         ship.trade_profits["contracts"] = ship.trade_profits.get("contracts", 0) + int(words[1])

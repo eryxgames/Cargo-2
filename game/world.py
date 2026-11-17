@@ -29,6 +29,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
     def __init__(self, difficulty=None, player_name=None, intro=True, origin=None, voyage=None):
         self.standing = {name: 0 for name in FACTIONS}     # with the Hansa, the Mandate, the Concord
         self.dawn_trust = 0                                 # the Binary Dawn's, hidden until it speaks
+        self.front_berths = 0                               # front places owed at the middle's fare
         self.term_width = self.get_terminal_width()
         self.term_height = self.get_terminal_height()
         asked = difficulty is None
@@ -218,6 +219,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
         for name in FACTIONS:
             self.standing.setdefault(name, 0)
         self.dawn_trust = getattr(self, "dawn_trust", 0)
+        self.front_berths = getattr(self, "front_berths", 0)
         self.story_manager.apply_story_text()
 
     def count_discovered(self, location_type=None):

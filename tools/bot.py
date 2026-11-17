@@ -16,6 +16,9 @@ VOYAGE = {"short": "1", "standard": "2", "long": "3"}.get(
     next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--voyage=")), "standard"), "2")
 max_turns = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4].isdigit() else 3000
 verbose = "--verbose" in sys.argv
+# --captain=trade|combat|discovery|tycoon: play as a captain from Cargo 1 with that ending (and a
+# handful of the flags the act-1 scenes read) instead of a fresh one
+CAPTAIN = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--captain=")), None)
 save_every = 0
 trace_path = None
 for a in sys.argv:
@@ -642,9 +645,23 @@ result = {"goal": goal, "seed": seed}
 history = []
 try:
     bot.ctx = None
-    answers = iter(["2", VOYAGE, "Bot %s %d" % (goal, seed)])
-    builtins.input = lambda prompt="": next(answers)
-    game = cargo.Game()
+    if CAPTAIN:
+        from game import captain as captains
+        record = {"format": "cargo-captain", "version": 1, "id": "BOT", "name": "Bot %s %d" % (goal, seed),
+                  "rank": "Veteran", "origin": {"game": "cargo1", "version": "bot"},
+                  "career": {"turns": 150}, "ship": {}, "hold": {}, "log": [],
+                  "story": {"ending": CAPTAIN, "flags": ["hansa_founder", "convoy_friend", "pell_lent",
+                                                          "lauritz_bribed", "took_the_commission"]}}
+        record["check"] = captains._captain_check(record)
+        record = captains.clean_captain(record)
+        answers = iter(["2", VOYAGE])
+        builtins.input = lambda prompt="": next(answers)
+        game = cargo.Game(player_name=record["name"], origin=record)
+        result["captain"] = CAPTAIN
+    else:
+        answers = iter(["2", VOYAGE, "Bot %s %d" % (goal, seed)])
+        builtins.input = lambda prompt="": next(answers)
+        game = cargo.Game()
     builtins.input = fake_input
     bot.game = game
     while True:

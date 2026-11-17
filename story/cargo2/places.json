@@ -158,6 +158,33 @@
     "research": 90,
     "economy": "Mysterious"
    }
+  },
+  "Planet": {
+   "kind": "location type",
+   "hidden": false
+  },
+  "AsteroidBase": {
+   "kind": "location type",
+   "hidden": true
+  },
+  "DeepSpaceOutpost": {
+   "kind": "location type",
+   "hidden": true
+  },
+  "ResearchColony": {
+   "kind": "location type",
+   "hidden": true
+  },
+  "Space": {
+   "kind": "between locations"
+  },
+  "port": {
+   "kind": "venue",
+   "about": "the port: passengers and cabins"
+  },
+  "cantina": {
+   "kind": "venue",
+   "about": "the cantina: gossip, jobs, rumours"
   }
  }
 }

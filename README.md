@@ -19,7 +19,13 @@ own world and story. What works now:
 
 - a new game, or one started as any captain whose record is in the shared folder; a captain from
   Cargo 1 comes in with their name, ranks and choices;
-- travel, trade, fights, quests, crew, the Hansa's dues, saves, autosave and continue;
+- the opening fits the captain: a fresh hauler; Cargo 1's Hansa founder, legion veteran (or
+  Serac's colonel), the one who filed the heading, the tycoon, or a career left unfinished; a
+  captain from Cargo 2 again, or from Cargo 3, thrown back. Each starts with its own standing;
+- act 1 at the needle office: the founders' wall, Grab Allsa Targa, Pell Okafor at fifty-nine and
+  Hanne Lauritz's notebooks remember what a Cargo 1 captain did, and greet a fresh one; the
+  cantinas talk about 2460;
+- travel, trade, fights, quests, crew, saves, autosave and continue;
 - every screen from 36 columns up, in Termux too; standard library only;
 - the needles: between the stars you book a place in a Hansa convoy (front: safe and dear; tail:
   cheap and cold, and the Cargolytes work the tail); inside a star system you fly on your own fuel;
@@ -30,8 +36,8 @@ own world and story. What works now:
   games. `CARGO_STYLE=name` picks one for a single run; `NO_COLOR=1` turns colour off and
   `CARGO_ASCII=1` draws in plain ASCII.
 
-The story of Cargo 2 is still to be written: for now there is one opening chapter, and the map
-and the endings are still Cargo 1's. The plan (world in 2460, the convoy needles, factions and
+Most of the story is still to be written: the openings and the first scenes of act 1 are in, and
+the map, the chapters after the first and the endings are still Cargo 1's. The plan (world in 2460, the convoy needles, factions and
 the ring, the modular ship, tactical convoy combat, research trees) is in the project's design
 document.
 
@@ -83,6 +89,7 @@ trilogy are named once, in `story/saga.json`. After a change:
 python3 tools/build_story.py                     # builds story/cargo2.game.json
 python3 storykit/validate.py story/saga.json     # unknown names, broken links, unpaid promises
 python3 tools/scenes.py                          # plays every scene with every choice
+python3 tools/openings.py                        # every kind of captain starts right
 ```
 
 `storykit/`, `story/saga.json` and Cargo 1's story are copies from the Cargo repository

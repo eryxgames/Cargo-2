@@ -1,0 +1,2016 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "Act 1: the Hansa forty years on, and the people from Cargo 1 who run it now; the cantina's rumours of 2460.",
+ "arcs": {
+  "hansa": {
+   "title": "The Hansa, forty years on",
+   "order": 1
+  },
+  "2460": {
+   "title": "Rumours of 2460",
+   "order": 9
+  }
+ },
+ "characters": {
+  "convoy_captain": {
+   "kind": "human",
+   "about": "Grab of the Hansa, master of the needle office, eighty-one; still keeps score"
+  },
+  "young_hauler": {
+   "kind": "human",
+   "about": "fifty-nine, a senior of the Hansa with a seat on the needle council"
+  },
+  "inspector": {
+   "kind": "human",
+   "about": "retired customs inspector; her notebooks are in the Mandate's archive, and in print"
+  },
+  "serac": {
+   "kind": "human",
+   "about": "runs the Mandate's operations and the Solar Union's inner-systems wing; has not aged"
+  },
+  "santor": {
+   "kind": "human",
+   "about": "the name on the drive of every lead hauler"
+  }
+ },
+ "flags": {
+  "joined_late": {
+   "about": "the captain joined the Hansa forty years after it was founded",
+   "carries_to": [
+    "cargo3"
+   ]
+  }
+ },
+ "nodes": {
+  "hansa.first_mark": {
+   "kind": "event",
+   "arc": "hansa",
+   "act": 1,
+   "title": "The founders' wall",
+   "requires": {
+    "at_type": "Planet",
+    "turn_min": 2
+   },
+   "text": [
+    "The needle office at {place} has a wall with forty founders' names on it, and the first Mark under glass: a pellet of metal with a registry number stamped into it.",
+    "Haulers touch the glass for luck on the way to their slots. You touch it too."
+   ],
+   "chance": 0.5,
+   "pays": [
+    "the_first_mark"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "hansa_founder"
+      }
+     },
+     "text": [
+      "The needle office at {place} has a wall with forty founders' names on it. Yours is the first, above the first Mark under glass.",
+      "The clerk looks from the wall to you and stands up. 'The league remembers who signed first,' she says."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "hansa_member"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "hansa_founder"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The needle office at {place} has a wall with forty founders' names on it. Yours is the eleventh, between two captains who died rich.",
+      "The clerk finds it after a while and puts a star on your booking."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "hansa_outside"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "hansa_founder"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "hansa_member"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The needle office at {place} has a wall with forty founders' names on it. None of them is yours.",
+      "The clerk knows the story: the captain who stayed out. 'You can still join,' she says. 'It costs more now.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "founders_share",
+     "say": "Take the founders' share (two Hansa bonds)",
+     "requires": {
+      "player_origin": {
+       "flag": "hansa_founder"
+      }
+     },
+     "effects": {
+      "standing.hansa": 20,
+      "code": "give bonds 2"
+     }
+    },
+    {
+     "id": "leave_the_share",
+     "say": "Leave the share in the league's chest",
+     "requires": {
+      "player_origin": {
+       "flag": "hansa_founder"
+      }
+     },
+     "effects": {
+      "standing.hansa": 30
+     }
+    },
+    {
+     "id": "star",
+     "say": "Thank the clerk",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "hansa_member"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "hansa_founder"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 10
+     }
+    },
+    {
+     "id": "join",
+     "say": "Join the Hansa now (5,000)",
+     "requires": {
+      "all": [
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "hansa_outside"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "hansa_founder"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "hansa_member"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "money": 5000
+       }
+      ]
+     },
+     "effects": {
+      "money": -5000,
+      "standing.hansa": 20,
+      "set": [
+       "joined_late"
+      ]
+     }
+    },
+    {
+     "id": "stay_out",
+     "say": "Stay outside, as before",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "hansa_outside"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "hansa_founder"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "hansa_member"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": -10
+     }
+    },
+    {
+     "id": "touch",
+     "say": "Touch the glass and go to your slot",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "hansa_founder"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "hansa_member"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "hansa_outside"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "hansa.targa": {
+   "kind": "event",
+   "arc": "hansa",
+   "act": 1,
+   "title": "The master of the needle office",
+   "requires": {
+    "at_type": "Planet",
+    "done": "hansa.first_mark",
+    "since": {
+     "hansa.first_mark": 3
+    }
+   },
+   "text": [
+    "The master of the needle office is Grab {convoy_captain}, eighty-one and chewing liquorice root. She has run the convoys since before the needles had names.",
+    "'New captain,' she says, reading your slot. 'The middle is where you learn. The tail is where you learn faster.'"
+   ],
+   "chance": 0.4,
+   "who": [
+    "convoy_captain"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "convoy_friend"
+      }
+     },
+     "text": [
+      "Grab {convoy_captain} runs the needle office now, eighty-one and still chewing liquorice root. She sees your name on the list and crosses the floor herself, slower than she used to.",
+      "'I keep score,' she says. 'I still owe you a berth.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "convoy_helped"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "Grab {convoy_captain} runs the needle office now, eighty-one and still chewing liquorice root. 'Two barges, perishables, no tug,' she says before you open your mouth.",
+      "'I keep score.' She moves your next booking to the front without being asked."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "targa_remembers_the_raid"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "Grab {convoy_captain} runs the needle office now, eighty-one and still chewing liquorice root. She remembers the Cargolytes' raid, and who cut loose and ran.",
+      "She looks at your booking for a long time, then moves it to the tail."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "convoy_refused"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "targa_remembers_the_raid"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "Grab {convoy_captain} runs the needle office now, eighty-one and still chewing liquorice root.",
+      "'You left my barges at the dock,' she says, not looking up. 'Forty years ago. The perishables were melons.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "berth",
+     "say": "Take the berth (ten jumps at the front for the middle's fare)",
+     "requires": {
+      "player_origin": {
+       "flag": "convoy_friend"
+      }
+     },
+     "effects": {
+      "code": "front berths 10",
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "even",
+     "say": "Tell her the score is even",
+     "requires": {
+      "player_origin": {
+       "flag": "convoy_friend"
+      }
+     },
+     "effects": {
+      "standing.hansa": 15
+     }
+    },
+    {
+     "id": "thanks",
+     "say": "Thank her",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "convoy_helped"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "code": "front berths 3",
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "tail",
+     "say": "Take the tail and say nothing",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "targa_remembers_the_raid"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": -5
+     }
+    },
+    {
+     "id": "why",
+     "say": "Tell her why you ran",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "targa_remembers_the_raid"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "melons",
+     "say": "Apologise for the melons",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "convoy_refused"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "targa_remembers_the_raid"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "shrug",
+     "say": "Shrug",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "convoy_refused"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "convoy_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "convoy_helped"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "targa_remembers_the_raid"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": -5
+     }
+    },
+    {
+     "id": "ask",
+     "say": "Ask her where to sit",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "convoy_friend"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "convoy_helped"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "targa_remembers_the_raid"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "convoy_refused"
+         }
+        }
+       ]
+      }
+     },
+     "effects": {
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "nod",
+     "say": "Nod and go",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "convoy_friend"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "convoy_helped"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "targa_remembers_the_raid"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "convoy_refused"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "hansa.pell": {
+   "kind": "event",
+   "arc": "hansa",
+   "act": 1,
+   "title": "{young_hauler.short} at fifty-nine",
+   "requires": {
+    "at_type": "Planet",
+    "turn_min": 8,
+    "done": "hansa.first_mark"
+   },
+   "text": [
+    "{young_hauler} is fifty-nine and a senior of the Hansa. In the back room of the needle office he teaches new haulers how to book, where to sit, and what the Cargolytes take from the tail."
+   ],
+   "chance": 0.3,
+   "who": [
+    "young_hauler"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "pell_friend"
+      }
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa, with a seat on the needle council and the same grin as at nineteen.",
+      "'You flew with me when I had nothing,' he says. 'Book us into the same needle and I'll take the place behind you.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_lent"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa. He pays back the ten thousand you lent him at nineteen, with forty years of interest at the Hansa's rate, worked out to the credit."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_redeemed"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa. 'You took me back from the raiders,' he tells the young haulers around him. 'Nobody else would have. Remember that when somebody asks you.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_turned_away"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa. He remembers the captain who turned a nineteen-year-old away from the dock, and he is polite about it, which is worse."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "fought_pell"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa, with a scar along his jaw from a fight on a lane forty years ago.",
+      "'I was on the wrong side of it,' he says. 'So were you.' Then he buys you a drink."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "paid_pell"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "fought_pell"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa. 'You paid me to go away,' he says. 'I went. Then I came back with a ship.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "any": [
+         {
+          "player_origin": {
+           "flag": "pell_taught"
+          }
+         },
+         {
+          "player_origin": {
+           "flag": "pell_advised"
+          }
+         }
+        ]
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "fought_pell"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "paid_pell"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{young_hauler} is fifty-nine and a senior of the Hansa. 'You told me to keep my receipts and stay out of the tail,' he says. 'I still do. Mostly.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "shake",
+     "say": "Shake on it",
+     "requires": {
+      "player_origin": {
+       "flag": "pell_friend"
+      }
+     },
+     "effects": {
+      "standing.hansa": 10,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "take",
+     "say": "Take the money (40,000)",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_lent"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "money": 40000,
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "round",
+     "say": "Tell him to stand the young haulers a round with it",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_lent"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 15,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "buy_round",
+     "say": "Buy the round yourself",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_redeemed"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "money": -500,
+      "standing.hansa": 10
+     }
+    },
+    {
+     "id": "sorry",
+     "say": "Apologise, forty years late",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_turned_away"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "silent",
+     "say": "Say nothing",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "pell_turned_away"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": -5
+     }
+    },
+    {
+     "id": "drink",
+     "say": "Drink to the wrong side",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "fought_pell"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "ship_name",
+     "say": "Ask what the ship was called",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "paid_pell"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "fought_pell"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "mostly",
+     "say": "Ask what 'mostly' means",
+     "requires": {
+      "all": [
+       {
+        "any": [
+         {
+          "player_origin": {
+           "flag": "pell_taught"
+          }
+         },
+         {
+          "player_origin": {
+           "flag": "pell_advised"
+          }
+         }
+        ]
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_friend"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_lent"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_redeemed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_turned_away"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "fought_pell"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "paid_pell"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5,
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "class",
+     "say": "Sit in on the class",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "pell_friend"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_lent"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_redeemed"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_turned_away"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "fought_pell"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "paid_pell"
+         }
+        },
+        {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_taught"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_advised"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "effects": {
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "skip",
+     "say": "You know how to sit in a needle",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "pell_friend"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_lent"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_redeemed"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "pell_turned_away"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "fought_pell"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "paid_pell"
+         }
+        },
+        {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "pell_taught"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "pell_advised"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "hansa.notebooks": {
+   "kind": "event",
+   "arc": "hansa",
+   "act": 1,
+   "title": "{inspector.short}'s notebooks",
+   "requires": {
+    "at_type": [
+     "Planet",
+     "AsteroidBase"
+    ],
+    "turn_min": 12,
+    "done": "hansa.first_mark"
+   },
+   "text": [
+    "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+    "The notebooks are a book now, sold at every needle office: The Manifests. The customs officer checking your hold quotes it at you, page and line."
+   ],
+   "chance": 0.25,
+   "who": [
+    "inspector"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_bribed"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor stops you at the gate with page nine: a 'processing fee', your name, the date, the amount. 'Bribery has no time limit,' he says. 'The fine has a size.'"
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fined_for_the_fee"
+      }
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor reads you page nine, then page ten: fined in full, closed. 'Well,' he says. 'Off you go.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_burned"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor reads you page sixty: the captain who opened her sealed case. She wrote that down too."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "double_cross"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor has page seventy-two open: you told her about the Rootstock's big run. Customs records go public after thirty years, and the Rootstock read them."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_trust"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "double_cross"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor stops you at the gate with page forty-one. 'She wrote that your manifests were always right,' he says. 'She never wrote that about anybody else.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_courier"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "double_cross"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_trust"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "{inspector} retired eleven years ago and gave her notebooks to the Mandate's customs archive: forty years of manifests, bribes and tea, in a small square hand.",
+      "A Mandate auditor reads you page sixty: you carried her case sealed and never opened it. The case put a quartermaster in prison."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "pay_fine",
+     "say": "Pay the fine, with forty years of interest",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_bribed"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "code": "lose money 0.05 min 3000",
+      "standing.mandate": 5
+     }
+    },
+    {
+     "id": "refuse_fine",
+     "say": "Refuse: the inspector is retired, and so is the fee",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_bribed"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": -10
+     }
+    },
+    {
+     "id": "go",
+     "say": "Off you go",
+     "requires": {
+      "player_origin": {
+       "flag": "fined_for_the_fee"
+      }
+     }
+    },
+    {
+     "id": "burned",
+     "say": "Go, quickly",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_burned"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": -5
+     }
+    },
+    {
+     "id": "who_read",
+     "say": "Ask who else has read it",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "double_cross"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 5
+     }
+    },
+    {
+     "id": "waved",
+     "say": "Go through the gate",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_trust"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "double_cross"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 10
+     }
+    },
+    {
+     "id": "courier",
+     "say": "Ask which quartermaster",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "lauritz_courier"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "fined_for_the_fee"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_bribed"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_burned"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "double_cross"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "lauritz_trust"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 5
+     }
+    },
+    {
+     "id": "salt",
+     "say": "Ask for the page about salt",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "fined_for_the_fee"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_bribed"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_burned"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "double_cross"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_trust"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_courier"
+         }
+        }
+       ]
+      }
+     },
+     "effects": {
+      "plot_points": 1
+     }
+    },
+    {
+     "id": "quiet",
+     "say": "Let her check the hold",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "fined_for_the_fee"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_bribed"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_burned"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "double_cross"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_trust"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "lauritz_courier"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "hansa.old_hand": {
+   "kind": "event",
+   "arc": "hansa",
+   "act": 1,
+   "title": "An old hand",
+   "requires": {
+    "at_type": "Planet",
+    "visiting_captain": {
+     "game": "cargo1",
+     "same_name": false
+    }
+   },
+   "text": [
+    "An old captain sits under the founders' wall, telling the young haulers how it was before the needles: {visitor.name}, {visitor.rank}, forty years retired.",
+    "'The middle of the file,' {visitor.name} tells you. 'Always the middle, until you can afford to be wrong.'"
+   ],
+   "chance": 0.3,
+   "choices": [
+    {
+     "id": "drink",
+     "say": "Buy the old hand a drink",
+     "requires": {
+      "money": 200
+     },
+     "effects": {
+      "money": -200,
+      "standing.hansa": 5,
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "listen",
+     "say": "Listen, and go to your slot"
+    }
+   ]
+  },
+  "rumour.gamma_coop": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "gamma_farms_coop"
+    }
+   },
+   "text": "Gamma's underground farms feed three systems now. The miners' cooperative keeps an empty chair at its meetings for the captain who signed the farms over."
+  },
+  "rumour.gamma_company": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "gamma_farms_company"
+    }
+   },
+   "text": "Gamma is a company town: the farms, the shafts and the canteen belong to one board. The miners call the farms 'the captain's gift', and they do not mean it kindly."
+  },
+  "rumour.harp": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "harp_relay"
+    }
+   },
+   "text": "The quantum harp has forty strings now. The Hansa's forecasts come from it, and the Mandate would very much like to know how."
+  },
+  "rumour.insured": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "convoys_insured"
+    }
+   },
+   "text": "Every needle leaves insured. The underwriters have done well out of it for forty years, and they still tell the story of the flare lane."
+  },
+  "rumour.bekkenheim": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "House Bekkenheim licenses the resonance every lead hauler jumps on. Fly past the Bekkenheim limit without a licence and you are a pirate, whatever you carry."
+  },
+  "rumour.lighthouse": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "Every jump shows on the Mandate's gravity-wave observatories like a lighthouse. Smugglers fly decoys. The Mandate counts the decoys too."
+  },
+  "rumour.tithe": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "The Cargolytes work the tail of every needle. Now and then they cut a container loose and call it the tithe. Some captains pay before they are asked."
+  },
+  "rumour.santor": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "The drive in every lead hauler carries {santor}'s name. Ask at the needle office why, and the clerks change the subject."
+  },
+  "rumour.jump_clocks": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "A jump takes minutes aboard and years outside. Haulers keep two clocks, and argue about which one the loan is on."
+  },
+  "rumour.mandate": {
+   "kind": "rumour",
+   "arc": "2460",
+   "act": 1,
+   "text": "The Mandate's needles go first, and their decoys go first too. Civilian needles wait at the departure buoy while the grey ships form up."
+  }
+ }
+}
