@@ -1,5 +1,5 @@
 {
- "commit": "f01a567",
+ "commit": "450b652",
  "files": {
   "story/cargo1.story.json": "cc38de0497e4e5a2e65c663b58949925ef4d2845badee2ec0dd3a3105e0757fc",
   "story/cargo1/captain.json": "3377ce01dfafce6e0c06f0b0b8bdcd4c36323015a0b394e7c4bcdc2c682291f6",
@@ -29,13 +29,13 @@
   "story/cargo1/serac.json": "a26279ab95a875023ce4acfdc35fb6dc3083e97d2b9f05b1e0de8eec77d54808",
   "story/cargo1/synthetics.json": "f2b413ca61d018a68fde547b56d66a4bfe787a962964b04f7f44eac421d1a51c",
   "story/saga.json": "e8b1b1c5a91a8d4dc8bdcb2ee5a7145ad5a6520caa62735f2ec7ae9ec36fe728",
-  "storykit/FORMAT.md": "d5e2228eff60388bfd75e8a8173fe4ed870d6055524dc59b1de5c8e7f47ba78b",
+  "storykit/FORMAT.md": "38a17a8f6264a3131411302d12298ea87742838bbb9ec8ec997ad0f553104e56",
   "storykit/README.md": "94bea9c8961d510fa3a51d1897de7f1c6a996d1af1aeca00855196bf00a66ec7",
   "storykit/map_template.html": "a48b7f01404dc79f4ff88589f855dad9a1d06dc73782f01d10a64a4618bac6e5",
   "storykit/replay.py": "d5b49c231944ac130375d1d34395bfa8c56b2d7dac2407ac3a02b07ae313ff23",
-  "storykit/story.py": "6e5350807e2ebb0587a62f6feb0336204ada80bc7148fbefd04a7024e3c891ca",
+  "storykit/story.py": "bab5df30843759e5cbcc8083070efd8fd1fddde8f0bf638759cc0f873c454379",
   "storykit/storymap.py": "961137c2da6476b617812415e682d62a7e3ae67dcfc90fe1fd7c84577036c851",
-  "storykit/validate.py": "1c47a405e3803d002c3c47e9038c1fcc10cf5545c4efc74b19f63bc74fa0ce95"
+  "storykit/validate.py": "21ee06284de3eb84720ddef09d9747d5db761d203fd2c94296bc8dfd2a92c43f"
  },
  "from": "eryxgames/Cargo"
 }

@@ -56,8 +56,13 @@ class FactionsMixin:
         if enemy_kind != "militia":           # customs cutters and toll militia
             return False
         trust = self.standing_of("mandate")
+        if self.has_equipment("decoy_code") and random.random() < DECOY_WAVE:
+            return True                         # the Mandate's own decoy code, found at Gamma
         return trust >= 20 and random.random() < trust / 100.0
 
     def concord_research_factor(self):
         """The Concord's houses share more with a captain they trust (0.5 to 1.5)."""
         return 1.0 + self.standing_of("concord") / 200.0
+
+
+from .looking import DECOY_WAVE  # noqa: E402

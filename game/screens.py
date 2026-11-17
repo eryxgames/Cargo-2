@@ -117,7 +117,7 @@ class ScreensMixin:
                 total_capacity += module.capacity
 
         status_content = [
-            ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
+            [short_logo(), "Ship", f"{self.current_location.location_type}"],
             [f"Turn: {self.turn}", f"ATK: {self.ship.attack}", f"Name: {self.current_location.name}"],
             [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense}", f"Tech LVL: {self.current_location.tech_level}"],
             [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed}", f"Agri LVL: {self.current_location.agri_level}"],
@@ -201,7 +201,7 @@ class ScreensMixin:
         # Add items if any exist
         if self.ship.items:
             for item, count in self.ship.items.items():
-                ship_info.append([f"  {item.capitalize()}: {count}"])
+                ship_info.append([f"  {item.replace('_', ' ').capitalize()}: {count}"])
         else:
             ship_info.append(["  No items"])
 
@@ -323,6 +323,8 @@ class ScreensMixin:
         'captain': "your captain's record: carry it to another part of the saga",
         'style': "the look: colours and frames (themes from CLIo and from Cargo 2)",
         'sound': "music and effects on or off (composed as you play; silent without a player)",
+        'look': "look around the dock: people here, things to examine, what is going on",
+        'think': "your captain's notes: leads, where people travel, what the story still needs",
         'help': "this screen",
         'version': "the game's version",
         'resign': "end this game and see the score",
@@ -391,6 +393,10 @@ class ScreensMixin:
                  "rough lanes; a broken one does nothing until it is mended. Research colonies (action/a) research "
                  "in two tiers: each branch of the second closes its twin. The journal (log/l) lists your "
                  "standings and achievements."],
+                [""],
+                ["Look around a dock (look/lk) for the people there and things to examine; some people travel "
+                 "routes of their own. Think (th) to read your captain's notes: leads, where people go, what "
+                 "the story still needs. Nothing you find this way is needed for an ending, but some of it helps."],
                 [""],
                 ["Type a command or its shortcut and press Enter. In any menu, Enter on its own goes back. "
                  "Amounts: a number, max/m or half/h. Each 'end' or journey is one turn; the game saves "
@@ -486,6 +492,6 @@ class ScreensMixin:
 
 
 # The game's other modules, imported last so that the modules can refer to each other.
-from .terminal import RULE, box_inner_width, render_box, terminal_columns, wrap_text  # noqa: E402
+from .terminal import RULE, box_inner_width, render_box, short_logo, terminal_columns, wrap_text  # noqa: E402
 from .commands import GLOBAL_COMMANDS  # noqa: E402
 from .modules import condition_word, module_name  # noqa: E402

@@ -17,10 +17,25 @@
    "name": "Astin Pfennig",
    "short": "Astin",
    "kind": "human",
-   "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune"
+   "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune",
+   "route": {
+    "places": [
+     "Delta"
+    ],
+    "stay": 1
+   }
   },
   "clone": {
-   "about": "the other hauler with the captain's name"
+   "about": "the other hauler with the captain's name",
+   "route": {
+    "places": [
+     "Delta",
+     "Epsilon",
+     "Beta"
+    ],
+    "stay": 2,
+    "start": 3
+   }
   },
   "neurodroid_leader": {
    "kind": "neurodroid",

@@ -11,7 +11,16 @@
  "characters": {
   "meza_voce": {
    "kind": "android",
-   "about": "head of the Rootstock family, forty years on"
+   "about": "head of the Rootstock family, forty years on",
+   "route": {
+    "places": [
+     "Gamma",
+     "Delta",
+     "Beta"
+    ],
+    "stay": 3,
+    "start": 1
+   }
   },
   "pirate_captain": {
    "kind": "human",

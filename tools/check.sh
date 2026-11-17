@@ -24,6 +24,7 @@ $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
 $PY $T/openings.py || fail=1
 $PY $T/acts.py || fail=1
+$PY $T/look.py || fail=1
 $PY $T/handoff.py --check || fail=1
 
 echo "== Cargo 2's systems, one by one"
@@ -85,6 +86,17 @@ r=json.load(sys.stdin)
 crash='traceback' in r
 ok=r.get('ending')==sys.argv[1].replace('discovery2','discovery') and not crash
 print('  %-9s %s at turn %s %s' % (sys.argv[1], r.get('ending') or r.get('end'), r.get('turn'), 'CRASH '+r['traceback'][-300:] if crash else ''))
+sys.exit(0 if ok else 1)" $goal || fail=1; done
+
+echo "== a captain who looks around and follows the notes (36 columns, saves and loads): every road"
+echo "   still ends, and the side quests get done"
+for goal in trade combat discovery dawn; do $PY $T/bot.py $G $goal 3 900 --leads --save-every=9 --cols=36 | $PY -c "
+import json,sys
+r=json.load(sys.stdin)
+crash='traceback' in r
+done=[f for f in ('found_the_liar','locker_opened','loader_patch','needle_talk','returned_the_archive','institute_charts') if f in r['docks']['flags']]
+ok=r.get('ending')==sys.argv[1] and not crash and len(done)>=3
+print('  %-9s %s at turn %s; side quests done: %s %s' % (sys.argv[1], r.get('ending') or r.get('end'), r.get('turn'), ', '.join(done), 'CRASH '+r['traceback'][-300:] if crash else ''))
 sys.exit(0 if ok else 1)" $goal || fail=1; done
 
 echo "== the combat road on easy and expert (36 columns, saves and loads)"

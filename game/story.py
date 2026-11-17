@@ -21,6 +21,7 @@ with open(STORY_FILE, encoding="utf-8") as _story_file:
 # --- end of story data ---
 
 _STORY = None
+_STORY_ITEMS = None
 _STORY_LINKS = None
 STORY_MOMENTS = {}      # id(game) -> (snapshot, verdicts) of the runtime's last look; not saved
 
@@ -45,6 +46,19 @@ def story_data():
             data["order"] = list(data["nodes"])
         _STORY = data
     return _STORY
+
+
+def story_items():
+    """Items the story gives (a pass, a reader, a loader's hand): keepsakes and keys, not
+    equipment, so nothing breaks them or takes them except the story itself."""
+    global _STORY_ITEMS
+    if _STORY_ITEMS is None:
+        found = set()
+        for node in story_data()["nodes"].values():
+            for effects in [node.get("effects") or {}] + [c.get("effects") or {} for c in node.get("choices") or []]:
+                found.update(_as_list(((effects or {}).get("give") or {}).get("items")))
+        _STORY_ITEMS = found
+    return _STORY_ITEMS
 
 
 def story_links():
@@ -139,6 +153,11 @@ class StoryRuntime:
                 self.due.setdefault(target, self.game.turn + 1)
 
     # -- conditions --------------------------------------------------------------
+    def where_is(self, who, turn=None):
+        """Where a character's route has them on a turn (this one by default); None without a route."""
+        route = (story_data()["characters"].get(who) or {}).get("route")
+        return route_place(route, self.game.turn if turn is None else turn)
+
     def check(self, cond, snap, found=None):
         if not cond:
             return True
@@ -180,6 +199,8 @@ class StoryRuntime:
             return snap["place_type"] in _as_list(want)
         if key == "venue":
             return snap.get("venue") in _as_list(want)
+        if key == "here":
+            return any(self.where_is(who, snap["turn"]) == snap["place"] for who in _as_list(want))
         if key == "chapter":
             return snap.get("chapter") in _as_list(want)
         if key == "has":
@@ -351,8 +372,9 @@ class StoryRuntime:
             box.extend(self.game.option_lines(number, self.fill(choice.get("say", choice.get("id", "")))))
         self.game.display_story_message(box, pause=0)
         self.offered = choices              # what a reader of the screen sees (tools/bot.py)
+        self.offered_at = nid
         picked = self.ask(len(choices))
-        self.offered = None
+        self.offered = self.offered_at = None
         choice = choices[picked]
         self.done["%s:%s" % (nid, choice.get("id", picked))] = self.game.turn
         self.apply(choice.get("effects"))
@@ -511,6 +533,9 @@ class StoryRuntime:
         earned = game.achievement_rows()
         if earned:
             rows.extend([[""], ["Achievements"]] + earned)
+        equipment = game.equipment_rows()
+        if equipment:
+            rows.extend([[""], ["Special equipment"]] + equipment)
         rows.extend([[""], ["People"]])
         people = [c for c in self.met if c in chars and not chars[c].get("generated")]
         for cid in people or []:
@@ -565,7 +590,7 @@ def story_hook(game, value):
     'lose research <share>', 'buy bonds <n>', 'give bonds <n>' (free), 'sell bonds', 'crew leaves <role>',
     'dues hike <factor>' (for thirty turns), 'squeeze <good> <factor>' (prices of a good fall at
     every known dock, then recover like any market), 'front berths <n>' (the next n places at the
-    front of a needle cost the middle's fare)."""
+    front of a needle cost the middle's fare), 'take <item>' (an item the story gave leaves the ship)."""
     if isinstance(value, list):
         for one in value:
             story_hook(game, one)
@@ -619,6 +644,11 @@ def story_hook(game, value):
         if units is not None:
             label = getattr(ship, "special_labels", {}).pop(words[1], words[1])
             game.display_simple_message("Unloaded: %s (%d units of hold free again)." % (label, units), 2)
+    elif words[0] == "take" and len(words) == 2:
+        if isinstance(ship.items.get(words[1]), int) and ship.items[words[1]] > 1:
+            ship.items[words[1]] -= 1
+        else:
+            ship.items.pop(words[1], None)
     elif words[:2] == ["front", "berths"] and len(words) == 3:
         game.front_berths = getattr(game, "front_berths", 0) + int(words[2])
         game.display_simple_message("The needle office owes you %d berth%s at the front, at the middle's fare."
@@ -688,3 +718,13 @@ def voyage_condition(cond, factor):
 # The game's other modules, imported last so that the modules can refer to each other.
 from .encounters import ENEMIES  # noqa: E402
 from .sound import sfx  # noqa: E402
+
+
+def route_place(route, turn):
+    """Where a route puts a character on a turn: places[((turn + start) // stay) % len(places)]
+    (as storykit/story.py computes it)."""
+    places = (route or {}).get("places") or []
+    if not places:
+        return None
+    stay = max(1, int(route.get("stay", 1)))
+    return places[((turn + int(route.get("start", 0))) // stay) % len(places)]

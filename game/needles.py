@@ -45,6 +45,8 @@ class NeedlesMixin:
         fare = base * POSITIONS[position][0] * hike * self.hansa_fare_factor() * 0.88 ** getattr(self, "hansa_bonds", 0)
         if self.ship.researched("fast_turnaround"):
             fare *= 0.9
+        if self.has_equipment("founders_transponder"):
+            fare *= EQUIPMENT_FARE
         return max(10, int(fare))
 
     def needle_wait(self):
@@ -98,7 +100,8 @@ class NeedlesMixin:
         if wait:
             self.turn += wait               # waiting at the buoy; the jump itself is the trip's turn
         sfx("needle")
-        self.needle_risk = POSITIONS[position][1] * (SCANNER_RISK if self.ship.working("scanner") else 1.0)
+        self.needle_risk = POSITIONS[position][1] * (SCANNER_RISK if self.ship.working("scanner") else 1.0) \
+            * (NEEDLE_TALK_RISK if self.has_equipment("needle_talk") else 1.0)
         self.needle_position = position
         return position
 
@@ -149,3 +152,4 @@ class NeedlesMixin:
 
 from .modules import SCANNER_RISK  # noqa: E402
 from .sound import sfx  # noqa: E402
+from .looking import EQUIPMENT_FARE, NEEDLE_TALK_RISK  # noqa: E402

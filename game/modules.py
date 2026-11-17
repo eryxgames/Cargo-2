@@ -73,6 +73,8 @@ class ModulesMixin:
         if not fitted or amount <= 0:
             return None
         module = random.choice(fitted)
+        if self.has_equipment("loader_patch"):
+            amount = max(1, int(amount * LOADER_WEAR))
         module["condition"] = max(0, module["condition"] - int(amount))
         if module["condition"] == 0:
             sfx("broken")
@@ -193,3 +195,4 @@ class ModulesMixin:
 
 
 from .sound import sfx  # noqa: E402
+from .looking import LOADER_WEAR  # noqa: E402

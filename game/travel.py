@@ -112,7 +112,8 @@ class TravelMixin:
             total_gain = base_research + max(1, int(research_bonus * rank_multiplier * (1 + self.difficulty)))
 
             # Add research points to the ship (a research module and an analyzer add a share)
-            total_gain = int(total_gain * (1 + self.ship.research_bonus()) * self.concord_research_factor())
+            total_gain = int(total_gain * (1 + self.ship.research_bonus()) * self.concord_research_factor()
+                             * (CHARTS_RESEARCH if self.has_equipment("institute_charts") else 1))
             self.ship.research_points += total_gain
 
             # After successful travel for quest
@@ -192,3 +193,4 @@ class TravelMixin:
 
 # The game's other modules, imported last so that the modules can refer to each other.
 from .story import story_data  # noqa: E402
+from .looking import CHARTS_RESEARCH  # noqa: E402

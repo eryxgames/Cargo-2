@@ -1278,8 +1278,9 @@ class EventsMixin:
 
         # Handle equipment failure
         if scenario["equipment_failure"]:
-            if self.ship.items and random.random() < 0.3:
-                item = random.choice(list(self.ship.items.keys()))
+            breakable = [name for name in self.ship.items if name not in story_items()]
+            if breakable and random.random() < 0.3:
+                item = random.choice(breakable)
                 self.ship.items[item] -= 1
                 if self.ship.items[item] <= 0:
                     del self.ship.items[item]
@@ -1303,5 +1304,6 @@ class EventsMixin:
 
 # The game's other modules, imported last so that the modules can refer to each other.
 from .encounters import ENEMIES, SITUATIONS  # noqa: E402
+from .story import story_items  # noqa: E402
 from .quests import Quest  # noqa: E402
 from .places import AsteroidBase, ResearchColony  # noqa: E402

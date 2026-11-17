@@ -15,11 +15,25 @@
  "characters": {
   "convoy_captain": {
    "kind": "human",
-   "about": "Grab of the Hansa, master of the needle office, eighty-one; still keeps score"
+   "about": "Grab of the Hansa, master of the needle office, eighty-one; still keeps score",
+   "route": {
+    "places": [
+     "Alpha"
+    ],
+    "stay": 1
+   }
   },
   "young_hauler": {
    "kind": "human",
-   "about": "fifty-nine, a senior of the Hansa with a seat on the needle council"
+   "about": "fifty-nine, a senior of the Hansa with a seat on the needle council",
+   "route": {
+    "places": [
+     "Alpha",
+     "Beta",
+     "Gamma"
+    ],
+    "stay": 2
+   }
   },
   "inspector": {
    "kind": "human",

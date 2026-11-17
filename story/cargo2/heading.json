@@ -15,11 +15,25 @@
  "characters": {
   "ancient_scholar": {
    "kind": "human",
-   "about": "old, still right; bids at the Institute's auction"
+   "about": "old, still right; bids at the Institute's auction",
+   "route": {
+    "places": [
+     "Epsilon",
+     "Alpha"
+    ],
+    "stay": 4
+   }
   },
   "ysolde": {
    "kind": "human",
-   "about": "head of House Rostrom, old and dilated"
+   "about": "head of House Rostrom, old and dilated",
+   "route": {
+    "places": [
+     "Epsilon",
+     "Stellar Institute"
+    ],
+    "stay": 5
+   }
   }
  },
  "flags": {

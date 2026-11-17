@@ -259,6 +259,11 @@ def say(text=""):
         print(line)
 
 
+def short_logo():
+    """The logo in the stats box: Cargo 2's CΔRGΩ][, or plain letters where Greek cannot show."""
+    return "CARGO][" if plain_terminal() else "CΔRGΩ]["
+
+
 def display_logo(logo, centered=True):
     """Displays the logo, optionally centered."""
     terminal_width = terminal_columns()

@@ -21,6 +21,11 @@ verbose = "--verbose" in sys.argv
 CAPTAIN = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--captain=")), None)
 # --difficulty=1|2|3 (default 2)
 DIFFICULTY = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--difficulty=")), "2")
+# --curious: look around at every dock and follow what turns up (people, sights, side quests);
+# without it the bot never looks, and the result still says whom it shared a dock with
+CURIOUS = "--curious" in sys.argv or "--leads" in sys.argv
+# --leads: curious, and every other voyage goes where one of the captain's thoughts points
+LEADS = "--leads" in sys.argv
 save_every = 0
 trace_path = None
 for a in sys.argv:
@@ -84,6 +89,9 @@ os.environ["CARGO_SAGA_HOME"] = home
 size = os.terminal_size((int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cols=")), 80)), 40))
 shutil.get_terminal_size = lambda fallback=(80, 24): size
 cargo = headless.load(path)
+# the flags of the docks' side quests (Cargo 2.1), to see when each moves
+_people = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(path))), "story", "cargo2", "people.json")
+DOCK_FLAGS = list(json.load(open(_people, encoding="utf-8"))["flags"]) if os.path.exists(_people) else []
 if ledger_on:
     install_ledger(cargo)
 headless.patch(cargo, headless.IO())
@@ -131,8 +139,69 @@ class Bot:
         self.loads = 0
         self.reload_step = None
         self.reload_turn = -1
+        self.sight = None
+        self.docks = {"places": collections.Counter(), "together": collections.Counter(), "first": {}, "flags": {},
+                      "leads": collections.Counter(), "lead_first": {},
+                      "unlocked": {}, "chapters": {}, "lead_from": collections.Counter()}
 
     # ---- helpers -----------------------------------------------------
+    def note_docks(self, g):
+        """Where the captain is this turn, who shares the dock, and when the side quests move."""
+        if not hasattr(g, "people_here"):
+            return
+        d = self.docks
+        d["places"][g.current_location.name] += 1
+        for cid in g.people_here():
+            d["together"][cid] += 1
+            d["first"].setdefault(cid, g.turn)
+        for kind in g.unlocked_location_types:
+            d["unlocked"].setdefault(kind, g.turn)
+        d["chapters"].update({c: g.turn for c in g.story_manager.completed_chapters if c not in d["chapters"]})
+        states = g.story_manager.story_states
+        for flag in DOCK_FLAGS:
+            if states.get(flag) and flag not in d["flags"]:
+                d["flags"][flag] = g.turn
+
+    def advances(self, g, choice):
+        """A choice that sets a flag not yet set or gives an item not yet held."""
+        effects = choice.get("effects") or {}
+        states = g.story_manager.story_states
+        if any(not states.get(f) for f in ([effects["set"]] if isinstance(effects.get("set"), str) else effects.get("set", []))):
+            return True
+        items = (effects.get("give") or {}).get("items", [])
+        return any(not g.ship.items.get(i) for i in ([items] if isinstance(items, str) else items))
+
+    def lead_place(self, g):
+        """A place one of the captain's thoughts names (not this one), read off the think screen."""
+        import game.story as gs
+        snap = g.story.snapshot()
+        names = sorted((l.name for l in g.locations), key=len, reverse=True)
+        for nid, node in gs.story_data()["nodes"].items():
+            if node.get("kind") != "thought" or not g.story.check(g.story.requires_of(node), snap):
+                continue
+            text = g.story.fill(node["text"] if isinstance(node["text"], str) else " ".join(node["text"]))
+            for name in names:
+                short = " ".join(name.split()[:2]) if len(name.split()) > 2 else name
+                if name != g.current_location.name and re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(short), text):
+                    self.docks["lead_from"][nid] += 1
+                    return name
+        return None
+
+    def pick_sight(self, g):
+        """The sight a curious captain looks at: one with a step forward, else one not seen yet."""
+        import game.story as gs
+        nodes = gs.story_data()["nodes"]
+        sights = g.sights_here()
+        snap = g.story.snapshot()
+        for i, nid in enumerate(sights):
+            if any(self.advances(g, c) and g.story.check(c.get("requires"), snap)
+                   for c in nodes[nid].get("choices") or []):
+                return str(i + 1)
+        for i, nid in enumerate(sights):
+            if nid not in g.story.done:
+                return str(i + 1)
+        return None
+
     def need(self):
         """Open requirement keys of the current chapter and of the wanted next chapter."""
         g = self.game
@@ -202,6 +271,7 @@ class Bot:
         if g.turn != self.turn_seen:
             self.turn_seen = g.turn
             self.flags = set()
+            self.note_docks(g)
         need = self.need()
 
         # every so often: save under a name, then load that save and play on from it
@@ -212,6 +282,13 @@ class Bot:
             self.reload_turn = g.turn
             self.reload_step = "load"
             return "save"
+
+        # a curious captain looks around first (Cargo 2.1)
+        if CURIOUS and "look" in options and "look" not in self.flags and hasattr(g, "sights_here"):
+            self.flags.add("look")
+            self.sight = self.pick_sight(g)
+            if self.sight:
+                return "look"
 
         if "repair" in options and ship.damage >= 20 and "repair" not in self.flags:
             self.flags.add("repair")
@@ -385,6 +462,12 @@ class Bot:
                             and g.count_discovered(loc.location_type) < wanted[loc.location_type]:
                         dest = loc.name
                         break
+            # a captain who follows leads goes where a thought points, every other voyage
+            if dest is None and LEADS and g.turn % 2 == 0 and hasattr(g, "sights_here"):
+                dest = self.lead_place(g)
+                if dest:
+                    self.docks["leads"][dest] += 1
+                    self.docks["lead_first"].setdefault(dest, g.turn)
             # then a passenger destination, then unexplored places, then the trade plan
             if dest is None and self.pax_dest and self.pax_dest != here.name:
                 dest = self.pax_dest
@@ -477,9 +560,17 @@ class Bot:
                 return ""
             if p.startswith("your move"):             # a fight, a situation or the bounty board
                 return self.move(options)
+            if p.startswith("look at"):               # the look list (Cargo 2.1)
+                pick, self.sight = self.sight, None
+                return pick or ""
             if p.startswith("your choice"):           # a story scene's choice
                 self.story_choices += 1
                 offered = getattr(getattr(g, "story", None), "offered", None) or []
+                at = getattr(g.story, "offered_at", None) or ""
+                if CURIOUS and offered and at.startswith(("sight.", "docks.")):
+                    forward = [i for i, c in enumerate(offered) if self.advances(g, c)]
+                    if forward:
+                        return str(forward[0] + 1)
                 if offered and options:
                     gain = [(c.get("effects") or {}).get(ROAD_STAT, 0) for c in offered]
                     if max(gain) > 0:
@@ -754,6 +845,14 @@ if g is not None:
         "locations": len(g.locations), "known": len(g.known_locations),
         "open_requirements": {k: (v if not callable(v) else "fn") for k, v in bot.need().items()} if not result.get("traceback") else None,
         "inputs": bot.inputs, "loads": bot.loads,
+        "standing": dict(getattr(g, "standing", {}) or {}),
+        "story_needs": {c: [w for _, w in sm.chapter_needs(sm.chapters[c])] for c in PATH_CHOICE
+                        if c in sm.chapters and c not in sm.completed_chapters} if hasattr(sm, "chapter_needs") else None,
+        "docks": {"places": dict(bot.docks["places"].most_common()), "together": dict(bot.docks["together"]),
+                  "first": bot.docks["first"], "flags": bot.docks["flags"],
+                  "leads": dict(bot.docks["leads"]), "lead_first": bot.docks["lead_first"],
+                  "unlocked": bot.docks["unlocked"], "chapters": bot.docks["chapters"],
+                  "lead_from": dict(bot.docks["lead_from"])},
         "discovered": sorted(g.discovered_locations), "all_locations": [(l.name, l.location_type) for l in g.locations],
         "here": g.current_location.name, "travel_to": getattr(bot, "travel_to", None),
         "active_quests": [q.name for q in g.quest_system.active_quests][:8],
