@@ -5,7 +5,7 @@ later systems add here).
 
     python3 tools/systems.py
 """
-import os, random, sys, tempfile
+import os, random, re, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -233,6 +233,75 @@ expect([m["kind"] for m in loaded.ship.modules] == [m["kind"] for m in ship.modu
 del loaded.ship.__dict__["modules"]
 loaded.bring_up_to_date()
 expect(loaded.ship.modules == [] and loaded.ship.grips() == 3, "an old save gets an empty spine")
+
+# ---- needles from outposts wait at the buoy ---------------------------------------------------
+game, io = headless.new_game(cargo)
+game.ship.money = 10 ** 6
+outpost = cargo.DeepSpaceOutpost("DSO-Test", 7, 3, 20, "Stable")
+game.current_location = outpost
+there = next(loc for loc in game.locations if not game.same_system(loc, outpost))
+game.turn = 10
+expect(game.needle_wait() == 2, "from an outpost the next needle forms on a turn divisible by three")
+io.queue.clear(); io.feed(["2"])
+with headless.quiet() as buf:
+    game.book_needle(there)
+expect(game.turn == 12, "booking from an outpost waits for the needle: turn %d" % game.turn)
+game.current_location = next(loc for loc in game.locations if type(loc).__name__ == "Planet")
+expect(game.needle_wait() == 0, "planets have a needle every turn")
+
+# ---- convoy fights ---------------------------------------------------------------------------
+from game import tactics  # noqa: E402
+
+
+class Dice:
+    """The tactics module's dice, loaded: rolls below `edge` are the captain's."""
+    def __init__(self, rolls):
+        self.rolls = list(rolls)
+
+    def random(self):
+        return self.rolls.pop(0) if self.rolls else 0.5
+
+    def randint(self, a, b):
+        return a
+
+    def choice(self, seq):
+        return seq[0]
+
+
+def convoy(enemy_id, answers, rolls, needle=True, modules=()):
+    game, io = headless.new_game(cargo)
+    game.ship.money, game.ship.attack, game.ship.defense = 50000, 6, 4
+    game.ship.modules.extend({"kind": k, "condition": 100} for k in modules)
+    game.in_needle = needle
+    io.queue.clear(); io.feed(answers + [""] * 10)
+    tactics.random = Dice(rolls)
+    with headless.quiet() as buf:
+        out = game.fight(enemy_id, 0, [])
+    tactics.random = random
+    return game, out, buf.getvalue(), io.asked
+
+
+game, out, text, asked = convoy("corsair", ["1", "1"], [0.0, 0.0])
+expect(out == "victory" and "round 2" in text and "round 3" not in text, "two rounds of focused fire beat a corsair wing")
+expect("Screen the convoy" in text, "in a needle the convoy is there to screen")
+game, out, text, asked = convoy("corsair", ["1"], [0.0, 0.0], needle=False)
+expect("Screen the convoy" not in text, "inside a system there is no convoy to screen")
+game, out, text, asked = convoy("corsair", ["1", "1"], [0.99, 0.99])
+expect(out == "defeat" and game.standing_of("hansa") == -4, "losing in a needle costs the file two containers: %s" % game.standing_of("hansa"))
+game, out, text, asked = convoy("corsair", ["2", "2", "2"], [0.0, 0.99, 0.0])
+expect(out == "victory" and game.standing_of("hansa") == 3, "screening the file keeps it whole: %s" % game.standing_of("hansa"))
+game, out, text, asked = convoy("corsair", ["3", "1", "1"], [0.99, 0.0, 0.0], modules=("shield",))
+flat = " ".join(re.sub(r"[\u2500-\u259f|]", " ", text).split())
+expect(out == "victory" and "their volley goes wide" in flat, "countermeasures make their round miss")
+expect(text.count("Countermeasures") == 1, "countermeasures work once a fight")
+game, out, text, asked = convoy("corsair", ["1", "3"], [0.0, 0.0])
+expect("Board them" in text and out == "victory", "pirates down to their last mark can be boarded")
+game, out, text, asked = convoy("corsair", ["2"], [0.0], needle=False)
+expect(out == "escaped" and game.ship.combat_victories["total"] == 0, "breaking off gets away")
+game, out, text, asked = convoy("skiff", ["1"], [], needle=True)
+expect("round" not in text, "a skiff is still settled in one roll")
+expect(abs(tactics.round_chance(0.6) ** 2 * (3 - 2 * tactics.round_chance(0.6)) - 0.6) < 1e-6,
+       "a race of rounds is won as often as the fight's odds")
 
 for problem in problems:
     print("FAIL", problem)

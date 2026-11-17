@@ -410,13 +410,24 @@ class EncountersMixin:
         return max(0.1, min(0.9, 0.15 + self.ship.passenger_reputation / 120))
 
     def fight(self, enemy_id, bounty, lines, edge=0, shield=1.0):
+        """Settle a fight: one roll against a small enemy, a convoy fight (game/tactics.py) against
+        a bigger one."""
+        enemy = ENEMIES[enemy_id]
+        power = enemy["power"]
+        if power >= TACTICAL_FROM:
+            return self.convoy_fight(enemy_id, bounty, lines, edge, shield)
+        won = random.random() < self.fight_chance(power, edge)
+        hit = random.randint(4, 9) * power / self.ship.fight_defense() * (1 + self.difficulty) * shield
+        if not won:
+            hit *= 2.2
+        return self.fight_result(enemy_id, bounty, lines, won, hit)
+
+    def fight_result(self, enemy_id, bounty, lines, won, hit, prize=1.0):
+        """What a fight leaves: damage (less with armour and a crew that patches), wear on the
+        modules, and the winnings or the losses."""
         enemy = ENEMIES[enemy_id]
         ship = self.ship
         power = enemy["power"]
-        won = random.random() < self.fight_chance(power, edge)
-        hit = random.randint(4, 9) * power / ship.fight_defense() * (1 + self.difficulty) * shield
-        if not won:
-            hit *= 2.2
         if ship.items.get("shield"):
             hit *= 0.7
         if ship.items.get("armor"):
@@ -436,7 +447,7 @@ class EncountersMixin:
 
         if won:
             ship.record_combat_victory(enemy["kind"])
-            money = int(random.randint(150, 350) * power) + bounty
+            money = int(random.randint(150, 350) * power * prize) + bounty
             if ship.working("salvage"):
                 salvage = int(random.randint(100, 300) * power)
                 money += salvage
@@ -673,3 +684,4 @@ class EncountersMixin:
 from .terminal import say  # noqa: E402
 from .story import story_data  # noqa: E402
 from .modules import condition_word, module_name  # noqa: E402
+from .tactics import TACTICAL_FROM  # noqa: E402

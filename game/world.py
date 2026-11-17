@@ -18,12 +18,13 @@ from .ranks import RanksMixin
 from .factions import FactionsMixin
 from .needles import NeedlesMixin
 from .modules import ModulesMixin
+from .tactics import TacticsMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin, NeedlesMixin, ModulesMixin):
+           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -975,5 +976,6 @@ from .needles import (  # noqa: E402,F401
     ACCOUNT_LIMIT, FUEL_PRICE, HOP_FUEL, POSITIONS, system_of)
 from .modules import (  # noqa: E402,F401
     CONTAINER_UNITS, FULL, MODULES, SCANNER_RISK, condition_word, mend_cost, module_name)
+from .tactics import MARKS, TACTICAL_FROM  # noqa: E402,F401
 from .start import (  # noqa: E402,F401
     choose_captain, choose_saved_game, main, new_game, start_game)

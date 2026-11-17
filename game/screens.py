@@ -366,6 +366,8 @@ class ScreensMixin:
                  "trade, combat or discovery." % sum(self.ship.hold_sizes())],
                 [""],
                 ["Between docks you meet pirates, customs, drones and odd moments: pick how to handle each. "
+                 "A small ship is settled in one roll; a bigger one is a convoy fight, round by round: focus "
+                 "fire, screen the haulers of your needle, use your modules, board them or break off. "
                  "Gear and crew open better options (a mining laser cuts drones, a scanner spots bait). "
                  "The bounty board (hunt/hu) pays for wanted ships. Cantinas have rumours, people, and "
                  "crew for hire (four bunks). Plot points move the story: earn them by doing things."],
@@ -373,6 +375,7 @@ class ScreensMixin:
                 ["Between the stars you ride the Hansa's needles: book a place in the file when you travel. "
                  "The front is safe and dear, the tail cheap and cold, and the Cargolytes work the tail. Fares "
                  "grow as the routes get busier; Hansa bonds and the Hansa's good opinion lower them (hansa/ha). "
+                 "Needles leave planets every turn, other docks every third turn. "
                  "Inside a star system you fly free, on your own fuel. Big loads move prices and markets take a "
                  "while to recover: the Hansa price board and the port's broker robot guess prices elsewhere."],
                 [""],

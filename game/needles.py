@@ -20,6 +20,7 @@ POSITIONS = {   # place in the file: (fare factor, chance of trouble on the way,
     "tail": (0.5, 1.6, "the tail: cheap and cold, and the Cargolytes work the tail"),
 }
 HOP_FUEL = 3            # fuel for a hop inside a star system
+OUTPOST_EVERY = 3       # needles leave a planet every turn, anywhere else every third turn
 FUEL_PRICE = 30         # credits a unit, from a yard's tanks, when the hold has none
 ACCOUNT_LIMIT = 6       # the needle office carries a captain for up to this many middle fares
 
@@ -44,6 +45,13 @@ class NeedlesMixin:
         fare = base * POSITIONS[position][0] * hike * self.hansa_fare_factor() * 0.88 ** getattr(self, "hansa_bonds", 0)
         return max(10, int(fare))
 
+    def needle_wait(self):
+        """Turns until the next needle forms here: planets have one every turn, outposts, bases
+        and colonies every third turn (their buoys see fewer lead haulers)."""
+        if type(self.current_location).__name__ == "Planet":
+            return 0
+        return (OUTPOST_EVERY - self.turn % OUTPOST_EVERY) % OUTPOST_EVERY
+
     def fare_for(self, position):
         """The fare this captain pays: a berth owed by the needle office puts the front at the middle's fare."""
         if position == "front" and getattr(self, "front_berths", 0) > 0:
@@ -61,6 +69,10 @@ class NeedlesMixin:
         owed = getattr(self, "dues_arrears", 0)
         if owed:
             lines.extend([[""], ["On account with the needle office: %s." % self.format_money(owed)]])
+        wait = self.needle_wait()
+        if wait:
+            lines.extend([[""], ["Few lead haulers call here: the next needle forms in %d turn%s, and you wait "
+                                 "at the buoy." % (wait, "" if wait == 1 else "s")]])
         print(self.create_box(lines, 'double'))
         answer = self.validate_input("Your place in the needle (1-3, Enter to stay): ", ["1", "2", "3"])
         if answer is None:
@@ -81,6 +93,8 @@ class NeedlesMixin:
             return None
         if position == "front" and berths:
             self.front_berths = berths - 1
+        if wait:
+            self.turn += wait               # waiting at the buoy; the jump itself is the trip's turn
         self.needle_risk = POSITIONS[position][1] * (SCANNER_RISK if self.ship.working("scanner") else 1.0)
         self.needle_position = position
         return position

@@ -38,6 +38,12 @@ own world and story. What works now:
   container modules, turret mounts, shields, radiation shielding, scanners, a repair bay, a robotic
   offloader, debris retrieval and a drone hangar (upgrade/u, modules); modules wear in fights and
   on rough lanes, and a broken one does nothing until it is mended;
+- convoy fights: a ship of threat 3 or more is fought round by round (focus fire, screen the
+  haulers of your needle, countermeasures, drones, boarding, breaking off); the haulers in the
+  file behind you can be hit, and the Hansa hears how you looked after them. Focused fire wins as
+  often as Cargo 1's one-roll fight did (tools/fights.py checks every difficulty);
+- needles leave planets every turn and other docks every third turn: from an outpost you may
+  wait at the buoy;
 - standing with the Hansa, the Mandate and the Concord, in the journal: the Hansa's fares follow
   it, Mandate cutters wave a trusted captain through, the Concord's houses share more research;
 - styles: `style` picks one of twelve (CLIo's seven, and five from Cargo 2's first version:
@@ -75,7 +81,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   story.py  chapters.py     the storykit runtime; chapters, milestones, endings
   ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
   actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
-  ranks.py  commands.py  factions.py  needles.py  modules.py
+  ranks.py  commands.py  factions.py  needles.py  modules.py  tactics.py
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story: cargo2.story.json and the files in story/cargo2/, built into
                 cargo2.game.json for the game; saga.json and Cargo 1's story, copied

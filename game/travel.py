@@ -53,6 +53,7 @@ class TravelMixin:
 
         if found_location:
             old_location = self.current_location
+            self.in_needle = False
             if self.same_system(old_location, found_location):
                 self.fly_in_system(found_location)
             elif self.book_needle(found_location) is None:
@@ -127,7 +128,10 @@ class TravelMixin:
 
             self.turn += 1
             self.shop.reset_turn()
+            self.in_needle = getattr(self, "needle_position", None) is not None and not self.same_system(
+                old_location, found_location)
             self.random_event()
+            self.in_needle = False
             self.after_needle()
             self.needle_risk = 1.0
             self.autosave()

@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.." || exit 1
 T=tools
 G=game/world.py
 PY=${PYTHON:-python3}
-if [ "$1" = "quick" ]; then SEEDS="1 2"; WIDTHS="80 40 36"; N=600; else SEEDS="1 2 3 4"; WIDTHS="100 80 60 50 44 40 36"; N=1500; fi
+if [ "$1" = "quick" ]; then SEEDS="1 2"; WIDTHS="80 40 36"; N=600; FIGHTS=100; else SEEDS="1 2 3 4"; WIDTHS="100 80 60 50 44 40 36"; N=1500; FIGHTS=300; fi
 fail=0
 
 echo "== CLIo's layer in kit/ is as copied"
@@ -24,6 +24,9 @@ $PY $T/acts.py || fail=1
 
 echo "== Cargo 2's systems, one by one"
 $PY $T/systems.py || fail=1
+
+echo "== convoy fights against one-roll fights, every difficulty (win rate and damage)"
+$PY $T/fights.py $FIGHTS > /tmp/cargo2-fights.txt || fail=1; grep OFF /tmp/cargo2-fights.txt; tail -1 /tmp/cargo2-fights.txt
 
 echo "== each module of the game imports on its own"
 $PY $T/modules.py || fail=1
@@ -66,5 +69,16 @@ r=json.load(sys.stdin)
 crash='traceback' in r
 print('  %-7s seed %s%s: %s at turn %s, %s loads %s' % (r['goal'], r['seed'], ' (Cargo 1 captain)' if r.get('captain') else '', r.get('ending') or r.get('end') or 'playing', r.get('turn'), r.get('loads'), 'CRASH '+r['traceback'][-300:] if crash else ''))
 sys.exit(1 if crash else 0)" || fail=1; done; done
+
+if [ "$1" != "quick" ]; then
+echo "== the combat road on easy and expert (36 columns, saves and loads)"
+for d in 1 3; do $PY $T/bot.py $G combat 1 700 --save-every=9 --cols=36 --difficulty=$d | $PY -c "
+import json,sys
+r=json.load(sys.stdin)
+crash='traceback' in r
+ok=r.get('ending')=='combat' and not crash
+print('  difficulty %s: %s at turn %s, %s fights won, %s lost %s' % (sys.argv[1], r.get('ending') or r.get('end'), r.get('turn'), r.get('wins'), r.get('losses'), 'CRASH '+r['traceback'][-300:] if crash else ''))
+sys.exit(0 if ok else 1)" $d || fail=1; done
+fi
 
 if [ $fail = 0 ]; then echo "ALL CHECKS PASSED"; else echo "SOME CHECKS FAILED"; exit 1; fi

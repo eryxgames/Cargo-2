@@ -19,6 +19,8 @@ verbose = "--verbose" in sys.argv
 # --captain=trade|combat|discovery|tycoon: play as a captain from Cargo 1 with that ending (and a
 # handful of the flags the act-1 scenes read) instead of a fresh one
 CAPTAIN = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--captain=")), None)
+# --difficulty=1|2|3 (default 2)
+DIFFICULTY = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--difficulty=")), "2")
 save_every = 0
 trace_path = None
 for a in sys.argv:
@@ -552,6 +554,18 @@ class Bot:
                 if "easy" in label or "good odds" in label:
                     best = i                                 # the hardest target with good odds
             return str((best if best is not None and fighter else keys.index("leave")) + 1)
+        if "focus" in keys:                                  # a round of a convoy fight (Cargo 2)
+            ship = g.ship
+            for key in ("drones", "board"):
+                if key in keys:
+                    return str(keys.index(key) + 1)
+            if "counter" in keys and ship.damage > 30:
+                return str(keys.index("counter") + 1)
+            if ship.damage > 75 and not fighter:
+                return str(keys.index("break") + 1)
+            if "screen" in keys and any(w in shown[keys.index("screen")][1] for w in ("good odds", "easy")):
+                return str(keys.index("screen") + 1)
+            return str(keys.index("focus") + 1)
         if "fight" in keys:                                  # a fight
             found = re.search(r"threat (\d)", getattr(g, "move_title", "") or "")
             power = int(found.group(1)) if found else 3
@@ -675,12 +689,12 @@ try:
                                                           "lauritz_bribed", "took_the_commission"]}}
         record["check"] = captains._captain_check(record)
         record = captains.clean_captain(record)
-        answers = iter(["2", VOYAGE])
+        answers = iter([DIFFICULTY, VOYAGE])
         builtins.input = lambda prompt="": next(answers)
         game = cargo.Game(player_name=record["name"], origin=record)
         result["captain"] = CAPTAIN
     else:
-        answers = iter(["2", VOYAGE, "Bot %s %d" % (goal, seed)])
+        answers = iter([DIFFICULTY, VOYAGE, "Bot %s %d" % (goal, seed)])
         builtins.input = lambda prompt="": next(answers)
         game = cargo.Game()
     builtins.input = fake_input
@@ -717,6 +731,8 @@ if g is not None:
         "turn": g.turn, "chapter": sm.current_chapter, "completed": sorted(sm.completed_chapters),
         "ending": getattr(g, "ending_reached", None), "money": int(g.ship.money),
         "modules": ["%s %d" % (m["kind"], m["condition"]) for m in getattr(g.ship, "modules", [])],
+        "difficulty": getattr(g, "difficulty", None), "wins": g.ship.combat_victories.get("total", 0),
+        "losses": g.ship.combat_defeats.get("total", 0),
         "plot_points": sm.plot_points, "trades": g.trades_completed,
         "victories": g.ship.combat_victories.get("total"), "defeats": g.ship.combat_defeats.get("total"),
         "rating": g.ship.attack + g.ship.defense + g.ship.speed, "damage": g.ship.damage,
