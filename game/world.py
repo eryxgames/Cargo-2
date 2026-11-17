@@ -945,7 +945,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
 # whole game through it.
 from .terminal import (  # noqa: E402,F401
     MIN_COLUMNS, NARROW_COLUMNS, RULE, _ANSI_RE, box_inner_width,
-    display_logo, flow_cells, is_narrow, logo_data, pad_to, plain_terminal,
+    display_logo, flow_cells, is_narrow, logo_data, pad_to, plain_terminal, short_logo,
     print_centered_text, render_box, safe_output, say, terminal_columns, visible_len,
     wrap_text)
 from .saves import (  # noqa: E402,F401

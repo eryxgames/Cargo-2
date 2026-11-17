@@ -117,7 +117,7 @@ class ScreensMixin:
                 total_capacity += module.capacity
 
         status_content = [
-            ["CΔRGΩ", "Ship", f"{self.current_location.location_type}"],
+            [short_logo(), "Ship", f"{self.current_location.location_type}"],
             [f"Turn: {self.turn}", f"ATK: {self.ship.attack}", f"Name: {self.current_location.name}"],
             [f"¤: {self.format_money(self.ship.money)}", f"DEF: {self.ship.defense}", f"Tech LVL: {self.current_location.tech_level}"],
             [f"Tech: {self.format_money(self.ship.cargo['tech'])}", f"SPD: {self.ship.speed}", f"Agri LVL: {self.current_location.agri_level}"],
@@ -486,6 +486,6 @@ class ScreensMixin:
 
 
 # The game's other modules, imported last so that the modules can refer to each other.
-from .terminal import RULE, box_inner_width, render_box, terminal_columns, wrap_text  # noqa: E402
+from .terminal import RULE, box_inner_width, render_box, short_logo, terminal_columns, wrap_text  # noqa: E402
 from .commands import GLOBAL_COMMANDS  # noqa: E402
 from .modules import condition_word, module_name  # noqa: E402
