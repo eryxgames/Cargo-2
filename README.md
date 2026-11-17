@@ -8,7 +8,7 @@ of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames
         ╔═══════ C Δ R G Ω ][ ══════╗
         ║     Space Trading Saga    ║
         ╚═══════════════════════════╝
-                Version 2.0.0-dev
+                Version 2.0.0
 ```
 
 ## Status
@@ -76,14 +76,25 @@ document.
 
 ## Playing
 
+- **Windows:** download `cargo2-2.0.0-windows.zip` from the releases (or itch.io), unpack, run
+  `cargo2.exe`. No Python needed.
+- **Linux, macOS, Termux, or Windows with Python:** Python 3.8 or newer, nothing else to install.
+  Download `cargo2-2.0.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
+
 ```bash
 git clone https://github.com/eryxgames/Cargo-2.git
 cd Cargo-2
 python3 cargo2.py
 ```
 
-Python 3.8 or newer, nothing to install. Saves and captain records are shared with Cargo 1
-(1.2.1 and later) in `~/.cargo-saga`; set `CARGO_SAGA_HOME` to keep them elsewhere.
+In Termux: `pkg install python git` first. Any terminal from 36 columns wide works; `style` picks
+the look and `sound` turns the music on or off. Sound plays through whatever player the machine
+has (paplay or aplay on Linux, afplay on macOS, play-audio or mpv in Termux, the built-in player
+on Windows; `CLIO_AUDIO` picks one) and is silent otherwise.
+
+Saves and captain records are shared with Cargo 1 (1.2.1 and later) in `~/.cargo-saga`; set
+`CARGO_SAGA_HOME` to keep them elsewhere. A captain who finished Cargo 1 can start Cargo 2 as
+themselves: their record is offered when a new game starts.
 
 ## Layout
 
@@ -102,12 +113,20 @@ game/           the game, Cargo 1.2's core split by what each part does:
 music/          cargo2.music.json: the songs (moods and seeds for CLIo's synthesizer)
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story: cargo2.story.json and the files in story/cargo2/, built into
-                cargo2.game.json for the game; saga.json and Cargo 1's story, copied
+                cargo2.game.json for the game; saga.json and Cargo 1's story, copied;
+                CARGO2-HANDOFF.md: what Cargo 3 inherits (tools/handoff.py writes it)
 storykit/       the trilogy's story tools (format, validator, map), copied
 themes/         Cargo 2's own styles (CLIo theme files), beside CLIo's in kit/style/
-tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit
+tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit, story,
+                openings, acts, systems, fights, sound, hand-off
+.github/        the release workflow: tag vX.Y.Z to build, release and push to itch.io
 legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, items and texts
 ```
+
+Releasing: set `VERSION` in `game/__init__.py`, add a `## X.Y.Z` section to `CHANGELOG.md`,
+then `git tag vX.Y.Z && git push --tags`. The workflow checks, builds `cargo2.exe`, makes the
+GitHub release and, with a `BUTLER_API_KEY` secret, pushes to itch.io (`ITCH_PROJECT` in the
+workflow names the page).
 
 `kit/` is never edited here: change the files in CLIo and copy them again with
 `python3 tools/sync_kit.py ../CLIo`. `tools/check.sh` (or `tools/check.sh quick`) runs every

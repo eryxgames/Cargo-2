@@ -1,0 +1,103 @@
+# Release: push a tag like v2.0.0 and this workflow
+#   1. runs the quick checks,
+#   2. builds cargo2.exe for Windows (PyInstaller, one file, no Python needed),
+#   3. makes a GitHub release with the notes for that version from CHANGELOG.md,
+#   4. pushes both builds to itch.io with butler (if the BUTLER_API_KEY secret is set).
+#
+# The tag must match VERSION in game/__init__.py, and CHANGELOG.md needs a "## 2.0.0" section.
+# itch.io channels: "windows" (cargo2.exe) and "linux-mac" (the Python game, needs Python 3.8+;
+# also runs on Windows and in Termux). Set ITCH_PROJECT below to the page's user/slug.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  ITCH_PROJECT: eryxgames/cargo-2
+  PYTHON_VERSION: "3.12"
+  # what the Python build ships (the story sources and tools stay in the repository)
+  SHIP: cargo2.py game kit story/cargo2.game.json music themes README.md CHANGELOG.md
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Tag matches the game's version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          game=$(python3 -c "import re; print(re.search(r'^VERSION = \"(.+)\"', open('game/__init__.py').read(), re.M).group(1))")
+          echo "tag $tag, game/__init__.py $game"
+          test "$tag" = "$game"
+          grep -q "^## $tag\$" CHANGELOG.md || { echo "CHANGELOG.md has no '## $tag' section"; exit 1; }
+      - name: Quick checks
+        run: bash tools/check.sh quick
+
+  windows:
+    needs: check
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Build cargo2.exe
+        run: |
+          python -m pip install --upgrade pyinstaller
+          pyinstaller --onefile --console --name cargo2 --icon favicon.ico --exclude-module pkg_resources --exclude-module setuptools --add-data "story/cargo2.game.json;story" --add-data "music;music" --add-data "themes;themes" --add-data "kit/style;kit/style" cargo2.py
+      - name: Smoke test (start, new game, autosave, clean exit; UTF-8 and cp1252 output)
+        run: python tools/smoke.py dist/cargo2.exe
+      - name: Pack
+        shell: bash
+        run: |
+          mkdir -p build/windows
+          cp dist/cargo2.exe README.md CHANGELOG.md build/windows/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/windows
+
+  release:
+    needs: [check, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: build/windows
+      - name: Pack the Python version
+        run: |
+          mkdir -p build/python
+          cp -r --parents $SHIP build/python/
+          find build/python -name __pycache__ -prune -exec rm -rf {} +
+          version="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          (cd build/windows && zip -qr "../../cargo2-$version-windows.zip" .)
+          (cd build/python && zip -qr "../../cargo2-$version-python.zip" .)
+          awk -v v="## $version" '$0==v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+      - name: The Python build starts on its own
+        run: python3 tools/smoke.py python3 build/python/cargo2.py
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "cargo2-$VERSION-windows.zip" "cargo2-$VERSION-python.zip" \
+            --title "Cargo 2 $VERSION" --notes-file notes.md
+      - name: Push to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ]; then echo "No BUTLER_API_KEY secret: skipping itch.io"; exit 0; fi
+          curl -fsSL --retry 5 -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          ./butler/butler -V
+          ./butler/butler push build/windows "$ITCH_PROJECT:windows" --userversion "$VERSION"
+          ./butler/butler push build/python "$ITCH_PROJECT:linux-mac" --userversion "$VERSION"

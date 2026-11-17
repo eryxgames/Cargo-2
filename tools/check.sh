@@ -24,6 +24,7 @@ $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
 $PY $T/openings.py || fail=1
 $PY $T/acts.py || fail=1
+$PY $T/handoff.py --check || fail=1
 
 echo "== Cargo 2's systems, one by one"
 $PY $T/systems.py || fail=1
