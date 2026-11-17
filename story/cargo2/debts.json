@@ -17,7 +17,13 @@
    "name": "Astin Pfennig",
    "short": "Astin",
    "kind": "human",
-   "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune"
+   "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune",
+   "route": {
+    "places": [
+     "Delta"
+    ],
+    "stay": 1
+   }
   },
   "clone": {
    "about": "the other hauler with the captain's name",

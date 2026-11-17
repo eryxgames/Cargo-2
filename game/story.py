@@ -21,6 +21,7 @@ with open(STORY_FILE, encoding="utf-8") as _story_file:
 # --- end of story data ---
 
 _STORY = None
+_STORY_ITEMS = None
 _STORY_LINKS = None
 STORY_MOMENTS = {}      # id(game) -> (snapshot, verdicts) of the runtime's last look; not saved
 
@@ -45,6 +46,19 @@ def story_data():
             data["order"] = list(data["nodes"])
         _STORY = data
     return _STORY
+
+
+def story_items():
+    """Items the story gives (a pass, a reader, a loader's hand): keepsakes and keys, not
+    equipment, so nothing breaks them or takes them except the story itself."""
+    global _STORY_ITEMS
+    if _STORY_ITEMS is None:
+        found = set()
+        for node in story_data()["nodes"].values():
+            for effects in [node.get("effects") or {}] + [c.get("effects") or {} for c in node.get("choices") or []]:
+                found.update(_as_list(((effects or {}).get("give") or {}).get("items")))
+        _STORY_ITEMS = found
+    return _STORY_ITEMS
 
 
 def story_links():
@@ -358,8 +372,9 @@ class StoryRuntime:
             box.extend(self.game.option_lines(number, self.fill(choice.get("say", choice.get("id", "")))))
         self.game.display_story_message(box, pause=0)
         self.offered = choices              # what a reader of the screen sees (tools/bot.py)
+        self.offered_at = nid
         picked = self.ask(len(choices))
-        self.offered = None
+        self.offered = self.offered_at = None
         choice = choices[picked]
         self.done["%s:%s" % (nid, choice.get("id", picked))] = self.game.turn
         self.apply(choice.get("effects"))
@@ -575,7 +590,7 @@ def story_hook(game, value):
     'lose research <share>', 'buy bonds <n>', 'give bonds <n>' (free), 'sell bonds', 'crew leaves <role>',
     'dues hike <factor>' (for thirty turns), 'squeeze <good> <factor>' (prices of a good fall at
     every known dock, then recover like any market), 'front berths <n>' (the next n places at the
-    front of a needle cost the middle's fare)."""
+    front of a needle cost the middle's fare), 'take <item>' (an item the story gave leaves the ship)."""
     if isinstance(value, list):
         for one in value:
             story_hook(game, one)
@@ -629,6 +644,11 @@ def story_hook(game, value):
         if units is not None:
             label = getattr(ship, "special_labels", {}).pop(words[1], words[1])
             game.display_simple_message("Unloaded: %s (%d units of hold free again)." % (label, units), 2)
+    elif words[0] == "take" and len(words) == 2:
+        if isinstance(ship.items.get(words[1]), int) and ship.items[words[1]] > 1:
+            ship.items[words[1]] -= 1
+        else:
+            ship.items.pop(words[1], None)
     elif words[:2] == ["front", "berths"] and len(words) == 3:
         game.front_berths = getattr(game, "front_berths", 0) + int(words[2])
         game.display_simple_message("The needle office owes you %d berth%s at the front, at the middle's fare."

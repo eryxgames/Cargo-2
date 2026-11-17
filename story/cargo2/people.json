@@ -1,11 +1,44 @@
 {
  "format": "storykit",
  "version": 1,
- "about": "Cargo 2.1: things to look at at the docks, people who travel on their own (their routes are in the files that declare them), the captain's thoughts, and two side quests: the founders' locker at Alpha and the ship that lies at Gamma.",
+ "about": "Cargo 2.1-2.2: things to look at at the docks, people who travel on their own (routes in the files that declare them), the captain's thoughts, and side quests: the founders' locker at Alpha, the ship that lies at Gamma, the loader's hand (from the start), the singer's verse (act 2) and the Institute's archive (act 3). None of them is on the way to an ending.",
  "arcs": {
   "docks": {
    "title": "At the docks",
    "order": 7
+  }
+ },
+ "characters": {
+  "dock_loader": {
+   "name": "Adit",
+   "short": "Adit",
+   "kind": "agrobot",
+   "about": "an old loader agrobot on the cargo rings of Beta, Alpha and Gamma, one hand short",
+   "route": {
+    "places": [
+     "Beta",
+     "Alpha",
+     "Beta",
+     "Gamma"
+    ],
+    "stay": 2
+   }
+  },
+  "warp_singer": {
+   "name": "Korai",
+   "short": "Korai",
+   "kind": "human",
+   "about": "a needle signaller who sings to the file in needle-talk; never two turns in one place",
+   "route": {
+    "places": [
+     "Beta",
+     "Epsilon",
+     "Beta",
+     "Delta"
+    ],
+    "stay": 1,
+    "start": 1
+   }
   }
  },
  "flags": {
@@ -53,6 +86,54 @@
   },
   "compared_logbooks": {
    "about": "the captain compared logbooks with the other captain"
+  },
+  "adit_told_the_hand": {
+   "about": "{dock_loader} told the captain where its hand went"
+  },
+  "saw_the_hand": {
+   "about": "the captain saw a loader's hand on a farm agrobot on Geod's Row at Delta"
+  },
+  "bought_the_hand": {
+   "about": "the captain got a loader's hand back from Geod's Row at Delta"
+  },
+  "loader_patch": {
+   "about": "{dock_loader}'s patch routine runs on the captain's modules (they wear half as fast)",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "korai_asked": {
+   "about": "{warp_singer} asked the captain for a verse she does not know"
+  },
+  "got_the_trace": {
+   "about": "the astronomers at the Quantum Center gave the captain the trace that repeats"
+  },
+  "needle_talk": {
+   "about": "{warp_singer} taught the captain needle-talk's verse for trouble ahead (fewer fights on needles)",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "asked_about_the_archive": {
+   "about": "the captain asked who bought the Stellar Institute's old archive"
+  },
+  "returned_the_archive": {
+   "about": "the captain gave the Stellar Institute its old archive back",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "institute_charts": {
+   "about": "the captain kept the Stellar Institute's old survey charts (research goes further)",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "kept_the_invoice": {
+   "about": "the captain kept the invoice for the night of the Institute fire, from the old archive",
+   "carries_to": [
+    "cargo3"
+   ]
   }
  },
  "nodes": {
@@ -723,6 +804,889 @@
     ]
    },
    "text": "I wonder what they did with the Kraal sarcophagus now that it is empty. It was at Delta."
+  },
+  "sight.adit": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "{dock_loader}",
+   "text": [
+    "{dock_loader}, a loader agrobot older than most of the ring, stacks crates one-handed. Where its left hand should be there is a hook. A label on the hook says USE NO HOOKS.",
+    "It talks in junkcode, the robots' patchwork of old code and older slang: '...Lift... stack... 404... hand... not... found...'"
+   ],
+   "requires": {
+    "here": "dock_loader"
+   },
+   "who": [
+    "dock_loader"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "flag": "loader_patch"
+     },
+     "text": [
+      "{dock_loader} stacks crates with both hands, and now and then holds one up to show you. '...Two... hands... Stack... rate... nominal...'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "hand",
+     "say": "Ask about the hand",
+     "requires": {
+      "not_flag": [
+       "adit_told_the_hand",
+       "loader_patch"
+      ],
+      "not": {
+       "has": {
+        "items": [
+         "loader_hand"
+        ]
+       }
+      }
+     },
+     "effects": {
+      "set": [
+       "adit_told_the_hand"
+      ]
+     },
+     "next": "docks.adit_hand"
+    },
+    {
+     "id": "give",
+     "say": "Give {dock_loader.short} the hand from Geod's Row",
+     "requires": {
+      "has": {
+       "items": [
+        "loader_hand"
+       ]
+      },
+      "not_flag": "loader_patch"
+     },
+     "effects": {
+      "set": [
+       "loader_patch"
+      ],
+      "code": "take loader_hand",
+      "standing.hansa": 3,
+      "plot_points": 3
+     },
+     "next": "docks.adit_patch"
+    },
+    {
+     "id": "watch",
+     "say": "Watch it work"
+    }
+   ]
+  },
+  "docks.adit_hand": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Not found",
+   "requires": {
+    "flag": "adit_told_the_hand"
+   },
+   "text": [
+    "'...Hand... sold... for... scrap... by... a... null... pointer...' it says. '...Now... it... picks... fruit... Delta... Geod's... Row...'",
+    "It says Geod's Row twice, slowly, in case you are a null pointer too."
+   ]
+  },
+  "docks.adit_patch": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Two hands",
+   "requires": {
+    "flag": "loader_patch"
+   },
+   "text": [
+    "{dock_loader.short} fits the hand, flexes it, and lifts a crate with it out of pride. Then it climbs over your ship for an hour.",
+    "When it climbs down, your modules run a patch routine that was not there before. '...Wear... less...' it says. '...You... not... a... null... pointer...'"
+   ]
+  },
+  "sight.delta.row": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "Geod's Row",
+   "text": [
+    "The farm agrobots on Geod's Row pick with whatever hands they can get. One of them picks with a loader's hand, a Hansa registry stamp on the wrist, and drops every third fruit."
+   ],
+   "where": "Delta",
+   "effects": {
+    "set": [
+     "saw_the_hand"
+    ]
+   },
+   "variants": [
+    {
+     "requires": {
+      "flag": "bought_the_hand"
+     },
+     "text": [
+      "The farm agrobots on Geod's Row pick with whatever hands they can get. The one that had a loader's hand has a proper picking hand now, and drops nothing."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "geod_fields"
+      }
+     },
+     "text": [
+      "The farm agrobots on Geod's Row pick with whatever hands they can get. The Row was planted from the seed stock you brought Geod, forty years ago; the foreman says so to everyone.",
+      "One of the agrobots picks with a loader's hand, a Hansa registry stamp on the wrist, and drops every third fruit."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "favour",
+     "say": "Ask the foreman for the loader's hand, for the seed stock's sake",
+     "requires": {
+      "player_origin": {
+       "flag": "geod_fields"
+      },
+      "not_flag": "bought_the_hand"
+     },
+     "effects": {
+      "give": {
+       "items": [
+        "loader_hand"
+       ]
+      },
+      "set": [
+       "bought_the_hand"
+      ]
+     },
+     "next": "docks.row_favour"
+    },
+    {
+     "id": "buy",
+     "say": "Buy the loader's hand, and a picking hand for the agrobot (2,000)",
+     "requires": {
+      "money": 2000,
+      "not_flag": "bought_the_hand"
+     },
+     "effects": {
+      "money": -2000,
+      "give": {
+       "items": [
+        "loader_hand"
+       ]
+      },
+      "set": [
+       "bought_the_hand"
+      ]
+     },
+     "next": "docks.bought_hand"
+    },
+    {
+     "id": "leave",
+     "say": "Leave them to the harvest"
+    }
+   ]
+  },
+  "docks.bought_hand": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "A better hand",
+   "requires": {
+    "flag": "bought_the_hand"
+   },
+   "text": [
+    "The foreman takes two thousand, fits the agrobot with a proper picking hand, and gives you the loader's hand wrapped in a feed sack. 'It never liked fruit,' he says."
+   ]
+  },
+  "docks.row_favour": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "For the seed stock",
+   "requires": {
+    "flag": "bought_the_hand"
+   },
+   "text": [
+    "The foreman will not take your money. He fits the agrobot with a picking hand from his own stores and gives you the loader's hand wrapped in a feed sack. 'For the seed stock,' he says."
+   ]
+  },
+  "sight.dsobeta.line": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The bottling line",
+   "text": [
+    "The coldest water anywhere, bottled at the outpost with the labels already printed. The labels say BEST BEFORE: SEE BOTTOM. The bottom says SEE LABEL."
+   ],
+   "where": "DSO-Beta"
+  },
+  "thought.hand_lead": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "flag": "adit_told_the_hand",
+    "not_flag": "loader_patch",
+    "not": {
+     "has": {
+      "items": [
+       "loader_hand"
+      ]
+     }
+    }
+   },
+   "text": "{dock_loader.short}'s hand picks fruit on Geod's Row, at Delta, on the end of a farm agrobot."
+  },
+  "thought.hand_seen": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "flag": "saw_the_hand",
+    "not_flag": [
+     "adit_told_the_hand",
+     "loader_patch"
+    ],
+    "not": {
+     "has": {
+      "items": [
+       "loader_hand"
+      ]
+     }
+    }
+   },
+   "text": "A farm agrobot at Delta picks fruit with a loader's hand. Some loader on a Hansa cargo ring is missing it."
+  },
+  "thought.hand_held": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "has": {
+     "items": [
+      "loader_hand"
+     ]
+    },
+    "not_flag": "loader_patch"
+   },
+   "text": "I carry a loader's hand with a Hansa registry stamp. The loaders on Beta's cargo ring would know whose it is."
+  },
+  "sight.korai": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "{warp_singer}",
+   "text": [
+    "{warp_singer} signals for the needles and rides every one: she is never two turns in one place. She sings to the file in needle-talk, squeezed and stretched so that it still means something at the far end of the dilation.",
+    "On the dock it sounds like a kettle being reasonable."
+   ],
+   "requires": {
+    "here": "warp_singer",
+    "act_min": 2
+   },
+   "who": [
+    "warp_singer"
+   ],
+   "choices": [
+    {
+     "id": "teach",
+     "say": "Ask her to teach you a verse",
+     "requires": {
+      "not_flag": [
+       "korai_asked",
+       "needle_talk"
+      ]
+     },
+     "effects": {
+      "set": [
+       "korai_asked"
+      ]
+     },
+     "next": "docks.korai_asks"
+    },
+    {
+     "id": "trace",
+     "say": "Play her the trace from the Quantum Center",
+     "requires": {
+      "has": {
+       "items": [
+        "bell_trace"
+       ]
+      },
+      "not_flag": "needle_talk"
+     },
+     "effects": {
+      "set": [
+       "needle_talk"
+      ],
+      "standing.hansa": 3,
+      "plot_points": 3
+     },
+     "next": "docks.needle_talk"
+    },
+    {
+     "id": "listen",
+     "say": "Listen"
+    }
+   ]
+  },
+  "docks.korai_asks": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "A verse she does not know",
+   "requires": {
+    "flag": "korai_asked"
+   },
+   "text": [
+    "'Bring me a verse I do not know,' she says. 'The astronomers at the Quantum Center have been recording one for eleven years. They think it is the star.'"
+   ]
+  },
+  "sight.quantum.bell": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The ringing star",
+   "text": [
+    "The radio astronomers listen to the planet ringing its star like a bell. One trace on their screens does not ring. It repeats, every eleven minutes, and has done for eleven years."
+   ],
+   "where": "Quantum Center",
+   "choices": [
+    {
+     "id": "copy",
+     "say": "Ask for a copy of the trace that repeats",
+     "requires": {
+      "not": {
+       "has": {
+        "items": [
+         "bell_trace"
+        ]
+       }
+      },
+      "not_flag": [
+       "got_the_trace",
+       "needle_talk"
+      ]
+     },
+     "effects": {
+      "give": {
+       "items": [
+        "bell_trace"
+       ]
+      },
+      "set": [
+       "got_the_trace"
+      ],
+      "research_points": 50
+     },
+     "next": "docks.trace"
+    },
+    {
+     "id": "leave",
+     "say": "Leave them to their bell"
+    }
+   ]
+  },
+  "docks.trace": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Eleven minutes",
+   "requires": {
+    "flag": "got_the_trace"
+   },
+   "text": [
+    "They copy it for you gladly. Nobody has asked for it in eleven years; most of them think it is a fault in the dish."
+   ]
+  },
+  "docks.needle_talk": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Needle-talk",
+   "requires": {
+    "flag": "needle_talk"
+   },
+   "text": [
+    "She listens with her eyes shut. 'That is not the star. That is a needle calling its position in needle-talk, slowed down until it sounds like a bell.'",
+    "'Which needle?' you ask. 'No needle is missing,' she says. 'Not yet.'",
+    "Then she teaches you the verse for 'trouble ahead, close up'. Every file still answers it."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "done": [
+       "ring.lost"
+      ]
+     },
+     "text": [
+      "She listens with her eyes shut. 'That is a needle calling its position in needle-talk, slowed down until it sounds like a bell. It began eleven years ago.'",
+      "You both know which needle came out of the segment eleven years ago, into Barnard's Star, before it went in.",
+      "Then she teaches you the verse for 'trouble ahead, close up'. Every file still answers it."
+     ]
+    }
+   ]
+  },
+  "thought.korai_lead": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "flag": "korai_asked",
+    "not_flag": "needle_talk",
+    "not": {
+     "has": {
+      "items": [
+       "bell_trace"
+      ]
+     }
+    }
+   },
+   "text": "{warp_singer.short} wants a verse she does not know. The astronomers at the Quantum Center have a trace they think is the star."
+  },
+  "thought.trace_held": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "has": {
+     "items": [
+      "bell_trace"
+     ]
+    },
+    "flag": "korai_asked",
+    "not_flag": "needle_talk"
+   },
+   "text": "I carry the astronomers' trace. {warp_singer.short} rides every needle; looking around a dock tells me when she is due."
+  },
+  "thought.trace_odd": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "has": {
+     "items": [
+      "bell_trace"
+     ]
+    },
+    "not_flag": [
+     "korai_asked",
+     "needle_talk"
+    ]
+   },
+   "text": "The astronomers' trace repeats every eleven minutes. Slowed down like that, it sounds like the needle signallers' singing."
+  },
+  "thought.not_yet": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "flag": "needle_talk",
+    "done": [
+     "ring.lost"
+    ]
+   },
+   "text": "The astronomers' trace began eleven years ago. The needle that turned under the segment came out eleven years ago. Nobody else has put those two together."
+  },
+  "sight.institute.roof": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The new roof",
+   "text": [
+    "The Stellar Institute's new roof is very good. A brass plate thanks the old archive that paid for it: forty years of the Institute's papers, sold after the fire to a private buyer."
+   ],
+   "where": "Stellar Institute",
+   "variants": [
+    {
+     "requires": {
+      "flag": "returned_the_archive"
+     },
+     "text": [
+      "The old archive is back on its shelves under the new roof. The brass plate has a second line now, with your ship's name on it, spelled right."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "found_the_chair"
+      }
+     },
+     "text": [
+      "The Stellar Institute's new roof is very good. A brass plate thanks the old archive that paid for it, sold after the fire. You still know whose firm set that fire. The Institute never found out."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "who",
+     "say": "Ask the bursar who bought the archive",
+     "requires": {
+      "act_min": 3,
+      "not": {
+       "has": {
+        "items": [
+         "institute_archive"
+        ]
+       }
+      },
+      "not_flag": [
+       "returned_the_archive",
+       "institute_charts",
+       "asked_about_the_archive"
+      ]
+     },
+     "effects": {
+      "set": [
+       "asked_about_the_archive"
+      ]
+     },
+     "next": "docks.archive_buyer"
+    },
+    {
+     "id": "give",
+     "say": "Give the archive back, all of it",
+     "requires": {
+      "has": {
+       "items": [
+        "institute_archive"
+       ]
+      },
+      "not_flag": [
+       "returned_the_archive",
+       "institute_charts"
+      ]
+     },
+     "effects": {
+      "set": [
+       "returned_the_archive"
+      ],
+      "code": "take institute_archive",
+      "research_points": 400,
+      "standing.concord": 10,
+      "plot_points": 3
+     },
+     "next": "docks.archive_returned"
+    },
+    {
+     "id": "charts",
+     "say": "Give the papers back, keep the survey charts",
+     "requires": {
+      "has": {
+       "items": [
+        "institute_archive"
+       ]
+      },
+      "not_flag": [
+       "returned_the_archive",
+       "institute_charts"
+      ]
+     },
+     "effects": {
+      "set": [
+       "institute_charts"
+      ],
+      "code": "take institute_archive",
+      "standing.concord": 3
+     },
+     "next": "docks.archive_charts"
+    },
+    {
+     "id": "roof",
+     "say": "Admire the roof"
+    }
+   ]
+  },
+  "docks.archive_buyer": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Kraal paper",
+   "requires": {
+    "flag": "asked_about_the_archive"
+   },
+   "text": [
+    "'A private buyer at Delta,' the bursar says, 'who paid in Kraal paper.' The Kraal family keeps its fortune at Delta, and {astin} keeps its books."
+   ]
+  },
+  "sight.astin": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "{astin}",
+   "text": [
+    "{astin} keeps the Kraal fortune's books in a counting room off the port, on paper, because paper has no network. The Magister's son or his clone; he has stopped asking which."
+   ],
+   "requires": {
+    "here": "astin"
+   },
+   "who": [
+    "astin"
+   ],
+   "choices": [
+    {
+     "id": "buy",
+     "say": "Buy the Institute's archive back (50,000)",
+     "requires": {
+      "flag": "asked_about_the_archive",
+      "money": 50000,
+      "not": {
+       "has": {
+        "items": [
+         "institute_archive"
+        ]
+       }
+      },
+      "not_flag": [
+       "returned_the_archive",
+       "institute_charts"
+      ]
+     },
+     "effects": {
+      "money": -50000,
+      "give": {
+       "items": [
+        "institute_archive"
+       ]
+      }
+     },
+     "next": [
+      "docks.archive_sold",
+      "docks.invoice"
+     ]
+    },
+    {
+     "id": "conte",
+     "say": "Ask {neon_sleeper.short} for it instead",
+     "requires": {
+      "flag": "asked_about_the_archive",
+      "done": [
+       "sleeper.wakes"
+      ],
+      "not": {
+       "has": {
+        "items": [
+         "institute_archive"
+        ]
+       }
+      },
+      "not_flag": [
+       "returned_the_archive",
+       "institute_charts"
+      ]
+     },
+     "effects": {
+      "give": {
+       "items": [
+        "institute_archive"
+       ]
+      }
+     },
+     "next": [
+      "docks.archive_gift",
+      "docks.invoice"
+     ]
+    },
+    {
+     "id": "nod",
+     "say": "Leave him to his books"
+    }
+   ]
+  },
+  "docks.archive_sold": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Smelling of smoke",
+   "requires": {
+    "has": {
+     "items": [
+      "institute_archive"
+     ]
+    }
+   },
+   "text": [
+    "{astin.short} counts the money twice and has the boxes carried to your hold: forty years of the Institute's papers, smelling of smoke.",
+    "'The Kraal like to own the past,' he says. 'They can own the money instead.'"
+   ]
+  },
+  "docks.archive_gift": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "One thing on time",
+   "requires": {
+    "has": {
+     "items": [
+      "institute_archive"
+     ]
+    }
+   },
+   "text": [
+    "{neon_sleeper} hears you out over coffee. 'I bought it because nobody else would,' she says. 'Take it back to them. Tell them a Kraal did one thing on time.'"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "neon_sleeper_carried"
+      }
+     },
+     "text": [
+      "{neon_sleeper} hears you out over coffee. 'The captain who carried me asks, and I bought it because nobody else would. Take it back to them. Tell them a Kraal did one thing on time.'"
+     ]
+    }
+   ]
+  },
+  "docks.invoice": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "The last box",
+   "requires": {
+    "has": {
+     "items": [
+      "institute_archive"
+     ]
+    },
+    "player_origin": {
+     "flag": "found_the_chair"
+    }
+   },
+   "text": [
+    "In the last box is a security firm's invoice for the night of the fire, paid in full. You know whose firm it is."
+   ],
+   "choices": [
+    {
+     "id": "keep",
+     "say": "Keep the invoice",
+     "effects": {
+      "set": [
+       "kept_the_invoice"
+      ]
+     }
+    },
+    {
+     "id": "leave",
+     "say": "Leave it in the box for the Institute"
+    }
+   ]
+  },
+  "docks.archive_returned": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "Under the new roof",
+   "requires": {
+    "flag": "returned_the_archive"
+   },
+   "text": [
+    "The archivists unpack the boxes in silence, then not in silence. The Institute's first readings of the grey alloy are in there, and the ones nobody wrote up because the fire came first."
+   ]
+  },
+  "docks.archive_charts": {
+   "kind": "event",
+   "arc": "docks",
+   "title": "The survey charts",
+   "requires": {
+    "flag": "institute_charts"
+   },
+   "text": [
+    "You keep the survey charts: forty years of the Institute's best guesses about where to look, in the margins as much as on the maps. The archivists take the rest and do not ask about the charts."
+   ]
+  },
+  "thought.archive_lead": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "flag": "asked_about_the_archive",
+    "not": {
+     "has": {
+      "items": [
+       "institute_archive"
+      ]
+     }
+    },
+    "not_flag": [
+     "returned_the_archive",
+     "institute_charts"
+    ]
+   },
+   "text": "The Institute's old archive went to a buyer who paid in Kraal paper. {astin.short} keeps the Kraal family's books at Delta."
+  },
+  "thought.archive_held": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "has": {
+     "items": [
+      "institute_archive"
+     ]
+    },
+    "not_flag": [
+     "returned_the_archive",
+     "institute_charts"
+    ]
+   },
+   "text": "The Institute's archive is in my hold. The Stellar Institute would like it back. I could keep the survey charts."
+  },
+  "sight.omega.board": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The yard's chalk board",
+   "text": [
+    "The Hansa yard keeps a chalk board by the airlock: who is rock-bound this week, who is spin-sick, and which tunnel rat owes the kitty for the last void-walk. Your ship's name is not on it, which the yard counts as a compliment."
+   ],
+   "where": "Omega XIV"
+  },
+  "sight.dsogamma.ice": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "Under the ice",
+   "text": [
+    "The Mandate's garrison still guards something under the ice at Scholz's Star. The sentries are polite and do not say what. Their knees, you notice, are good ones."
+   ],
+   "where": "DSO-Gamma",
+   "variants": [
+    {
+     "requires": {
+      "done": [
+       "ring.lost"
+      ]
+     },
+     "text": [
+      "The Mandate's garrison still guards something under the ice at Scholz's Star. Since the segment turned, the ice hums every eleven minutes. The sentries have stopped pretending not to hear it."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "asked_the_garrison"
+      }
+     },
+     "text": [
+      "The Mandate's garrison still guards something under the ice at Scholz's Star. The quartermaster remembers you asked about it, forty years ago. 'Still not saying,' he says."
+     ]
+    }
+   ]
+  },
+  "sight.sigma.galleries": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The galleries",
+   "text": [
+    "The colony that hollowed Sigma VII into galleries talks in text, when it talks. A screen by the dock says HELLO SHIP. A moment later it adds: WIPE YOUR FEET."
+   ],
+   "where": "Sigma VII",
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "nano_sold_out"
+      }
+     },
+     "text": [
+      "The colony that hollowed Sigma VII into galleries talks in text, when it talks. The screen by the dock stays dark while you are docked, and lights up again as you leave."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "nano_trusted"
+      }
+     },
+     "text": [
+      "The colony that hollowed Sigma VII into galleries talks in text, when it talks. A screen by the dock says HELLO SHIP THAT KEPT THE SECRET. A moment later it adds: WIPE YOUR FEET ANYWAY."
+     ]
+    }
+   ]
+  },
+  "sight.nova.rules": {
+   "kind": "sight",
+   "arc": "docks",
+   "title": "The rules on the door",
+   "text": [
+    "Nova Labs took Concord money, and Concord rules with it. They are posted on the door. Rule 14: a visitor who reads rule 14 has agreed to rules 1 to 13, and to rule 15, which is confidential."
+   ],
+   "where": "Nova Labs"
   }
  }
 }

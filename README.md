@@ -8,7 +8,7 @@ of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames
         ╔═══════ C Δ R G Ω ][ ══════╗
         ║     Space Trading Saga    ║
         ╚═══════════════════════════╝
-                Version 2.1.0
+                Version 2.2.0
 ```
 
 ## Status
@@ -61,9 +61,11 @@ own world and story. What works now:
 - look and think (2.1): `look` at a dock shows what is going on, the people there and things to
   examine; some people travel routes of their own (Pell flies Alpha, Beta and Gamma; Grab Targa
   never leaves Alpha) and the docks say when a known face is due. `think` gives the captain's
-  notes: leads, where people travel, special equipment, what the story still needs. Two side
-  quests start from a look (a sealed locker at Alpha, a ship that lies at Gamma) and end with
-  special equipment; nothing at the docks is needed for an ending;
+  notes: leads, where people travel, special equipment, what the story still needs. Side quests
+  start from a look and end with special equipment or a reward: a sealed locker at Alpha and a
+  ship that lies at Gamma (2.1); a loader agrobot's lost hand (from the start), a needle
+  signaller's missing verse (act 2) and the Stellar Institute's sold archive (act 3) (2.2).
+  Nothing at the docks is needed for an ending;
 - sound through CLIo's synthesizer: a song composed for each kind of place, for convoy fights and
   for act 3, and effects for trades, fights, modules, achievements and the story's moments. No
   audio files; silent when the machine has no player. `sound` turns it on or off (kept);
@@ -82,10 +84,10 @@ document.
 
 ## Playing
 
-- **Windows:** download `cargo2-2.1.0-windows.zip` from the releases (or itch.io), unpack, run
+- **Windows:** download `cargo2-2.2.0-windows.zip` from the releases (or itch.io), unpack, run
   `cargo2.exe`. No Python needed.
 - **Linux, macOS, Termux, or Windows with Python:** Python 3.8 or newer, nothing else to install.
-  Download `cargo2-2.1.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
+  Download `cargo2-2.2.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
 
 ```bash
 git clone https://github.com/eryxgames/Cargo-2.git

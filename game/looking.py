@@ -4,8 +4,8 @@
 the people whose routes have them here (story characters with a "route"), and the sights of the
 place (story nodes of kind "sight"). Picking one plays it as a scene; sights can be looked at
 again. Some sights have choices that need an item, a flag or a person met elsewhere: that is how
-the small side quests work (a pass for a locker, a reader for a console). None of it is on the
-way to an ending.
+the side quests work (a pass for a locker, a reader for a console, a loader's hand, a recorded
+trace, a sold archive). None of it is on the way to an ending.
 
 `think` shows the captain's own notes: thoughts (story nodes of kind "thought") whose conditions
 hold, where the people the captain has met travel, the special equipment aboard, and what the
@@ -16,9 +16,15 @@ next step of the story still needs, in the captain's words.
 EQUIPMENT = {
     "founders_transponder": ("Founders' transponder", "needle fares 15% lower: the offices wave a founder's code through"),
     "decoy_code": ("Decoy code", "Mandate patrols wave you through half the time"),
+    "loader_patch": ("Adit's patch routine", "modules wear half as fast"),
+    "needle_talk": ("Needle-talk", "fewer fights on needles: the file closes up when you call trouble"),
+    "institute_charts": ("The Institute's survey charts", "research from every voyage goes 15% further"),
 }
 EQUIPMENT_FARE = 0.85
 DECOY_WAVE = 0.5
+LOADER_WEAR = 0.5           # modules wear this much with Adit's patch routine
+NEEDLE_TALK_RISK = 0.7      # trouble on a needle with needle-talk
+CHARTS_RESEARCH = 1.15      # research on the way with the Institute's charts
 
 
 class LookMixin:
@@ -115,8 +121,8 @@ class LookMixin:
                 if len(places) == 1:
                     line = "%s is always at %s." % (self.story.fill("{%s}" % cid), places[0])
                 else:
-                    line = "%s flies %s, %d turn%s at each; now at %s." % (
-                        self.story.fill("{%s}" % cid), ", ".join(places), stay, "" if stay == 1 else "s", where)
+                    line = "%s flies %s, %s at each; now at %s." % (
+                        self.story.fill("{%s}" % cid), ", ".join(places), "a turn" if stay == 1 else "%d turns" % stay, where)
                 rows.extend([w] for w in self.word_wrap(line))
         owned = [EQUIPMENT[f] for f in EQUIPMENT if self.has_equipment(f)]
         if owned:
