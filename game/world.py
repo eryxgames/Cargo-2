@@ -21,12 +21,14 @@ from .modules import ModulesMixin
 from .tactics import TacticsMixin
 from .achievements import AchievementsMixin
 from .sound import SoundMixin
+from .looking import LookMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin, AchievementsMixin, SoundMixin):
+           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin, AchievementsMixin, SoundMixin,
+           LookMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -659,6 +661,10 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
                 self.choose_style()
             elif action in ['sound', 'so']:
                 self.handle_sound()
+            elif action in ['look', 'lk']:
+                self.handle_look()
+            elif action in ['think', 'th']:
+                self.handle_think()
                 return
 
             elif action in ['version', 'v']:
@@ -997,6 +1003,7 @@ from .modules import (  # noqa: E402,F401
     CONTAINER_UNITS, FULL, MODULES, SCANNER_RISK, condition_word, mend_cost, module_name)
 from .tactics import MARKS, TACTICAL_FROM  # noqa: E402,F401
 from .sound import CUES, MUSIC_FILE, audio, music_table, sfx  # noqa: E402,F401
+from .looking import DECOY_WAVE, EQUIPMENT, EQUIPMENT_FARE  # noqa: E402,F401
 from .achievements import ACHIEVEMENTS  # noqa: E402,F401
 from .research import BRANCHES  # noqa: E402,F401
 from .start import (  # noqa: E402,F401

@@ -20,7 +20,16 @@
    "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune"
   },
   "clone": {
-   "about": "the other hauler with the captain's name"
+   "about": "the other hauler with the captain's name",
+   "route": {
+    "places": [
+     "Delta",
+     "Epsilon",
+     "Beta"
+    ],
+    "stay": 2,
+    "start": 3
+   }
   },
   "neurodroid_leader": {
    "kind": "neurodroid",

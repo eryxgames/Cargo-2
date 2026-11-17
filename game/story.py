@@ -139,6 +139,11 @@ class StoryRuntime:
                 self.due.setdefault(target, self.game.turn + 1)
 
     # -- conditions --------------------------------------------------------------
+    def where_is(self, who, turn=None):
+        """Where a character's route has them on a turn (this one by default); None without a route."""
+        route = (story_data()["characters"].get(who) or {}).get("route")
+        return route_place(route, self.game.turn if turn is None else turn)
+
     def check(self, cond, snap, found=None):
         if not cond:
             return True
@@ -180,6 +185,8 @@ class StoryRuntime:
             return snap["place_type"] in _as_list(want)
         if key == "venue":
             return snap.get("venue") in _as_list(want)
+        if key == "here":
+            return any(self.where_is(who, snap["turn"]) == snap["place"] for who in _as_list(want))
         if key == "chapter":
             return snap.get("chapter") in _as_list(want)
         if key == "has":
@@ -511,6 +518,9 @@ class StoryRuntime:
         earned = game.achievement_rows()
         if earned:
             rows.extend([[""], ["Achievements"]] + earned)
+        equipment = game.equipment_rows()
+        if equipment:
+            rows.extend([[""], ["Special equipment"]] + equipment)
         rows.extend([[""], ["People"]])
         people = [c for c in self.met if c in chars and not chars[c].get("generated")]
         for cid in people or []:
@@ -688,3 +698,13 @@ def voyage_condition(cond, factor):
 # The game's other modules, imported last so that the modules can refer to each other.
 from .encounters import ENEMIES  # noqa: E402
 from .sound import sfx  # noqa: E402
+
+
+def route_place(route, turn):
+    """Where a route puts a character on a turn: places[((turn + start) // stay) % len(places)]
+    (as storykit/story.py computes it)."""
+    places = (route or {}).get("places") or []
+    if not places:
+        return None
+    stay = max(1, int(route.get("stay", 1)))
+    return places[((turn + int(route.get("start", 0))) // stay) % len(places)]

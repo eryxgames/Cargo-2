@@ -2,7 +2,7 @@
 
 Written by `tools/handoff.py` from the built story; do not edit by hand.
 
-Cargo 2 has 113 story nodes, 14 characters and 26 flags; 23 flags are meant for Cargo 3. A captain record carries every flag that is set (up to 160, the carried ones first), the endings below, the achievements and the standings with the Hansa, the Mandate and the Concord.
+Cargo 2 has 140 story nodes, 14 characters and 39 flags; 25 flags are meant for Cargo 3. A captain record carries every flag that is set (up to 160, the carried ones first), the endings below, the achievements and the standings with the Hansa, the Mandate and the Concord.
 
 ## Endings and the segments
 
@@ -45,6 +45,13 @@ Each road's climax decides who holds the ring's segments when Cargo 3 begins (a 
 | `santor_hidden` | the captain hid Dharr Santor from the Mandate |
 | `santor_with_hansa` | Dharr Santor went to the Hansa after he came back |
 | `santor_with_rostrom` | Dharr Santor went to House Rostrom after he came back |
+
+### docks
+
+| Flag | Means |
+| --- | --- |
+| `decoy_code` | the captain carries a Mandate decoy code, found at Gamma (patrols wave the ship through) |
+| `founders_transponder` | the captain carries the founders' transponder from the locker at Alpha (needle fares lower) |
 
 ### hansa
 

@@ -8,7 +8,7 @@ of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames
         ╔═══════ C Δ R G Ω ][ ══════╗
         ║     Space Trading Saga    ║
         ╚═══════════════════════════╝
-                Version 2.0.0
+                Version 2.1.0
 ```
 
 ## Status
@@ -58,6 +58,12 @@ own world and story. What works now:
 - fourteen achievements, announced when earned, listed in the journal and written into the
   captain's record with the standings, for Cargo 3 (Cargo 1 still reads the record);
 - the places of 2460 describe themselves on a first visit;
+- look and think (2.1): `look` at a dock shows what is going on, the people there and things to
+  examine; some people travel routes of their own (Pell flies Alpha, Beta and Gamma; Grab Targa
+  never leaves Alpha) and the docks say when a known face is due. `think` gives the captain's
+  notes: leads, where people travel, special equipment, what the story still needs. Two side
+  quests start from a look (a sealed locker at Alpha, a ship that lies at Gamma) and end with
+  special equipment; nothing at the docks is needed for an ending;
 - sound through CLIo's synthesizer: a song composed for each kind of place, for convoy fights and
   for act 3, and effects for trades, fights, modules, achievements and the story's moments. No
   audio files; silent when the machine has no player. `sound` turns it on or off (kept);
@@ -76,10 +82,10 @@ document.
 
 ## Playing
 
-- **Windows:** download `cargo2-2.0.0-windows.zip` from the releases (or itch.io), unpack, run
+- **Windows:** download `cargo2-2.1.0-windows.zip` from the releases (or itch.io), unpack, run
   `cargo2.exe`. No Python needed.
 - **Linux, macOS, Termux, or Windows with Python:** Python 3.8 or newer, nothing else to install.
-  Download `cargo2-2.0.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
+  Download `cargo2-2.1.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
 
 ```bash
 git clone https://github.com/eryxgames/Cargo-2.git
@@ -110,6 +116,7 @@ game/           the game, Cargo 1.2's core split by what each part does:
   ship.py  travel.py  market.py  hansa.py  encounters.py  events.py  research.py
   actions.py  port.py  places.py  quests.py  contracts.py  people.py  passengers.py
   ranks.py  commands.py  factions.py  needles.py  modules.py  tactics.py  achievements.py  sound.py
+  looking.py      look and think: people on their routes, sights, thoughts, special equipment
 music/          cargo2.music.json: the songs (moods and seeds for CLIo's synthesizer)
 kit/            CLIo's screen and sound layer, copied in by tools/sync_kit.py (Apache-2.0)
 story/          the story: cargo2.story.json and the files in story/cargo2/, built into
@@ -118,7 +125,7 @@ story/          the story: cargo2.story.json and the files in story/cargo2/, bui
 storykit/       the trilogy's story tools (format, validator, map), copied
 themes/         Cargo 2's own styles (CLIo theme files), beside CLIo's in kit/style/
 tools/          checks: smoke, bot, fuzzing, save round trips, hostile files, kit, story,
-                openings, acts, systems, fights, sound, hand-off
+                openings, acts, look, systems, fights, sound, hand-off
 .github/        the release workflow: tag vX.Y.Z to build, release and push to itch.io
 legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, items and texts
 ```

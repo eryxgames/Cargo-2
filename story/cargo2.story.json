@@ -36,7 +36,8 @@
   "cargo2/heading.json",
   "cargo2/debts.json",
   "cargo2/roads.json",
-  "cargo2/echoes.json"
+  "cargo2/echoes.json",
+  "cargo2/people.json"
  ],
  "stats": {
   "money": {

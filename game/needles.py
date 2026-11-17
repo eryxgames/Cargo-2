@@ -45,6 +45,8 @@ class NeedlesMixin:
         fare = base * POSITIONS[position][0] * hike * self.hansa_fare_factor() * 0.88 ** getattr(self, "hansa_bonds", 0)
         if self.ship.researched("fast_turnaround"):
             fare *= 0.9
+        if self.has_equipment("founders_transponder"):
+            fare *= EQUIPMENT_FARE
         return max(10, int(fare))
 
     def needle_wait(self):
@@ -149,3 +151,4 @@ class NeedlesMixin:
 
 from .modules import SCANNER_RISK  # noqa: E402
 from .sound import sfx  # noqa: E402
+from .looking import EQUIPMENT_FARE  # noqa: E402

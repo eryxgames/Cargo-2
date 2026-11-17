@@ -2,6 +2,20 @@
 
 Cargo 2, the second part of the Cargo trilogy. Versions follow the game (`game/__init__.py`).
 
+## 2.1.0
+
+- **Look and think.** `look` (lk) at a dock: what is going on (the next needle, people due),
+  the people there, and things to examine. `think` (th): the captain's notes, from the leads
+  they have picked up to what the story still needs.
+- **People who travel on their own.** Pell Okafor flies Alpha, Beta and Gamma; Grab Allsa Targa
+  never leaves Alpha; Meza Voce, Tylde Kren, Yzode van Rostrom and the other captain have
+  routes of their own. Find them by reasoning, not by luck: the docks and your notes say where.
+- **Two side quests and special equipment:** a sealed locker at Alpha that takes a pass nobody
+  carries any more (the founders' transponder: cheaper needles), and a ship at Gamma that lies
+  about what it is (a decoy code: Mandate patrols wave you through). Small finds at Delta,
+  Epsilon, Beta and the segment itself. None of it is needed for an ending.
+- The stats box shows CΔRGΩ][.
+
 ## 2.0.0
 
 The whole game, rebuilt on Cargo 1.2's core with CLIo's screen and sound layer. About forty
