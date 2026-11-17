@@ -133,9 +133,12 @@ legacy/         Cargo 2 0.1.0-a (2025), kept as a source of themes, research, it
 ```
 
 Releasing: set `VERSION` in `game/__init__.py`, add a `## X.Y.Z` section to `CHANGELOG.md`,
-then `git tag vX.Y.Z && git push --tags`. The workflow checks, builds `cargo2.exe`, makes the
-GitHub release and, with a `BUTLER_API_KEY` secret, pushes to itch.io (`ITCH_PROJECT` in the
-workflow names the page).
+then `git tag vX.Y.Z && git push origin vX.Y.Z`. The workflow checks, builds `cargo2.exe`, makes
+the GitHub release and, with a `BUTLER_API_KEY` secret, pushes to itch.io (`ITCH_PROJECT` in the
+workflow names the page). The release's description is `.github/release-intro.md` followed by
+the version's changelog section (`sh tools/release_notes.sh X.Y.Z` shows it). To try the build
+first, run the workflow by hand (Actions, Release, Run workflow): it builds and smoke-tests both
+zips and keeps them with the notes as the run's artifacts, without releasing anything.
 
 `kit/` is never edited here: change the files in CLIo and copy them again with
 `python3 tools/sync_kit.py ../CLIo`. `tools/check.sh` (or `tools/check.sh quick`) runs every

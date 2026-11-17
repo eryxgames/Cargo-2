@@ -1,10 +1,15 @@
-# Release: push a tag like v2.0.0 and this workflow
+# Release: push a tag like v2.2.0 and this workflow
 #   1. runs the quick checks,
 #   2. builds cargo2.exe for Windows (PyInstaller, one file, no Python needed),
-#   3. makes a GitHub release with the notes for that version from CHANGELOG.md,
+#   3. makes a GitHub release: .github/release-intro.md ({version} filled in), then the notes for
+#      that version from CHANGELOG.md,
 #   4. pushes both builds to itch.io with butler (if the BUTLER_API_KEY secret is set).
 #
-# The tag must match VERSION in game/__init__.py, and CHANGELOG.md needs a "## 2.0.0" section.
+# A trial run without a tag: Actions > Release > Run workflow. It does 1 and 2, packs both zips and
+# smoke-tests them, and leaves them (and the release notes) as the run's artifacts; no release, no
+# itch.io.
+#
+# The tag must match VERSION in game/__init__.py, and CHANGELOG.md needs a "## 2.2.0" section.
 # itch.io channels: "windows" (cargo2.exe) and "linux-mac" (the Python game, needs Python 3.8+;
 # also runs on Windows and in Termux). Set ITCH_PROJECT below to the page's user/slug.
 name: Release
@@ -12,6 +17,7 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,11 +38,15 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Tag matches the game's version
         run: |
-          tag="${GITHUB_REF_NAME#v}"
           game=$(python3 -c "import re; print(re.search(r'^VERSION = \"(.+)\"', open('game/__init__.py').read(), re.M).group(1))")
-          echo "tag $tag, game/__init__.py $game"
-          test "$tag" = "$game"
-          grep -q "^## $tag\$" CHANGELOG.md || { echo "CHANGELOG.md has no '## $tag' section"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="${GITHUB_REF_NAME#v}"
+            echo "tag $tag, game/__init__.py $game"
+            test "$tag" = "$game"
+          else
+            echo "trial run (no tag), game/__init__.py $game"
+          fi
+          grep -q "^## $game\$" CHANGELOG.md || { echo "CHANGELOG.md has no '## $game' section"; exit 1; }
       - name: Quick checks
         run: bash tools/check.sh quick
 
@@ -78,20 +88,31 @@ jobs:
           mkdir -p build/python
           cp -r --parents $SHIP build/python/
           find build/python -name __pycache__ -prune -exec rm -rf {} +
-          version="${GITHUB_REF_NAME#v}"
+          version=$(python3 -c "import re; print(re.search(r'^VERSION = \"(.+)\"', open('game/__init__.py').read(), re.M).group(1))")
           echo "VERSION=$version" >> "$GITHUB_ENV"
           (cd build/windows && zip -qr "../../cargo2-$version-windows.zip" .)
           (cd build/python && zip -qr "../../cargo2-$version-python.zip" .)
-          awk -v v="## $version" '$0==v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          bash tools/release_notes.sh "$version" > notes.md
+          cat notes.md
       - name: The Python build starts on its own
         run: python3 tools/smoke.py python3 build/python/cargo2.py
+      - name: Keep the trial run's zips and notes
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trial-${{ env.VERSION }}
+          path: |
+            cargo2-*.zip
+            notes.md
       - name: GitHub release
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" "cargo2-$VERSION-windows.zip" "cargo2-$VERSION-python.zip" \
             --title "Cargo 2 $VERSION" --notes-file notes.md
       - name: Push to itch.io
+        if: github.ref_type == 'tag'
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
