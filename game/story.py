@@ -534,34 +534,8 @@ class StoryRuntime:
 
 
 def play_cue(name):
-    """A story sound, if the kit beside the game can play it (silent otherwise)."""
-    kit = _sound_kit()
-    if kit is not None:
-        try:
-            kit.play(name)
-        except Exception:
-            pass
-
-
-_SOUND_KIT = []
-
-
-def _sound_kit():
-    if not _SOUND_KIT:
-        kit = None
-        if os.environ.get("CARGO_SOUND", "1") != "0":
-            folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cargo-kit")
-            path = os.path.join(folder, "sound.py")
-            if os.path.isfile(path):
-                try:
-                    import importlib.util
-                    spec = importlib.util.spec_from_file_location("cargo_kit_sound", path)
-                    kit = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(kit)
-                except Exception:
-                    kit = None
-        _SOUND_KIT.append(kit)
-    return _SOUND_KIT[0]
+    """A story sound: CLIo's synthesizer through game/sound.py (silent when it cannot play)."""
+    sfx(name)
 
 
 def _repair_at_cost(game):
@@ -713,3 +687,4 @@ def voyage_condition(cond, factor):
 
 # The game's other modules, imported last so that the modules can refer to each other.
 from .encounters import ENEMIES  # noqa: E402
+from .sound import sfx  # noqa: E402

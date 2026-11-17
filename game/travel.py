@@ -67,6 +67,7 @@ class TravelMixin:
             self.discovered_locations.add(found_location.name)
 
             self.arrive_through_hazard(found_location)
+            self.play_music()
             if first_visit:
                 self.story_manager.plot_points += 3
                 about = (story_data()["places"].get(found_location.name) or {}).get("about")

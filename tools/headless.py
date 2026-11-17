@@ -6,6 +6,8 @@
 """
 import builtins, importlib.util, io as _io, os, sys, time, contextlib
 
+os.environ.setdefault("CARGO_SOUND", "0")      # tests never start an audio player
+
 
 class IO:
     def __init__(self):

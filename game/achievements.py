@@ -34,8 +34,12 @@ class AchievementsMixin:
         for aid, (title, what, cond) in ACHIEVEMENTS.items():
             if aid not in earned and self.story.check(cond, snap):
                 earned[aid] = self.turn
+                sfx("achievement")
                 self.display_simple_message("Achievement: %s (%s)." % (title, what), 2, color='32')
 
     def achievement_rows(self):
         earned = getattr(self, "achievements", {})
         return [["  %s: %s" % (ACHIEVEMENTS[a][0], ACHIEVEMENTS[a][1])] for a in ACHIEVEMENTS if a in earned]
+
+
+from .sound import sfx  # noqa: E402

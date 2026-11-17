@@ -48,6 +48,15 @@ class TacticsMixin:
         ship = self.ship
         power = enemy["power"]
         convoy = bool(getattr(self, "in_needle", False))
+        self.in_fight = True
+        self.play_music()
+        try:
+            return self._rounds(enemy_id, bounty, lines, edge, shield, enemy, ship, power, convoy)
+        finally:
+            self.in_fight = False
+            self.play_music()
+
+    def _rounds(self, enemy_id, bounty, lines, edge, shield, enemy, ship, power, convoy):
         theirs, yours = MARKS, MARKS
         used, counters = set(), 0
         convoy_hits, screened_rounds = 0, 0
@@ -98,14 +107,17 @@ class TacticsMixin:
             if random.random() < chance:
                 theirs -= 1
                 hurt = True
+                sfx("round_won")
                 story.append(random.choice(YOU_SCORE))
                 if move == "board" and theirs == 0:
                     return self.convoy_end(enemy_id, "boarded", convoy, convoy_hits, screened_rounds, round_no,
                                            ["Your crew goes across with cutters and comes back with their hold."],
                                            bounty, hit_total)
             elif move == "counter":
+                sfx("miss")
                 story.append("Chaff and flares: their volley goes wide.")
             else:
+                sfx("round_lost")
                 yours -= 1
                 hit_total += random.randint(3, 6) * unit
                 if yours == 0:
@@ -139,3 +151,4 @@ class TacticsMixin:
 
 # The game's other modules, imported last so that the modules can refer to each other.
 from .encounters import ENEMIES, odds_word  # noqa: E402
+from .sound import sfx  # noqa: E402

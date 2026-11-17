@@ -75,6 +75,7 @@ class ModulesMixin:
         module = random.choice(fitted)
         module["condition"] = max(0, module["condition"] - int(amount))
         if module["condition"] == 0:
+            sfx("broken")
             self.display_simple_message("%s is broken%s. It does nothing until it is mended (upgrade/u, modules)."
                                         % (module_name(module["kind"]), " (" + reason + ")" if reason else ""),
                                         2, color='31')
@@ -152,6 +153,7 @@ class ModulesMixin:
             return
         ship.money -= price
         ship.modules.append({"kind": kind, "condition": FULL})
+        sfx("fit")
         self.display_simple_message("The yard's spanner monkeys clamp a %s onto grip %d." % (
             name.lower(), len(ship.modules)), 2, color='32')
 
@@ -188,3 +190,6 @@ class ModulesMixin:
             self.display_simple_message("Mended %d module%s." % (mended, "" if mended == 1 else "s"), 2, color='32')
         if mended < len(worn):
             self.display_simple_message("Not enough money to mend the rest.", 2, color='33')
+
+
+from .sound import sfx  # noqa: E402

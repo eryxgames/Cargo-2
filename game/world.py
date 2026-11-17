@@ -20,12 +20,13 @@ from .needles import NeedlesMixin
 from .modules import ModulesMixin
 from .tactics import TacticsMixin
 from .achievements import AchievementsMixin
+from .sound import SoundMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin, AchievementsMixin):
+           FactionsMixin, NeedlesMixin, ModulesMixin, TacticsMixin, AchievementsMixin, SoundMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -656,6 +657,8 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
 
             elif action in ['style', 'st']:
                 self.choose_style()
+            elif action in ['sound', 'so']:
+                self.handle_sound()
                 return
 
             elif action in ['version', 'v']:
@@ -770,6 +773,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
                 loc.recover()
             self.mend_on_the_way()
             self.check_achievements()
+        self.play_music()
         self.note_prices()
 
     def story_flag(self, *flags):
@@ -955,8 +959,8 @@ from .captain import (  # noqa: E402,F401
     list_captain_files, read_captain_file)
 from .story import (  # noqa: E402,F401
     ENDING_TITLES, GAME_ENDING_TITLES, GAME_TITLES, ending_title, STORY_FILE, STORY_HOOKS, STORY_MOMENTS, StoryRuntime,
-    VOYAGES, VOYAGE_STATS, _PLACEHOLDER, _SOUND_KIT, _as_list, _open_portal,
-    _repair_at_cost, _sound_kit, play_cue, record_matches, story_data, story_hook,
+    VOYAGES, VOYAGE_STATS, _PLACEHOLDER, _as_list, _open_portal,
+    _repair_at_cost, play_cue, record_matches, story_data, story_hook,
     story_links, voyage_condition, voyage_value)
 from .chapters import (  # noqa: E402,F401
     MilestoneRequirements, StoryChapter, StoryManager, StoryMilestone, chapter_requirements_met)
@@ -992,6 +996,7 @@ from .needles import (  # noqa: E402,F401
 from .modules import (  # noqa: E402,F401
     CONTAINER_UNITS, FULL, MODULES, SCANNER_RISK, condition_word, mend_cost, module_name)
 from .tactics import MARKS, TACTICAL_FROM  # noqa: E402,F401
+from .sound import CUES, MUSIC_FILE, audio, music_table, sfx  # noqa: E402,F401
 from .achievements import ACHIEVEMENTS  # noqa: E402,F401
 from .research import BRANCHES  # noqa: E402,F401
 from .start import (  # noqa: E402,F401

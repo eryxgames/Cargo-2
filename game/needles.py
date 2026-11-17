@@ -97,6 +97,7 @@ class NeedlesMixin:
             self.front_berths = berths - 1
         if wait:
             self.turn += wait               # waiting at the buoy; the jump itself is the trip's turn
+        sfx("needle")
         self.needle_risk = POSITIONS[position][1] * (SCANNER_RISK if self.ship.working("scanner") else 1.0)
         self.needle_position = position
         return position
@@ -147,3 +148,4 @@ class NeedlesMixin:
 
 
 from .modules import SCANNER_RISK  # noqa: E402
+from .sound import sfx  # noqa: E402

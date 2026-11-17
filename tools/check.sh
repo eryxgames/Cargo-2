@@ -1,6 +1,7 @@
 #!/bin/sh
 # Run every check on Cargo 2. Usage: tools/check.sh [quick]
 cd "$(dirname "$0")/.." || exit 1
+export CARGO_SOUND=0          # the checks never start an audio player
 T=tools
 G=game/world.py
 PY=${PYTHON:-python3}
@@ -26,6 +27,9 @@ $PY $T/acts.py || fail=1
 
 echo "== Cargo 2's systems, one by one"
 $PY $T/systems.py || fail=1
+
+echo "== sound: songs composed and rendered, places, fights, act 3, effects, sound off (into a recorder)"
+$PY $T/sound.py || fail=1
 
 echo "== convoy fights against one-roll fights, every difficulty (win rate and damage)"
 $PY $T/fights.py $FIGHTS > /tmp/cargo2-fights.txt || fail=1; grep OFF /tmp/cargo2-fights.txt; tail -1 /tmp/cargo2-fights.txt

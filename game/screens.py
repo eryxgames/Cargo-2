@@ -322,6 +322,7 @@ class ScreensMixin:
         'load': "load a saved game",
         'captain': "your captain's record: carry it to another part of the saga",
         'style': "the look: colours and frames (themes from CLIo and from Cargo 2)",
+        'sound': "music and effects on or off (composed as you play; silent without a player)",
         'help': "this screen",
         'version': "the game's version",
         'resign': "end this game and see the score",

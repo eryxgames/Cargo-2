@@ -73,7 +73,7 @@ COMMODITIES = {"tech": ("t",), "agri": ("a", "agro"), "salt": ("s",), "fuel": ("
 
 # Commands every location accepts besides its own (long form, shortcut)
 GLOBAL_COMMANDS = [('hansa', 'ha'), ('log', 'l'), ('journal', 'j'), ('save', 'sv'), ('load', 'ld'),
-                   ('captain', 'cap'), ('style', 'st'), ('help', 'h'), ('version', 'v'), ('resign', 'rs'), ('quit', 'q')]
+                   ('captain', 'cap'), ('style', 'st'), ('sound', 'so'), ('help', 'h'), ('version', 'v'), ('resign', 'rs'), ('quit', 'q')]
 
 
 def commodity_from(answer):
