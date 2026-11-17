@@ -291,6 +291,25 @@ class Bot:
                 self.upgrade = "hull"
                 return "u"
 
+        # modules at a yard (Cargo 2): a trader wants hold and a lower tax, a fighter guns and
+        # shields; a broken module is mended; one visit to the yard a turn
+        if "upgrade" in options and "upgrade" not in self.flags and hasattr(ship, "grips") and g.has_yard():
+            wants = (["turret", "shield", "hangar", "repair", "turret", "shield", "salvage"]
+                     if goal == "combat" or "combat_victories" in need
+                     else ["container", "offloader", "container", "repair", "scanner", "container", "container"])
+            fitted = [m["kind"] for m in ship.modules]
+            todo = [k for k in wants if fitted.count(k) < wants.count(k)]
+            broken = any(m["condition"] < 40 for m in ship.modules)
+            self.yard = None
+            if broken and ship.money > 3 * sum(cargo.mend_cost(m) for m in ship.modules) + 20000:
+                self.yard = ["m"]
+            elif todo and len(fitted) < ship.grips() and ship.money > 4 * cargo.MODULES[todo[0]][1] + 20000:
+                self.yard = ["f", str(list(cargo.MODULES).index(todo[0]) + 1)]
+            if self.yard:
+                self.flags.add("upgrade")
+                self.upgrade = "modules"
+                return "u"
+
         # ship upgrades: attack decides every fight (attack must exceed the enemy's defence,
         # which goes up to 6), defence only reduces damage
         if "upgrade" in options and "upgrade" not in self.flags:
@@ -405,6 +424,8 @@ class Bot:
                 return "2" if g.ship.money > 2 * fare else "3"
             if "property to upgrade" in p:
                 return self.upgrade
+            if p.startswith("yard:") or p.startswith("fit which"):      # the yard (Cargo 2)
+                return (getattr(self, "yard", None) or [""]).pop(0) if getattr(self, "yard", None) else ""
             if "overhaul the hull" in p:
                 return "yes"
             if "building type" in p:
@@ -695,6 +716,7 @@ if g is not None:
     result.update({
         "turn": g.turn, "chapter": sm.current_chapter, "completed": sorted(sm.completed_chapters),
         "ending": getattr(g, "ending_reached", None), "money": int(g.ship.money),
+        "modules": ["%s %d" % (m["kind"], m["condition"]) for m in getattr(g.ship, "modules", [])],
         "plot_points": sm.plot_points, "trades": g.trades_completed,
         "victories": g.ship.combat_victories.get("total"), "defeats": g.ship.combat_defeats.get("total"),
         "rating": g.ship.attack + g.ship.defense + g.ship.speed, "damage": g.ship.damage,

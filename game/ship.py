@@ -101,7 +101,8 @@ class Ship:
         """(general, special): units for any goods, and extra units for salt and fuel."""
         base = self.HOLD_BASE
         general = base * (1 + sum(b for item, b in self.HOLD_BONUS.items() if self.items.get(item))
-                          + (0.1 if "loader" in self.crew else 0) + self.hull_info()["hold"])
+                          + (0.1 if "loader" in self.crew else 0) + self.hull_info()["hold"]) \
+            + CONTAINER_UNITS * self.working("container")
         special = base * sum(b for item, b in self.SPECIAL_HOLD_BONUS.items() if self.items.get(item))
         return int(general), int(special)
 
@@ -124,9 +125,21 @@ class Ship:
     def hull_info(self):
         return self.HULLS[min(self.hull, len(self.HULLS) - 1)]
 
+    # Modules on the spine's grips (game/modules.py): [{"kind": "container", "condition": 100}, ...]
+    modules = property(lambda self: self.__dict__.setdefault("modules", []))
+
+    def grips(self):
+        """How many modules the hull's spine carries."""
+        return GRIPS[min(self.hull, len(GRIPS) - 1)]
+
+    def working(self, kind):
+        """How many modules of this kind are fitted and not broken."""
+        return sum(1 for m in self.modules if m["kind"] == kind and m["condition"] > 0)
+
     def repair_rate(self):
-        """Credits per point of damage: the hull's rate, less with a mechanic aboard."""
-        return self.hull_info()["repair"] * (0.7 if "mechanic" in self.crew else 1.0)
+        """Credits per point of damage: the hull's rate, less with a mechanic or a repair bay aboard."""
+        return self.hull_info()["repair"] * (0.7 if "mechanic" in self.crew else 1.0) \
+            * (0.7 if self.working("repair") else 1.0)
 
     # Fighting equipment: (attack bonus, defense bonus)
     FIGHT_GEAR = {"combat_drone": (1, 0), "shield_booster": (0, 1), "mining_laser": (0, 1),
@@ -138,11 +151,12 @@ class Ship:
 
     def fight_attack(self):
         return self.attack + sum(g[0] for item, g in self.FIGHT_GEAR.items() if self.items.get(item)) \
-            + (1 if "gunner" in self.crew else 0) + self.hull_info()["attack"]
+            + (1 if "gunner" in self.crew else 0) + self.hull_info()["attack"] \
+            + self.working("turret") + self.working("hangar")
 
     def fight_defense(self):
         return max(1, self.defense + sum(g[1] for item, g in self.FIGHT_GEAR.items() if self.items.get(item))
-                   + self.hull_info()["defense"])
+                   + self.hull_info()["defense"] + self.working("shield"))
 
     def trade_tax(self, rate):
         """The tax rate after the ship's loading gear and broker (never below 1%)."""
@@ -150,11 +164,14 @@ class Ship:
             rate -= 0.02
         if "broker" in self.crew:
             rate -= 0.02
+        if self.working("offloader"):
+            rate -= 0.02
         return max(0.01, rate)
 
     def research_bonus(self):
         """Extra share of research points from travel and discoveries."""
-        return (0.2 if self.items.get("research_module") else 0) + (0.1 if self.items.get("data_analyzer") else 0)
+        return (0.2 if self.items.get("research_module") else 0) + (0.1 if self.items.get("data_analyzer") else 0) \
+            + (0.1 if self.working("scanner") else 0)
 
     def stowed(self):
         """Units of hold taken by special cargo the story put aboard (a hovertank, sealed crates)."""
@@ -298,3 +315,6 @@ class Ship:
             self.defense += amount
         elif property_name == 'speed':
             self.speed += amount
+
+
+from .modules import CONTAINER_UNITS, GRIPS  # noqa: E402  (modules.py imports nothing from here)

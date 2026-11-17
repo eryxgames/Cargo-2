@@ -429,10 +429,18 @@ class EncountersMixin:
             ship.damage = max(0, ship.damage - 5)
         if ship.damage > before:
             lines.append("Hull damage +%d%%." % (ship.damage - before))
+            worn = self.wear_modules(min(40, 2 * (ship.damage - before)))
+            if worn and worn["condition"] > 0:
+                lines.append("The %s took some of it (%s)." % (module_name(worn["kind"]).lower(),
+                                                                condition_word(worn["condition"])))
 
         if won:
             ship.record_combat_victory(enemy["kind"])
             money = int(random.randint(150, 350) * power) + bounty
+            if ship.working("salvage"):
+                salvage = int(random.randint(100, 300) * power)
+                money += salvage
+                lines.append("Debris retrieval brings in %s of salvage." % self.format_money(salvage))
             research = int(random.randint(4, 10) * power * (1 + ship.research_bonus()))
             plot = 1 + power // 3
             ship.money += money
@@ -664,3 +672,4 @@ class EncountersMixin:
 # The game's other modules, imported last so that the modules can refer to each other.
 from .terminal import say  # noqa: E402
 from .story import story_data  # noqa: E402
+from .modules import condition_word, module_name  # noqa: E402

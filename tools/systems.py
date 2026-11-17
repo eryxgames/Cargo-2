@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Cargo 2's own systems, checked one by one on a real game: standing with the factions, the
-needles between the stars and the hops inside a system (and whatever later systems add here).
+needles between the stars and the hops inside a system, the ship's modules (and whatever
+later systems add here).
 
     python3 tools/systems.py
 """
@@ -132,6 +133,106 @@ game.needle_position = "front"
 with headless.quiet():
     game.after_needle()
 expect(game.ship.cargo["tech"] == 100, "the front loses nothing")
+
+# ---- the ship's modules ------------------------------------------------------------------
+def at(kind_name):
+    return next(loc for loc in game.locations if type(loc).__name__ == kind_name)
+
+
+def yard(answers):
+    io.queue.clear(); io.feed(answers + [""] * 6)
+    with headless.quiet():
+        game.handle_yard()
+
+
+game, io = headless.new_game(cargo)
+ship = game.ship
+game.current_location = at("Planet")
+expect(ship.modules == [] and ship.grips() == 3, "a new ship has three empty grips")
+general = ship.hold_sizes()[0]
+attack, defense = ship.fight_attack(), ship.fight_defense()
+ship.money = 100000
+yard(["f", "1"])
+expect(len(ship.modules) == 1 and ship.money == 92000 and ship.hold_sizes()[0] == general + 100,
+       "a container module costs 8,000 and adds 100 units of hold")
+yard(["f", "2", "f", "3"])
+expect(ship.fight_attack() == attack + 1 and ship.fight_defense() == defense + 1, "a turret and a shield fight")
+money = ship.money
+yard(["f", "1"])
+expect(len(ship.modules) == 3 and ship.money == money, "no module fits past the last grip")
+ship.modules[1]["condition"] = 0
+expect(ship.fight_attack() == attack, "a broken turret does not shoot")
+expect(cargo.mend_cost(ship.modules[1]) == 3000, "mending a broken turret costs 3,000: %d" % cargo.mend_cost(ship.modules[1]))
+yard(["m"])
+expect(ship.modules[1]["condition"] == 100 and ship.money == money - 3000, "the yard mends what the money pays for")
+yard(["s", "1"])
+expect(len(ship.modules) == 2 and ship.money == money - 3000 + 3200 and ship.hold_sizes()[0] == general,
+       "stripping a sound container pays 40% back")
+random.seed(3)
+with headless.quiet():
+    worn = game.wear_modules(30)
+expect(worn is not None and worn["condition"] == 70, "a hit wears one module")
+with headless.quiet():
+    for _ in range(5):
+        game.wear_modules(30)
+expect(any(m["condition"] == 0 for m in ship.modules), "enough hits break a module")
+ship.hull = 1
+expect(ship.grips() == 5, "an Ironback has five grips")
+game.current_location = cargo.DeepSpaceOutpost("DSO-Test", 7, 3, 20, "Stable")
+yard(["f", "1"])
+expect(len(ship.modules) == 2, "outposts have no yard")
+
+# effects outside the ship's own sums
+game, io = headless.new_game(cargo)
+ship = game.ship
+ship.money = 10 ** 6
+game.current_location = at("Planet")
+tax = ship.trade_tax(0.05)
+for kind in ("repair", "offloader", "scanner"):
+    ship.modules.append({"kind": kind, "condition": 100})
+expect(abs(ship.trade_tax(0.05) - (tax - 0.02)) < 1e-9, "the offloader takes 2% off the tax")
+ship.damage, ship.modules[1]["condition"] = 10, 50
+game.ticked_turn = game.turn - 1
+with headless.quiet():
+    game.new_turn()
+expect(ship.damage == 8 and ship.modules[1]["condition"] == 55, "the repair bay mends a little every turn")
+here = game.current_location
+there = next(loc for loc in game.locations if not game.same_system(loc, here))
+io.queue.clear(); io.feed(["2"])
+with headless.quiet():
+    game.book_needle(there)
+expect(abs(game.needle_risk - 0.8) < 1e-9, "a scanner sees trouble coming: %s" % game.needle_risk)
+far = cargo.DeepSpaceOutpost("DSO-Test", 7, 3, 20, "Stable")
+expect(game.lane_hazard(far) == 1, "an outpost is a rough lane for the old hauler")
+ship.damage = 0
+random.seed(5)
+with headless.quiet():
+    game.arrive_through_hazard(far)
+plain = ship.damage
+ship.damage = 0
+ship.modules.append({"kind": "rad", "condition": 100})
+random.seed(5)
+with headless.quiet():
+    game.arrive_through_hazard(far)
+expect(ship.damage == plain // 2, "radiation shielding halves a rough lane: %d against %d" % (ship.damage, plain))
+ship.modules.append({"kind": "salvage", "condition": 100})
+random.seed(2)
+money = ship.money
+lines = []
+with headless.quiet():
+    while not lines or not any("salvage" in line for line in lines):
+        lines = []
+        game.fight("skiff", 0, lines, edge=20)
+expect(any("salvage" in line for line in lines), "debris retrieval salvages a won fight")
+
+# a save keeps the modules; a save from before them gets an empty spine
+with headless.quiet():
+    game.save_game("modules")
+    loaded = cargo.load_game("modules")
+expect([m["kind"] for m in loaded.ship.modules] == [m["kind"] for m in ship.modules], "modules survive a save and a load")
+del loaded.ship.__dict__["modules"]
+loaded.bring_up_to_date()
+expect(loaded.ship.modules == [] and loaded.ship.grips() == 3, "an old save gets an empty spine")
 
 for problem in problems:
     print("FAIL", problem)

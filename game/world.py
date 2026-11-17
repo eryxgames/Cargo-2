@@ -17,12 +17,13 @@ from .port import PortMixin
 from .ranks import RanksMixin
 from .factions import FactionsMixin
 from .needles import NeedlesMixin
+from .modules import ModulesMixin
 
 
 class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
            MarketMixin, HansaMixin, EncountersMixin, EventsMixin,
            ResearchMixin, ActionsMixin, PortMixin, RanksMixin,
-           FactionsMixin, NeedlesMixin):
+           FactionsMixin, NeedlesMixin, ModulesMixin):
     # How often something happens between docks, by difficulty: an easy game has calmer lanes
     LANE_ACTIVITY = {0: 0.55, 1: 0.85, 2: 1.0}
 
@@ -220,6 +221,8 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             self.standing.setdefault(name, 0)
         self.dawn_trust = getattr(self, "dawn_trust", 0)
         self.front_berths = getattr(self, "front_berths", 0)
+        if not isinstance(self.ship.__dict__.get("modules"), list):
+            self.ship.__dict__["modules"] = []      # a save from before the ship had modules
         for cid, chapter in getattr(getattr(self, "story_manager", None), "chapters", {}).items():
             for milestone in chapter.milestones.values():
                 milestone.chapter_id = cid          # the story file may state its condition
@@ -541,13 +544,16 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
 
             elif action in ['upgrade', 'u']:
                 property_name = self.validate_input(
-                    "Choose property to upgrade (attack/defense/speed/hull): ",
-                    ['attack', 'defense', 'speed', 'hull']
+                    "Choose property to upgrade (attack/defense/speed/hull/modules): ",
+                    ['attack', 'defense', 'speed', 'hull', 'modules', 'mod']
                 )
                 if property_name is None:
                     return
                 if property_name == 'hull':
                     self.handle_hull_overhaul()
+                    return
+                if property_name in ('modules', 'mod'):
+                    self.handle_yard()
                     return
 
                 cost = self.ship.upgrade_costs[property_name]
@@ -747,6 +753,7 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
         if not first:
             for loc in self.locations:
                 loc.recover()
+            self.mend_on_the_way()
         self.note_prices()
 
     def story_flag(self, *flags):
@@ -966,5 +973,7 @@ from .factions import (  # noqa: E402,F401
     FACTIONS, HIGH, LOW, WORDS, standing_word)
 from .needles import (  # noqa: E402,F401
     ACCOUNT_LIMIT, FUEL_PRICE, HOP_FUEL, POSITIONS, system_of)
+from .modules import (  # noqa: E402,F401
+    CONTAINER_UNITS, FULL, MODULES, SCANNER_RISK, condition_word, mend_cost, module_name)
 from .start import (  # noqa: E402,F401
     choose_captain, choose_saved_game, main, new_game, start_game)

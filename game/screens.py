@@ -205,6 +205,12 @@ class ScreensMixin:
         else:
             ship_info.append(["  No items"])
 
+        ship_info.append(["Modules (%d/%d):" % (len(self.ship.modules), self.ship.grips())])
+        for module in self.ship.modules:
+            ship_info.append(["  %s: %s" % (module_name(module["kind"]), condition_word(module["condition"]))])
+        if not self.ship.modules:
+            ship_info.append(["  empty grips"])
+
         # Add combat statistics if they exist
         if hasattr(self.ship, 'combat_victories'):
                     ship_info.append(["Combat Record:"])
@@ -300,7 +306,7 @@ class ScreensMixin:
         'port': "passengers, cabins, contracts",
         'cantina': "maps, gossip, quests, contracts, and whoever is in the bar",
         'shop': "equipment for the ship",
-        'upgrade': "attack, defense or speed (each upgrade costs more)",
+        'upgrade': "attack, defense or speed (each costs more); hull: a heavier hull; modules: the yard",
         'repair': "repair the hull",
         'research': "spend research points (research colonies)",
         'action': "scan, research and other actions",
@@ -374,6 +380,11 @@ class ScreensMixin:
                  "system is worse: a planet's shipyard (upgrade/u, hull) rebuilds you as an Ironback or a "
                  "Farstrider, which fight and carry better and cost far more to repair. Rich captains draw "
                  "bigger pirates, who take a bigger share. People you meet come back, and so do your choices."],
+                [""],
+                ["Behind the command module the hull's spine has grips for modules: three on the old hauler, five "
+                 "on an Ironback, seven on a Farstrider. Yards at planets and asteroid bases (upgrade/u, modules) "
+                 "fit containers, turrets, shields, scanners, a repair bay and more. Modules wear in fights and on "
+                 "rough lanes; a broken one does nothing until it is mended."],
                 [""],
                 ["Type a command or its shortcut and press Enter. In any menu, Enter on its own goes back. "
                  "Amounts: a number, max/m or half/h. Each 'end' or journey is one turn; the game saves "
@@ -471,3 +482,4 @@ class ScreensMixin:
 # The game's other modules, imported last so that the modules can refer to each other.
 from .terminal import RULE, box_inner_width, render_box, terminal_columns, wrap_text  # noqa: E402
 from .commands import GLOBAL_COMMANDS  # noqa: E402
+from .modules import condition_word, module_name  # noqa: E402

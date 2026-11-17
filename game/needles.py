@@ -81,7 +81,7 @@ class NeedlesMixin:
             return None
         if position == "front" and berths:
             self.front_berths = berths - 1
-        self.needle_risk = POSITIONS[position][1]
+        self.needle_risk = POSITIONS[position][1] * (SCANNER_RISK if self.ship.working("scanner") else 1.0)
         self.needle_position = position
         return position
 
@@ -128,3 +128,6 @@ class NeedlesMixin:
         self.ship.cargo[good] -= lost
         self.display_simple_message("Somewhere in the jump the Cargolytes cut two containers off the tail of the "
                                     "needle: %d %s gone." % (lost, good), 2, color='31')
+
+
+from .modules import SCANNER_RISK  # noqa: E402

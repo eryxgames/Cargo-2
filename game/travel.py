@@ -162,9 +162,15 @@ class TravelMixin:
             return
         low, high = (10, 20) if need == 1 else ((20, 35) if hull == 1 else (30, 45))
         hit = random.randint(low, high)
+        shielded = self.ship.working("rad")
+        if shielded:
+            hit //= 2
         self.ship.damage = min(99, self.ship.damage + hit)
-        lines = ["The way to %s is %s, and the %s was not built for it: hull damage +%d%%." % (
-            loc.name, "rough" if need == 1 else "deep and empty", self.ship.hull_info()["name"].lower(), hit)]
+        lines = ["The way to %s is %s, and the %s was not built for it: hull damage +%d%%%s." % (
+            loc.name, "rough" if need == 1 else "deep and empty", self.ship.hull_info()["name"].lower(), hit,
+            " (the radiation shielding took half)" if shielded else "")]
+        if not shielded:
+            self.wear_modules(hit, "the lane")
         if random.random() < 0.3:
             goods = [g for g in ('tech', 'agri', 'salt', 'fuel') if self.ship.cargo[g] > 0]
             if goods:
