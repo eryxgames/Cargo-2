@@ -33,7 +33,10 @@ def build():
     repaired = []
     for nid, node in story["nodes"].items():
         nodes[nid] = {k: node[k] for k in NODE_FIELDS if k in node}
-        if any("requires" in a.get("fields", []) for a in node.get("amended", [])):
+        # Cargo 2 writes its own main story: a chapter, milestone or ending that states a
+        # condition replaces the one in game/chapters.py (Cargo 1's), as an amended one does
+        frame = node.get("kind") in ("chapter", "milestone", "ending") and "requires" in node
+        if frame or any("requires" in a.get("fields", []) for a in node.get("amended", [])):
             repaired.append(nid)
     return {
         "game": story["game"]["id"],

@@ -89,6 +89,14 @@ def record_matches(record, want, player=None):
 GAME_TITLES = {"cargo1": "Cargo", "cargo2": "Cargo 2", "cargo3": "Cargo 3"}
 ENDING_TITLES = {"trade": "the Hauler Hansa", "combat": "the First Legion", "discovery": "the Heading",
                  "tycoon": "Galactic Tycoon", "": "no ending yet"}
+GAME_ENDING_TITLES = {"cargo2": {"trade": "the Open Road", "combat": "the Lighthouse", "discovery": "the Door"}}
+
+
+def ending_title(record):
+    """How a captain record's ending is called, in the part it comes from."""
+    ending = (record or {}).get("story", {}).get("ending", "")
+    game = (record or {}).get("origin", {}).get("game")
+    return GAME_ENDING_TITLES.get(game, {}).get(ending) or ENDING_TITLES.get(ending, ending)
 _PLACEHOLDER = re.compile(r"\{([a-z_][a-z0-9_]*)(?:\.([a-z_]+))?\}")
 
 
@@ -226,11 +234,10 @@ class StoryRuntime:
         def swap(match):
             head, field = match.group(1), match.group(2)
             if head in records:
-                record = records[head]
-                story = record.get("story", {}) if record else {}
+                record = records[head] or {}
                 info = {"name": record.get("name", ""), "rank": record.get("rank", "") or "captain",
                         "game": GAME_TITLES.get(record.get("origin", {}).get("game"), "another part"),
-                        "ending": ENDING_TITLES.get(story.get("ending", ""), story.get("ending", "")),
+                        "ending": ending_title(record),
                         "turns": record.get("career", {}).get("turns", 0)}
                 return str(info.get(field or "name", match.group(0)))
             if head in chars and (field is None or field in chars[head]):

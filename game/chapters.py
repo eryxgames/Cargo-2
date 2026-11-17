@@ -163,9 +163,14 @@ class StoryMilestone:
         self.completion_turn = None
 
     def check_completion(self, game):
-        """Check if milestone requirements are met"""
+        """Check if milestone requirements are met: the story file's, when it states them."""
         if self.completed:
             return True
+        story = getattr(game, "story", None)
+        chapter = getattr(self, "chapter_id", None)
+        repaired = story.condition_for("%s.%s" % (chapter, self.id)) if story is not None and chapter else None
+        if repaired is not None:
+            return story.check(voyage_condition(repaired, game.voyage_factor()), story.snapshot())
         return MilestoneRequirements.check_requirements(self.requirements, game)
 
     def complete(self, game):
@@ -285,6 +290,7 @@ class StoryChapter:
         # Initialize milestones
         for milestone_data in milestones:
             milestone = StoryMilestone(**milestone_data)
+            milestone.chapter_id = chapter_id
             self.milestones[milestone.id] = milestone
 
     def check_completion(self, game):

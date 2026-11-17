@@ -11,7 +11,8 @@ echo "== CLIo's layer in kit/ is as copied"
 $PY $T/sync_kit.py --check || fail=1
 
 echo "== the story: copied tools unchanged, built file current, no new findings, every scene plays,"
-echo "   every way into the game (fresh, each Cargo 1 ending, Cargo 2 and 3 records) starts right"
+echo "   every way into the game (fresh, each Cargo 1 ending, Cargo 2 and 3 records) starts right,"
+echo "   acts 1 and 2 turn where they should and pay what Cargo 1 promised"
 $PY $T/sync_story.py --check || fail=1
 $PY $T/build_story.py --check || fail=1
 $PY storykit/validate.py story/saga.json --baseline story/findings-baseline.json > /tmp/cargo2-validate.txt; tail -2 /tmp/cargo2-validate.txt
@@ -19,6 +20,7 @@ grep -q "baseline: 0 new" /tmp/cargo2-validate.txt || fail=1
 $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
 $PY $T/openings.py || fail=1
+$PY $T/acts.py || fail=1
 
 echo "== Cargo 2's systems, one by one"
 $PY $T/systems.py || fail=1

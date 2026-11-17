@@ -25,6 +25,10 @@ own world and story. What works now:
 - act 1 at the needle office: the founders' wall, Grab Allsa Targa, Pell Okafor at fifty-nine and
   Hanne Lauritz's notebooks remember what a Cargo 1 captain did, and greet a fresh one; the
   cantinas talk about 2460;
+- acts 1 and 2: the heading file comes up at auction and is read; an expedition finds the first
+  segment of the ring past Sedna's orbit, and loses it when it throws a needle eleven years into
+  the past. On the way Conte Ottavine wakes, the other captain books your needle, the Binary Dawn
+  speaks and the colony at Sigma VII hears the ring turning: each as your Cargo 1 captain left it;
 - travel, trade, fights, quests, crew, saves, autosave and continue;
 - every screen from 36 columns up, in Termux too; standard library only;
 - the needles: between the stars you book a place in a Hansa convoy (front: safe and dear; tail:
@@ -36,8 +40,9 @@ own world and story. What works now:
   games. `CARGO_STYLE=name` picks one for a single run; `NO_COLOR=1` turns colour off and
   `CARGO_ASCII=1` draws in plain ASCII.
 
-Most of the story is still to be written: the openings and the first scenes of act 1 are in, and
-the map, the chapters after the first and the endings are still Cargo 1's. The plan (world in 2460, the convoy needles, factions and
+Acts 1 and 2 are written. Act 3's three roads and their endings have their titles and a first
+text, and still ask for what Cargo 1's chapters asked; they are written next, with the modular ship,
+the convoy fights and the map of 2460. The plan (world in 2460, the convoy needles, factions and
 the ring, the modular ship, tactical convoy combat, research trees) is in the project's design
 document.
 
@@ -82,7 +87,9 @@ check, including one that fails if a copied file was changed.
 ## Writing the story
 
 The story is data in the storykit format (`storykit/FORMAT.md`): scenes, choices, conditions and
-effects in `story/cargo2/*.json`, listed in `story/cargo2.story.json`. Characters who span the
+effects in `story/cargo2/*.json`, listed in `story/cargo2.story.json`. The chapters, their
+milestones and the endings are there too (`story/cargo2/main.json`): their conditions are the ones
+the game uses. Characters who span the
 trilogy are named once, in `story/saga.json`. After a change:
 
 ```bash
@@ -90,6 +97,7 @@ python3 tools/build_story.py                     # builds story/cargo2.game.json
 python3 storykit/validate.py story/saga.json     # unknown names, broken links, unpaid promises
 python3 tools/scenes.py                          # plays every scene with every choice
 python3 tools/openings.py                        # every kind of captain starts right
+python3 tools/acts.py                            # the turning points, and the promises paid
 ```
 
 `storykit/`, `story/saga.json` and Cargo 1's story are copies from the Cargo repository

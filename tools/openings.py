@@ -5,76 +5,10 @@ the right opening plays, standing starts where that opening puts it, nothing is 
 the act-1 scenes at the needle office show the variant and the choices the record calls for;
 and the scenes come on their own in a few dozen turns at the docks.
 Usage: python3 tools/openings.py"""
-import os, random, re, sys, tempfile
+import os, random, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-os.environ["CARGO_SAGA_HOME"] = tempfile.mkdtemp(prefix="cargo2-openings-")     # saves stay out of ~
-from headless import IO, load, patch, quiet  # noqa: E402
-
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-cargo = load(os.path.join(ROOT, "game", "world.py"))
-from game import captain as captains  # noqa: E402  (loaded with the package above)
-
-problems = 0
-
-
-def expect(ok, what):
-    global problems
-    if not ok:
-        problems += 1
-        print("FAIL", what)
-
-
-def record(game_id=None, ending="", flags=(), name="Ada Quill", rank="Hauler"):
-    """A captain record as another part would write it."""
-    if game_id is None:
-        return None
-    rec = {"format": "cargo-captain", "version": 1, "id": "T-1", "name": name, "rank": rank,
-           "origin": {"game": game_id, "version": "test"},
-           "career": {"turns": 140, "money": 900000, "trades": 80},
-           "story": {"chapter": "ch3", "completed": [], "ending": ending, "flags": list(flags), "plot_points": 40},
-           "ship": {"attack": 5, "defense": 5, "speed": 5}, "hold": {}, "log": []}
-    rec["check"] = captains._captain_check(rec)
-    return captains.clean_captain(rec)
-
-
-def start(rec, seed=1):
-    """A new game as this captain (or a fresh one): the opening plays; returns game, io, screen text."""
-    random.seed(seed)
-    io = IO()
-    patch(cargo, io)
-    with quiet() as buf:
-        if rec is None:
-            io.feed(["1", "2", "Tester"])
-            game = cargo.Game()
-        else:
-            io.feed(["1", "2"])
-            game = cargo.Game(player_name=rec["name"], origin=rec)
-    io.queue.clear()
-    return game, io, buf.getvalue()
-
-
-def flat(text):
-    """Screen text as one line: box borders out, wrapped lines joined."""
-    return " ".join(re.sub(r"[\u2500-\u259f|]", " ", text).split())
-
-
-def unfilled(text):
-    return re.findall(r"\{[a-z_]+(?:\.[a-z]+)?\}", text)
-
-
-def play(game, io, nid, answer="1"):
-    """Play one scene at a planet with one answer; returns what the screen said."""
-    game.current_location = next(loc for loc in game.locations if type(loc).__name__ == "Planet")
-    io.queue.clear()
-    io.feed([answer] + [""] * 10)
-    snap = game.story.snapshot()
-    node = cargo.story_data()["nodes"][nid]
-    expect(game.story.check(game.story.requires_of(node), snap), "%s can play here (%s)" % (nid, game.player_name))
-    with quiet() as buf:
-        game.story.play(nid)
-    text = buf.getvalue()
-    expect(not unfilled(text), "%s leaves %s unfilled" % (nid, unfilled(text)))
-    return text
+from headless import quiet  # noqa: E402
+from storytest import cargo, expect, flat, options, play, problems, record, start, unfilled  # noqa: E402
 
 
 # ---- the openings -------------------------------------------------------------------------
@@ -162,7 +96,7 @@ for flags, words in TARGA:
     game.turn = 5
     text = play(game, io, "hansa.targa", "1")
     expect(words in flat(text), "Targa with %s says %r" % (flags or "no history", words))
-    expect(text.count("1. ") == 1 and text.count("2. ") <= 1 and "3. " not in text,
+    expect(1 <= options(text) <= 2,
            "Targa with %s offers one pair of choices" % (flags or "no history"))
     if flags[:1] == ["convoy_friend"]:
         expect(game.front_berths == 10, "Targa's berth: ten jumps at the front")
@@ -190,7 +124,7 @@ for flags, words in PELL:
     money = game.ship.money
     text = play(game, io, "hansa.pell", "1")
     expect(words in flat(text), "Pell with %s says %r" % (flags or "no history", words))
-    expect("3. " not in text, "Pell with %s offers at most two choices" % (flags or "no history"))
+    expect(options(text) <= 2, "Pell with %s offers at most two choices" % (flags or "no history"))
     if flags == ["pell_lent"]:
         expect(game.ship.money == money + 40000, "Pell pays back the loan with interest")
 
@@ -205,7 +139,7 @@ for flags, words in LAURITZ:
     game.ship.money = 100000
     text = play(game, io, "hansa.notebooks", "1")
     expect(words in flat(text), "Lauritz with %s: %r" % (flags or "no history", words))
-    expect("3. " not in text, "Lauritz with %s offers at most two choices" % (flags or "no history"))
+    expect(options(text) <= 2, "Lauritz with %s offers at most two choices" % (flags or "no history"))
     if flags == ["lauritz_bribed", "lauritz_trust"]:
         expect(game.ship.money == 95000 and game.standing_of("mandate") == 5, "the old fine is paid with interest")
 
@@ -232,5 +166,5 @@ for seed in (1, 2, 3):
     expect(not missing, "seed %d: in 80 turns at the docks these never played: %s" % (seed, missing))
     expect(not unfilled(buf.getvalue()), "seed %d: unfilled %s" % (seed, unfilled(buf.getvalue())))
 
-print("openings: %d ways in, %d problems" % (len(OPENINGS), problems))
-sys.exit(1 if problems else 0)
+print("openings: %d ways in, %d problems" % (len(OPENINGS), problems[0]))
+sys.exit(1 if problems[0] else 0)

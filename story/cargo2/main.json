@@ -1,7 +1,7 @@
 {
  "format": "storykit",
  "version": 1,
- "about": "The main story's frame.",
+ "about": "The main story's frame: chapters, milestones and endings with their conditions. The chapter ids are the game's; Cargo 2's conditions replace the ones in game/chapters.py.",
  "characters": {
   "captain": {
    "about": "the player"
@@ -17,8 +17,357 @@
     "Forty years after the Hansa was founded, the needles leave on schedule: a lead hauler pushing its asteroid, and a file of ships in its wake.",
     "Between the stars you ride in a needle, booked at the Hansa's needle office when you travel. Inside a star system you fly on your own fuel. The Hansa, the Mandate and the Concord all watch who books where."
    ],
-   "requires": {},
+   "requires": {
+    "done": [
+     "heading.opened"
+    ]
+   },
+   "next": [
+    "ch2a",
+    "ch2b"
+   ],
+   "choose": true,
    "start": true
+  },
+  "ch1.first_trade": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch1",
+   "title": "A cargo through the needles",
+   "text": "Buy cheap, book a place, sell at the other end: one trade.",
+   "requires": {
+    "trades_completed": 1
+   }
+  },
+  "ch1.first_combat": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch1",
+   "title": "Trouble in the wake",
+   "text": "Win one fight. They come where the wake does not protect: while a needle forms, after it breaks up, inside a system.",
+   "requires": {
+    "combat_victories": 1
+   }
+  },
+  "ch1.basic_license": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch1",
+   "title": "A slot of your own",
+   "text": "Five trades and 20,000 credits: the needle office gives regulars a slot of their own.",
+   "requires": {
+    "trades_completed": 5,
+    "money": 20000
+   }
+  },
+  "ch2a": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 2,
+   "title": "Instruments and Cargo",
+   "text": [
+    "The heading has been read, and half the Concord wants to fly it.",
+    "Expeditions need instruments, food and spare parts, and haulers who can book a needle on time. You can."
+   ],
+   "requires": {
+    "done": [
+     "ch1"
+    ],
+    "plot_points": 30,
+    "trades_completed": 10
+   },
+   "next": [
+    "ch3a",
+    "ch3c"
+   ],
+   "choose": true
+  },
+  "ch2a.establish_route": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch2a",
+   "title": "Standing orders",
+   "text": "Twenty trades, and a stock exchange at two docks: the expeditions order by the season.",
+   "requires": {
+    "trades_completed": 20,
+    "buildings.stockmarket": 2
+   }
+  },
+  "ch2a.passenger_business": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch2a",
+   "title": "Berths for the curious",
+   "text": "Deliver ten passengers and keep a good name with them: everyone wants to see the ring.",
+   "requires": {
+    "passengers_transported": 10,
+    "passenger_reputation": 20
+   }
+  },
+  "ch2b": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 2,
+   "title": "Escort Duty",
+   "text": [
+    "Every expedition that follows the heading wants guns behind it.",
+    "The Mandate has more expeditions to watch than ships to watch them with, and it is hiring captains who can fight in the wake."
+   ],
+   "requires": {
+    "done": [
+     "ch1"
+    ],
+    "plot_points": 30,
+    "combat_victories": 5
+   },
+   "next": [
+    "ch3b",
+    "ch3c"
+   ],
+   "choose": true
+  },
+  "ch2b.defeat_pirates": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch2b",
+   "title": "Clear the departure lanes",
+   "text": "Beat ten pirate ships: they wait where the needles form.",
+   "requires": {
+    "combat_victories.pirate": 10
+   }
+  },
+  "ch2b.defend_stations": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch2b",
+   "title": "Guard the instruments",
+   "text": "Win fifteen fights, and see a Neuroengineering Guild built to keep the expeditions' machines running.",
+   "requires": {
+    "combat_victories": 15,
+    "buildings.Neuroengineering Guild": 1
+   }
+  },
+  "ch3a": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 3,
+   "title": "The Open Road",
+   "text": [
+    "The Hansa wants the needles to stay a road anyone can book. A segment that throws ships without a lead hauler would end that, or end the Hansa.",
+    "The league asks its captains, its founders and its debtors, which it should be."
+   ],
+   "requires": {
+    "done": [
+     "ch2a",
+     "ring.lost"
+    ],
+    "plot_points": 80,
+    "trade_profit": 150000
+   },
+   "next": [
+    "ending_trade"
+   ],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ch3a.market_control": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch3a",
+   "title": "The league's exchanges",
+   "text": "Stock exchanges at four docks, and xenoeconomy researched: the Hansa's vote is counted in cargo.",
+   "requires": {
+    "buildings.stockmarket": 4,
+    "has": {
+     "researched": [
+      "xenoeconomy"
+     ]
+    }
+   }
+  },
+  "ch3b": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 3,
+   "title": "The Lighthouse",
+   "text": [
+    "The Mandate wants every jump seen and every segment held.",
+    "{serac} keeps a list of the captains who have seen a segment turn. You are on it, near the top."
+   ],
+   "requires": {
+    "done": [
+     "ch2b",
+     "ring.lost"
+    ],
+    "plot_points": 80,
+    "combat_victories": 25
+   },
+   "next": [
+    "ending_combat"
+   ],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ch3b.fleet_commander": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch3b",
+   "title": "A wing of your own",
+   "text": "Thirty-five fights won, and a ship rated 15 in attack, defense and speed together.",
+   "requires": {
+    "combat_victories": 35,
+    "combat_rating": 15
+   }
+  },
+  "ch3c": {
+   "kind": "chapter",
+   "arc": "main",
+   "act": 3,
+   "title": "The Door",
+   "text": [
+    "House Rostrom thinks the segment is not a catapult but a door: a way into another year.",
+    "Somebody has to fly through it on purpose and come back to say so."
+   ],
+   "requires": {
+    "done_any": [
+     "ch2a",
+     "ch2b"
+    ],
+    "done": [
+     "ring.lost"
+    ],
+    "plot_points": 80,
+    "research_points": 300
+   },
+   "next": [
+    "ending_discovery"
+   ],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ch3c.alien_artifacts": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ch3c",
+   "title": "The year on the other side",
+   "text": "Visit two research colonies, and research xenoeconomy and telemetry: enough to read what the segment does to a clock.",
+   "requires": {
+    "discovered.ResearchColony": 2,
+    "has": {
+     "researched": [
+      "xenoeconomy",
+      "telemetry"
+     ]
+    }
+   }
+  },
+  "ending_trade": {
+   "kind": "ending",
+   "arc": "main",
+   "act": 4,
+   "title": "A Road Anyone Can Book",
+   "text": [
+    "The vote on the drive licences goes the Hansa's way by eleven votes. The needles stay a road anyone can book, and the segments go into the league's charter as common ground: watched by everyone, owned by nobody.",
+    "Your name goes on another wall. You are getting used to it."
+   ],
+   "requires": {
+    "done": [
+     "ch3a"
+    ],
+    "plot_points": 120,
+    "trade_profit": 400000
+   },
+   "next": [],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ending_trade.trade_ending": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ending_trade",
+   "title": "The vote",
+   "text": "Stock exchanges at five docks, a passenger reputation of 80, and 400,000 credits of trade profit.",
+   "requires": {
+    "buildings.stockmarket": 5,
+    "passenger_reputation": 80,
+    "trade_profit": 400000
+   }
+  },
+  "ending_combat": {
+   "kind": "ending",
+   "arc": "main",
+   "act": 4,
+   "title": "Every Jump Seen",
+   "text": [
+    "The Mandate holds the segments and watches every jump. The lanes are safer than they have ever been, and nobody flies anywhere the Mandate has not seen first.",
+    "{serac} sends a medal and a note: 'For services.' He does not say whose."
+   ],
+   "requires": {
+    "done": [
+     "ch3b"
+    ],
+    "plot_points": 120,
+    "combat_victories": 50
+   },
+   "next": [],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ending_combat.combat_ending": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ending_combat",
+   "title": "The last escort",
+   "text": "Seventy-five fights won, and a ship rated 25.",
+   "requires": {
+    "combat_victories": 75,
+    "combat_rating": 25
+   }
+  },
+  "ending_discovery": {
+   "kind": "ending",
+   "arc": "main",
+   "act": 4,
+   "title": "Through the Door",
+   "text": [
+    "You fly into the segment's turn on purpose and come out where House Rostrom said you would: the same place, another year.",
+    "You file the logs, and this time somebody reads them the same day."
+   ],
+   "requires": {
+    "done": [
+     "ch3c"
+    ],
+    "plot_points": 120,
+    "research_points": 1500
+   },
+   "next": [],
+   "notes": [
+    "provisional (M2): the roads of act 3 are written in M4; this text and these conditions will change"
+   ]
+  },
+  "ending_discovery.discovery_ending": {
+   "kind": "milestone",
+   "arc": "main",
+   "in": "ending_discovery",
+   "title": "Read the other year",
+   "text": "Research xenoeconomy, telemetry, geophysics and chronopolitics; visit three research colonies and two asteroid bases.",
+   "requires": {
+    "has": {
+     "researched": [
+      "xenoeconomy",
+      "telemetry",
+      "geophysics",
+      "chronopolitics"
+     ]
+    },
+    "discovered.ResearchColony": 3,
+    "discovered.AsteroidBase": 2
+   }
   }
  }
 }

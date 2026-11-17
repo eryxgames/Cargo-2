@@ -32,7 +32,9 @@
   "cargo2/places.json",
   "cargo2/openings.json",
   "cargo2/main.json",
-  "cargo2/hansa.json"
+  "cargo2/hansa.json",
+  "cargo2/heading.json",
+  "cargo2/debts.json"
  ],
  "stats": {
   "money": {

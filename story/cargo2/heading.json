@@ -1,0 +1,402 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "The heading file opened (act 1's turning point) and the first segment, found and lost (act 2's).",
+ "arcs": {
+  "heading": {
+   "title": "The heading",
+   "order": 1.5
+  },
+  "ring": {
+   "title": "The ring",
+   "order": 2
+  }
+ },
+ "characters": {
+  "ancient_scholar": {
+   "kind": "human",
+   "about": "old, still right; bids at the Institute's auction"
+  },
+  "ysolde": {
+   "kind": "human",
+   "about": "head of House Rostrom, old and dilated"
+  }
+ },
+ "flags": {
+  "heading_bought": {
+   "about": "the captain bought the heading file at the Institute's auction"
+  },
+  "heading_kren": {
+   "about": "the captain backed {ancient_scholar}'s bid for the heading file"
+  },
+  "heading_rostrom": {
+   "about": "House Rostrom bought the heading file; the captain read it over a clerk's shoulder"
+  },
+  "saw_the_segment_turn": {
+   "about": "the captain's needle was the last to see the first segment turn",
+   "carries_to": [
+    "cargo3"
+   ]
+  }
+ },
+ "nodes": {
+  "heading.opened": {
+   "kind": "event",
+   "arc": "heading",
+   "act": 1,
+   "title": "Lot 1187",
+   "requires": {
+    "chapter": "ch1",
+    "at_type": "Planet",
+    "turn_min": 8,
+    "trades_completed": 3
+   },
+   "chance": 0.35,
+   "who": [
+    "ancient_scholar",
+    "ysolde"
+   ],
+   "pays": [
+    "the_heading"
+   ],
+   "text": [
+    "The Stellar Institute is selling its old archive to pay for a new roof. Lot 1187, in the auction room off the needle office at {place}: 'Course home, Scholz's Star. Filed forty years ago. Unread.'",
+    "{ancient_scholar} has bid on nothing all morning. She raises her card for 1187, and so does a clerk in House Rostrom's grey. 'It isn't a course home,' she says to nobody in particular. 'It's a course to home. There is a difference.'"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "game": "cargo1",
+       "ending": "discovery"
+      }
+     },
+     "text": [
+      "The Stellar Institute is selling its old archive to pay for a new roof. Lot 1187, in the auction room off the needle office at {place}: 'Course home, Scholz's Star. Filed forty years ago. Unread.' The handwriting on the cover is yours.",
+      "{ancient_scholar} sees you in the doorway and lowers her card. 'You filed it,' she says. 'You should be the one to open it.' The clerk in House Rostrom's grey does not lower his."
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "rostrom_creditor"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "game": "cargo1",
+            "ending": "discovery"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The Stellar Institute is selling its old archive to pay for a new roof. Lot 1187, in the auction room off the needle office at {place}: 'Course home, Scholz's Star. Filed forty years ago. Unread.'",
+      "{ancient_scholar} has bid on nothing all morning. She raises her card for 1187, and so does a clerk in House Rostrom's grey. 'It isn't a course home,' she says to nobody in particular. 'It's a course to home. There is a difference.'",
+      "The Rostrom clerk recognises you and goes pale. House Rostrom was founded on your loan, and he has orders to let you outbid him, once."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "own_file",
+     "say": "Take back your own file",
+     "requires": {
+      "player_origin": {
+       "game": "cargo1",
+       "ending": "discovery"
+      }
+     },
+     "effects": {
+      "set": [
+       "heading_bought"
+      ],
+      "standing.concord": 10,
+      "plot_points": 5
+     },
+     "next": "heading.read"
+    },
+    {
+     "id": "bid",
+     "say": "Outbid them both (20,000)",
+     "requires": {
+      "all": [
+       {
+        "not": {
+         "player_origin": {
+          "game": "cargo1",
+          "ending": "discovery"
+         }
+        }
+       },
+       {
+        "money": 20000
+       }
+      ]
+     },
+     "effects": {
+      "money": -20000,
+      "set": [
+       "heading_bought"
+      ],
+      "standing.concord": 5,
+      "plot_points": 5
+     },
+     "next": "heading.read"
+    },
+    {
+     "id": "back_kren",
+     "say": "Back {ancient_scholar.short}'s bid (5,000)",
+     "requires": {
+      "all": [
+       {
+        "not": {
+         "player_origin": {
+          "game": "cargo1",
+          "ending": "discovery"
+         }
+        }
+       },
+       {
+        "money": 5000
+       }
+      ]
+     },
+     "effects": {
+      "money": -5000,
+      "set": [
+       "heading_kren"
+      ],
+      "standing.concord": 5,
+      "plot_points": 5
+     },
+     "next": "heading.read"
+    },
+    {
+     "id": "let_rostrom",
+     "say": "Let House Rostrom have it, and ask to read it",
+     "requires": {
+      "not": {
+       "player_origin": {
+        "game": "cargo1",
+        "ending": "discovery"
+       }
+      }
+     },
+     "effects": {
+      "set": [
+       "heading_rostrom"
+      ],
+      "standing.concord": 10,
+      "plot_points": 5
+     },
+     "next": "heading.read"
+    }
+   ]
+  },
+  "heading.read": {
+   "kind": "event",
+   "arc": "heading",
+   "act": 1,
+   "title": "The heading",
+   "text": [
+    "You read it in the auction room, standing up.",
+    "The course runs from Scholz's Star back towards Sol and ends past Sedna's orbit, at a field the old charts call the Stator Field. It is not a way to the builders' home. The builders were us."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "flag": "heading_kren"
+     },
+     "text": [
+      "{ancient_scholar.short} reads it aloud in the auction room, slowly, so the Rostrom clerk hears every word.",
+      "The course runs from Scholz's Star back towards Sol and ends past Sedna's orbit, at a field the old charts call the Stator Field. It is not a way to the builders' home. The builders were us.",
+      "'Forty years,' she says. 'Somebody file that this time.'"
+     ]
+    },
+    {
+     "requires": {
+      "flag": "heading_rostrom"
+     },
+     "text": [
+      "The Rostrom clerk lets you read it over his shoulder before he seals it for {ysolde}.",
+      "The course runs from Scholz's Star back towards Sol and ends past Sedna's orbit, at a field the old charts call the Stator Field. It is not a way to the builders' home. The builders were us."
+     ]
+    }
+   ]
+  },
+  "ring.expedition": {
+   "kind": "event",
+   "arc": "ring",
+   "act": 2,
+   "title": "The Stator Field",
+   "requires": {
+    "chapter": [
+     "ch2a",
+     "ch2b"
+    ],
+    "done": [
+     "heading.opened"
+    ],
+    "at_type": "Planet"
+   },
+   "chance": 0.4,
+   "who": [
+    "ysolde"
+   ],
+   "text": [
+    "The course from the heading ends past Sedna's orbit, where Sol's old charts mark the Stator Field. House Rostrom fits out an expedition: a Hansa lead hauler, a Mandate escort, and room for haulers who will carry the instruments.",
+    "What they find is forty kilometres of grey alloy, curved, turning once every eleven minutes: a segment of a ring around the Sun."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "flag": "heading_bought"
+     },
+     "text": [
+      "The course from the heading ends past Sedna's orbit, where Sol's old charts mark the Stator Field. House Rostrom fits out an expedition: a Hansa lead hauler, a Mandate escort, and room for haulers who will carry the instruments.",
+      "What they find is forty kilometres of grey alloy, curved, turning once every eleven minutes: a segment of a ring around the Sun.",
+      "Your name is on the file they are following. House Rostrom offers a finder's fee, if you would rather stay home."
+     ]
+    }
+   ],
+   "effects": {
+    "reveal": [
+     "Stator Field Megastructure"
+    ],
+    "plot_points": 10
+   },
+   "choices": [
+    {
+     "id": "hansa",
+     "say": "Carry the Hansa's instruments",
+     "effects": {
+      "standing.hansa": 10
+     }
+    },
+    {
+     "id": "mandate",
+     "say": "Fly with the Mandate's escort",
+     "effects": {
+      "standing.mandate": 10
+     }
+    },
+    {
+     "id": "concord",
+     "say": "Sign on with House Rostrom's survey",
+     "effects": {
+      "standing.concord": 10
+     }
+    },
+    {
+     "id": "fee",
+     "say": "Take the finder's fee (25,000) and stay home",
+     "requires": {
+      "flag": "heading_bought"
+     },
+     "effects": {
+      "money": 25000
+     }
+    }
+   ]
+  },
+  "ring.segment": {
+   "kind": "event",
+   "arc": "ring",
+   "act": 2,
+   "title": "Forty kilometres of grey",
+   "requires": {
+    "at": "Stator Field Megastructure",
+    "done": [
+     "ring.expedition"
+    ]
+   },
+   "text": [
+    "Up close the segment is quieter than a dock. Every eleven minutes it turns a hand's width, and every clock on your ship loses a second it never gets back.",
+    "House Rostrom's survey boats hang off its inner face like gnats. Nobody has touched it. Everybody wants to be first."
+   ],
+   "choices": [
+    {
+     "id": "readings",
+     "say": "Take readings for the survey",
+     "effects": {
+      "standing.concord": 5,
+      "research_points": 100
+     }
+    },
+    {
+     "id": "touch",
+     "say": "Put a glove on the hull",
+     "effects": {
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "leave",
+     "say": "Leave it to the gnats"
+    }
+   ]
+  },
+  "ring.lost": {
+   "kind": "event",
+   "arc": "ring",
+   "act": 2,
+   "title": "Eleven years early",
+   "requires": {
+    "chapter": [
+     "ch2a",
+     "ch2b"
+    ],
+    "done": [
+     "ring.expedition"
+    ],
+    "since": {
+     "ring.expedition": 6
+    }
+   },
+   "chance": 0.35,
+   "text": [
+    "The needle ahead of yours forms up at the edge of the Stator Field, jumps, and does not arrive. The segment turned under it, once, and went dark.",
+    "Three days later the Hansa finds that needle's asteroid in the harbour at Barnard's Star, logged as arriving eleven years ago. Its crews have waited eleven years for today. Some of them are on the dock, old, watching your needle come in.",
+    "The segment is quiet now, and the Mandate has closed Sol's outer system. Everybody wants the logs from your needle: the last to see it turn."
+   ],
+   "effects": {
+    "set": [
+     "saw_the_segment_turn"
+    ],
+    "plot_points": 15
+   },
+   "choices": [
+    {
+     "id": "hansa",
+     "say": "Give the logs to the Hansa",
+     "effects": {
+      "standing.hansa": 15
+     }
+    },
+    {
+     "id": "mandate",
+     "say": "Give the logs to the Mandate",
+     "effects": {
+      "standing.mandate": 15
+     }
+    },
+    {
+     "id": "concord",
+     "say": "Give the logs to House Rostrom",
+     "effects": {
+      "standing.concord": 15
+     }
+    }
+   ]
+  }
+ }
+}

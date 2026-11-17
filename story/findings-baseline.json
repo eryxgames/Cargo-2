@@ -1,7 +1,6 @@
 {
  "about": "Findings accepted for now; validate.py --baseline fails only on new ones.",
  "accepted": [
-  "dead-end|cargo2:ch1|chapter leads nowhere and is not an ending",
   "flag-never-read|cargo1:flag alien_discovery|set (by the game) but no node reads it",
   "flag-never-read|cargo1:flag ancient_mystery|set (by the game) but no node reads it",
   "flag-never-read|cargo1:flag pirate_threat|set (by the game) but no node reads it",

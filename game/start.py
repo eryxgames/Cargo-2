@@ -60,7 +60,7 @@ def choose_captain():
         story = record.get("story", {})
         rows.append(["%d. %s, %s (%s%s)" % (
             number, record["name"], record["rank"] or "no rank", GAME_TITLES.get(record["origin"]["game"], "?"),
-            ", " + ENDING_TITLES.get(story.get("ending", ""), story.get("ending", "")) if story.get("ending") else "")])
+            ", " + ending_title(record) if story.get("ending") else "")])
     rows.extend([[""], ["Type a number to play as that captain, or press Enter for a new one."]])
     print(render_box(rows, 'round'))
     answer = input(">>> ").strip()
@@ -97,4 +97,4 @@ def main():
 from .terminal import display_logo, logo_data, render_box, safe_output  # noqa: E402
 from .saves import SaveError, SwitchGame, describe_save, list_saves, load_game  # noqa: E402
 from .captain import list_captain_files  # noqa: E402
-from .story import ENDING_TITLES, GAME_TITLES  # noqa: E402
+from .story import GAME_TITLES, ending_title  # noqa: E402

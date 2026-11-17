@@ -220,6 +220,9 @@ class Game(ScreensMixin, SavingMixin, CaptainMixin, TravelMixin,
             self.standing.setdefault(name, 0)
         self.dawn_trust = getattr(self, "dawn_trust", 0)
         self.front_berths = getattr(self, "front_berths", 0)
+        for cid, chapter in getattr(getattr(self, "story_manager", None), "chapters", {}).items():
+            for milestone in chapter.milestones.values():
+                milestone.chapter_id = cid          # the story file may state its condition
         self.story_manager.apply_story_text()
 
     def count_discovered(self, location_type=None):
@@ -928,7 +931,7 @@ from .captain import (  # noqa: E402,F401
     _captain_check, _clean_number, _clean_text, captain_from_code, captain_to_code, clean_captain,
     list_captain_files, read_captain_file)
 from .story import (  # noqa: E402,F401
-    ENDING_TITLES, GAME_TITLES, STORY_FILE, STORY_HOOKS, STORY_MOMENTS, StoryRuntime,
+    ENDING_TITLES, GAME_ENDING_TITLES, GAME_TITLES, ending_title, STORY_FILE, STORY_HOOKS, STORY_MOMENTS, StoryRuntime,
     VOYAGES, VOYAGE_STATS, _PLACEHOLDER, _SOUND_KIT, _as_list, _open_portal,
     _repair_at_cost, _sound_kit, play_cue, record_matches, story_data, story_hook,
     story_links, voyage_condition, voyage_value)
