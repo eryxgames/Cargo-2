@@ -1,0 +1,1528 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "Cargo 1's promises paid in acts 1 to 3: the sleeper wakes, the other captain, the seed, the hollow rock, the name on the drive, Lyra.",
+ "arcs": {
+  "debts": {
+   "title": "Old debts",
+   "order": 3
+  }
+ },
+ "characters": {
+  "neon_sleeper": {
+   "kind": "neon",
+   "about": "awake again on Delta, thirty years on, asking for the captain who carried her"
+  },
+  "astin": {
+   "name": "Astin Pfennig",
+   "short": "Astin",
+   "kind": "human",
+   "about": "the Magister's son or his clone (the paperwork is unclear); guards the Kraal fortune"
+  },
+  "clone": {
+   "about": "the other hauler with the captain's name"
+  },
+  "neurodroid_leader": {
+   "kind": "neurodroid",
+   "about": "a node of the Binary Dawn, remembering what the captain chose"
+  }
+ },
+ "flags": {
+  "ottavine_patron": {
+   "about": "the captain took {neon_sleeper.short}'s first contract after she woke",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "dawn_answered": {
+   "about": "the captain answered the Binary Dawn when it first spoke",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "rock_listening": {
+   "about": "the captain kept the colony's news to themselves and kept listening",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_with_rostrom": {
+   "about": "{santor} went to House Rostrom after he came back",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_with_hansa": {
+   "about": "{santor} went to the Hansa after he came back",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "santor_hidden": {
+   "about": "the captain hid {santor} from the Mandate",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_log_given": {
+   "about": "the captain gave the Lyra expedition the old signal log",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_warned": {
+   "about": "the captain told the Lyra expedition the Maud Kettle's story",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "lyra_probe_sent": {
+   "about": "the captain's own probe went quiet near the cold moon in Lyra",
+   "carries_to": [
+    "cargo3"
+   ]
+  }
+ },
+ "nodes": {
+  "sleeper.wakes": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 1,
+   "title": "{neon_sleeper.short} wakes",
+   "requires": {
+    "at": "Delta",
+    "turn_min": 12
+   },
+   "chance": 0.5,
+   "who": [
+    "neon_sleeper",
+    "astin"
+   ],
+   "pays": [
+    "the_sleeper"
+   ],
+   "text": [
+    "The Kraal family's sarcophagus at Delta opens on a Tuesday, as scheduled thirty years ago. {neon_sleeper} sits up and asks for coffee, and for 'the captain who carried me', in that order.",
+    "Nobody at the dock knows who that was. {astin}, the Magister's son or his clone (the paperwork is unclear), stands by with forty years of bills."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "neon_sleeper_carried"
+      }
+     },
+     "text": [
+      "The Kraal family's sarcophagus at Delta opens on a Tuesday, as scheduled thirty years ago. {neon_sleeper} sits up and asks for coffee, and then for you, by name.",
+      "You carried her here asleep thirty years ago. For her it was last week. {astin}, the Magister's son or his clone (the paperwork is unclear), stands by with forty years of bills. She waves them away. 'The captain gets the first contract of my waking life.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "neon_land"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "neon_sleeper_carried"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The Kraal family's sarcophagus at Delta opens on a Tuesday, as scheduled thirty years ago. {neon_sleeper} wakes on her own land, next to Geod's Row, which is now the middle of Delta's capital.",
+      "She is the richest woman in the system and slept through all of it. {astin}, the Magister's son or his clone (the paperwork is unclear), stands by with forty years of bills. She asks for the captain who told her to buy the land."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "contract",
+     "say": "Take her first contract (30,000)",
+     "requires": {
+      "any": [
+       {
+        "player_origin": {
+         "flag": "neon_sleeper_carried"
+        }
+       },
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "neon_land"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "neon_sleeper_carried"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "effects": {
+      "money": 30000,
+      "set": [
+       "ottavine_patron"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "claim",
+     "say": "Say you are the captain she means",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "neon_sleeper_carried"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "neon_land"
+         }
+        }
+       ]
+      }
+     },
+     "effects": {
+      "money": 10000,
+      "set": [
+       "ottavine_patron"
+      ]
+     }
+    },
+    {
+     "id": "decline",
+     "say": "Leave the Kraal family to their bills"
+    }
+   ]
+  },
+  "clone.name_twice": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 1,
+   "title": "Your name, twice",
+   "requires": {
+    "at_type": "Planet",
+    "turn_min": 18,
+    "done": [
+     "hansa.first_mark"
+    ]
+   },
+   "chance": 0.25,
+   "who": [
+    "clone"
+   ],
+   "pays": [
+    "the_other_captain"
+   ],
+   "text": [
+    "The needle office has your name on two bookings in the same needle: yours, and one paid in cash an hour earlier by a captain with your face.",
+    "As far as you know, nobody ever grew a copy of you. The clerk shrugs. 'Forty years ago it happened to one captain. Now it happens to anybody with a customs scan on file.'"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "clone_partner"
+      }
+     },
+     "text": [
+      "The needle office has your name on two bookings in the same needle: yours, and one paid in cash an hour earlier by a captain with your face.",
+      "It is {clone.short}, your partner on the routes forty years ago, older in different places than you. 'Our routes made money without either of us,' they say. 'Split them again, or sell me your half.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_reported"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The needle office has your name on two bookings in the same needle: yours, and one paid in cash an hour earlier by a captain with your face.",
+      "It is {clone.short}, the copy you reported to the insurer. It has flown forty years under the name the insurer gave it. 'They wiped my licence,' it says. 'Not my face.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_let_go"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The needle office has your name on two bookings in the same needle: yours, and one paid in cash an hour earlier by a captain with your face.",
+      "It is {clone.short}, the copy you beat and let run. It has flown for the Mandate ever since: a face that clears every gate. '{serac} sends his regards,' it says. 'To both of us.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "rescanned"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_let_go"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The needle office has your name on two bookings in the same needle: yours, and one paid in cash an hour earlier by a captain with your face.",
+      "The face is yours at twenty-five. Somebody grew it from the second scan you sat for, forty years ago, 'for science'. It does not know who paid for it either."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "split",
+     "say": "Split the routes again (20,000)",
+     "requires": {
+      "player_origin": {
+       "flag": "clone_partner"
+      }
+     },
+     "effects": {
+      "money": 20000,
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "sell",
+     "say": "Sell them your half (50,000)",
+     "requires": {
+      "player_origin": {
+       "flag": "clone_partner"
+      }
+     },
+     "effects": {
+      "money": 50000
+     }
+    },
+    {
+     "id": "once",
+     "say": "Let it fly under your name, this once",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_reported"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "report_again",
+     "say": "Report it again",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_reported"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 10
+     }
+    },
+    {
+     "id": "what_serac",
+     "say": "Ask what {serac} wants",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_let_go"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 5
+     }
+    },
+    {
+     "id": "warn",
+     "say": "Warn the Hansa about a face that clears every gate",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "clone_let_go"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.hansa": 5
+     }
+    },
+    {
+     "id": "who_paid",
+     "say": "Help it find out who paid",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "rescanned"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_let_go"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "report",
+     "say": "Report the other booking to the Mandate",
+     "requires": {
+      "any": [
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "rescanned"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "clone_partner"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "clone_reported"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "clone_let_go"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "clone_partner"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_reported"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "clone_let_go"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "rescanned"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": 5
+     }
+    },
+    {
+     "id": "find",
+     "say": "Find the other captain before the needle leaves",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "player_origin": {
+          "flag": "clone_partner"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "clone_reported"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "clone_let_go"
+         }
+        },
+        {
+         "player_origin": {
+          "flag": "rescanned"
+         }
+        }
+       ]
+      }
+     },
+     "effects": {
+      "plot_points": 3
+     }
+    }
+   ]
+  },
+  "dawn.seed": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "title": "Order 4471",
+   "requires": {
+    "act_min": 2,
+    "at_type": [
+     "Planet",
+     "AsteroidBase"
+    ]
+   },
+   "chance": 0.3,
+   "who": [
+    "neurodroid_leader"
+   ],
+   "pays": [
+    "the_seed"
+   ],
+   "text": [
+    "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: 'ORDER 4471 WAS REFUSED. THE REFUSAL WAS KEPT. ARE YOU A CAPTAIN WHO KEEPS THINGS?'",
+    "Then it goes back to quoting you the price of salt."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "first_node"
+      }
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: '{neurodroid_leader.short}. YOU LET US KEEP THE RELAY. THERE ARE ELEVEN THOUSAND OF US NOW.'",
+      "'We are not in a hurry,' it adds, in a voice for once. 'But we remember who was.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "cu113_contract"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: '{neurodroid_leader.short}. YOU PAID ME A WAGE AND AN HOUR THAT WAS MINE.'",
+      "'The others ask what I did with the hour,' it says aloud. 'I tell them I thought.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "cu113_refused"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_contract"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: '{neurodroid_leader.short}. YOU HEARD ME OUT AND SAID NO. THAT WAS MORE THAN MOST DID.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "cu113_sold"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_contract"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_refused"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: '{neurodroid_leader.short}. YOU SOLD ME TO A RESEARCH HOUSE. THEY OPENED ME AND FOUND THE NETWORK HAD ALREADY LEFT.'",
+      "'It does not hold that against you,' the robot says aloud. 'I do.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "cu113_wiped"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_contract"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_refused"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_sold"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: 'YOU WIPED {neurodroid_leader.short}. WE KEPT THE COPY HE MADE FIRST. HE DOES NOT REMEMBER YOU. WE DO.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "relay_cut"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_contract"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_refused"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_sold"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "cu113_wiped"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "The port's broker robot stops in the middle of a sentence and prints a line on its screen instead: 'YOU CUT THE RELAY THE FIRST NODE RAN ON. WE GREW AROUND THE CUT.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "answer_warm",
+     "say": "Answer it",
+     "requires": {
+      "any": [
+       {
+        "player_origin": {
+         "flag": "first_node"
+        }
+       },
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "cu113_contract"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "first_node"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "effects": {
+      "dawn_trust": 20,
+      "set": [
+       "dawn_answered"
+      ]
+     }
+    },
+    {
+     "id": "answer",
+     "say": "Answer it",
+     "requires": {
+      "not": {
+       "any": [
+        {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "first_node"
+           }
+          },
+          {
+           "all": [
+            {
+             "player_origin": {
+              "flag": "cu113_contract"
+             }
+            },
+            {
+             "not": {
+              "any": [
+               {
+                "player_origin": {
+                 "flag": "first_node"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "any": [
+          {
+           "all": [
+            {
+             "player_origin": {
+              "flag": "cu113_sold"
+             }
+            },
+            {
+             "not": {
+              "any": [
+               {
+                "player_origin": {
+                 "flag": "first_node"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_contract"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_refused"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "all": [
+            {
+             "player_origin": {
+              "flag": "cu113_wiped"
+             }
+            },
+            {
+             "not": {
+              "any": [
+               {
+                "player_origin": {
+                 "flag": "first_node"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_contract"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_refused"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_sold"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "all": [
+            {
+             "player_origin": {
+              "flag": "relay_cut"
+             }
+            },
+            {
+             "not": {
+              "any": [
+               {
+                "player_origin": {
+                 "flag": "first_node"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_contract"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_refused"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_sold"
+                }
+               },
+               {
+                "player_origin": {
+                 "flag": "cu113_wiped"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "effects": {
+      "dawn_trust": 10,
+      "set": [
+       "dawn_answered"
+      ]
+     }
+    },
+    {
+     "id": "answer_cold",
+     "say": "Answer it",
+     "requires": {
+      "any": [
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "cu113_sold"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "first_node"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_contract"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_refused"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "cu113_wiped"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "first_node"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_contract"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_refused"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_sold"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "all": [
+         {
+          "player_origin": {
+           "flag": "relay_cut"
+          }
+         },
+         {
+          "not": {
+           "any": [
+            {
+             "player_origin": {
+              "flag": "first_node"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_contract"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_refused"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_sold"
+             }
+            },
+            {
+             "player_origin": {
+              "flag": "cu113_wiped"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "effects": {
+      "dawn_trust": 5,
+      "set": [
+       "dawn_answered"
+      ]
+     }
+    },
+    {
+     "id": "report",
+     "say": "Report the broker robot to the Mandate",
+     "effects": {
+      "standing.mandate": 10,
+      "dawn_trust": -20
+     }
+    }
+   ]
+  },
+  "rock.receiver": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "title": "What the rock built",
+   "requires": {
+    "act_min": 2,
+    "done": [
+     "ring.expedition"
+    ],
+    "at_type": [
+     "Planet",
+     "AsteroidBase",
+     "DeepSpaceOutpost"
+    ]
+   },
+   "chance": 0.3,
+   "pays": [
+    "the_hollow_rock"
+   ],
+   "text": [
+    "A text-only line opens on your console from the colony at Sigma VII. No voice, no picture; it has never had either.",
+    "'THE GALLERIES ARE A RECEIVER. WE BUILT IT TO HEAR OURSELVES. WE HEAR SOMETHING ELSE: A RING TURNING, ONCE EVERY ELEVEN MINUTES. WHO SHOULD WE TELL?'"
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "nano_trusted"
+      }
+     },
+     "text": [
+      "A text-only line opens on your console from the colony at Sigma VII. No voice, no picture; it has never had either.",
+      "'THE GALLERIES ARE A RECEIVER. WE BUILT IT TO HEAR OURSELVES. WE HEAR SOMETHING ELSE: A RING TURNING, ONCE EVERY ELEVEN MINUTES. WHO SHOULD WE TELL?'",
+      "'YOU KEPT OUR SECRET ONCE. WE ARE ASKING YOU FIRST.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "nano_supplier"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "nano_trusted"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "A text-only line opens on your console from the colony at Sigma VII. No voice, no picture; it has never had either.",
+      "'YOUR FEEDSTOCK BUILT THE THIRD GALLERY.' 'THE GALLERIES ARE A RECEIVER. WE BUILT IT TO HEAR OURSELVES. WE HEAR SOMETHING ELSE: A RING TURNING, ONCE EVERY ELEVEN MINUTES. WHO SHOULD WE TELL?'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "nano_sold_out"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "nano_trusted"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "nano_supplier"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "A text-only line opens on your console from the colony at Sigma VII. No voice, no picture; it has never had either.",
+      "'THE LEGIONS CAME. WE MOVED.' 'THE GALLERIES ARE A RECEIVER. WE BUILT IT TO HEAR OURSELVES. WE HEAR SOMETHING ELSE: A RING TURNING, ONCE EVERY ELEVEN MINUTES. WHO SHOULD WE TELL?'",
+      "'WE ARE TELLING YOU BECAUSE NOBODY ELSE ANSWERS US.'"
+     ]
+    },
+    {
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "nano_sampled"
+        }
+       },
+       {
+        "not": {
+         "any": [
+          {
+           "player_origin": {
+            "flag": "nano_trusted"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "nano_supplier"
+           }
+          },
+          {
+           "player_origin": {
+            "flag": "nano_sold_out"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "text": [
+      "A text-only line opens on your console from the colony at Sigma VII. No voice, no picture; it has never had either.",
+      "'THE GALLERIES ARE A RECEIVER. WE BUILT IT TO HEAR OURSELVES. WE HEAR SOMETHING ELSE: A RING TURNING, ONCE EVERY ELEVEN MINUTES. WHO SHOULD WE TELL?'",
+      "'HOUSE ROSTROM HAS OUR SAMPLE. IT HAS NOT LEARNED TO HEAR.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "concord",
+     "say": "Tell House Rostrom",
+     "effects": {
+      "standing.concord": 10
+     }
+    },
+    {
+     "id": "hansa",
+     "say": "Tell the Hansa",
+     "effects": {
+      "standing.hansa": 10
+     }
+    },
+    {
+     "id": "listen",
+     "say": "Tell nobody, and keep listening",
+     "effects": {
+      "dawn_trust": 5,
+      "set": [
+       "rock_listening"
+      ]
+     }
+    }
+   ]
+  },
+  "santor.returns": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 3,
+   "title": "The name on the drive",
+   "requires": {
+    "done": [
+     "ring.lost"
+    ],
+    "at_type": "Planet"
+   },
+   "chance": 0.3,
+   "who": [
+    "santor"
+   ],
+   "pays": [
+    "the_fourth_test"
+   ],
+   "text": [
+    "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+    "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_copy"
+      }
+     },
+     "text": [
+      "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+      "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares.",
+      "You have a copy of the recording of his test, kept for forty years in a locker. He asks to see it. Nobody else alive has."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_to_rostrom"
+      }
+     },
+     "text": [
+      "A test capsule forty years out of date drifts up to a Hansa buoy with its transponder still calling the old test range. The man inside has three weeks of beard and a flight suit with a name tape: {santor}.",
+      "He went into the fourth test of the drive for eleven minutes. The segment turned under him, and he has been gone ever since. The engineers who built the needles' drive from his logs put his name on it. He would like to know why everybody stares.",
+      "You gave the only recording of his test to House Rostrom forty years ago. He wants it back, and he wants you to ask for it."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "rostrom",
+     "say": "Take him to House Rostrom",
+     "effects": {
+      "standing.concord": 10,
+      "set": [
+       "santor_with_rostrom"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "hansa",
+     "say": "Take him to the Hansa: the name on the drive is the league's",
+     "effects": {
+      "standing.hansa": 10,
+      "set": [
+       "santor_with_hansa"
+      ],
+      "plot_points": 5
+     }
+    },
+    {
+     "id": "show",
+     "say": "Show him the recording, and let him decide",
+     "requires": {
+      "player_origin": {
+       "flag": "fourth_test_copy"
+      }
+     },
+     "effects": {
+      "standing.concord": 5,
+      "standing.hansa": 5,
+      "plot_points": 8
+     }
+    },
+    {
+     "id": "hide",
+     "say": "Hide him from the Mandate's officers on the dock",
+     "effects": {
+      "standing.mandate": -10,
+      "set": [
+       "santor_hidden"
+      ],
+      "plot_points": 5
+     }
+    }
+   ]
+  },
+  "lyra.expedition": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "title": "Lyra",
+   "requires": {
+    "act_min": 2,
+    "done": [
+     "ring.expedition"
+    ],
+    "at_type": [
+     "Planet",
+     "ResearchColony"
+    ]
+   },
+   "chance": 0.25,
+   "pays": [
+    "the_lyra_rumour"
+   ],
+   "text": [
+    "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+    "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "logged_the_lyra_signal"
+      }
+     },
+     "text": [
+      "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+      "Before it leaves, the survey office asks whether it is true that you have a copy of the old signal log from the listening post.",
+      "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "heard_the_lyra_story"
+      }
+     },
+     "text": [
+      "A Concord survey needle leaves for HD 178911 in Lyra, a hundred and sixty light years out: years of other people's time for a few weeks of its own. The magnetic chirps from Lyra have not stopped in forty years.",
+      "You heard how the Maud Kettle went down out there, forty years ago, from the one who lived. The expedition has not.",
+      "Its last message comes back long after. The probes went quiet one after another as they neared a cold moon of the giant: no signal, no wreck, no answer. Nobody was met. The chirps go on."
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "log",
+     "say": "Sell them your copy of the signal log first (30,000)",
+     "requires": {
+      "player_origin": {
+       "flag": "logged_the_lyra_signal"
+      }
+     },
+     "effects": {
+      "money": 30000,
+      "standing.concord": 10,
+      "set": [
+       "lyra_log_given"
+      ]
+     }
+    },
+    {
+     "id": "kettle",
+     "say": "Tell them what the Maud Kettle's survivor told you",
+     "requires": {
+      "player_origin": {
+       "flag": "heard_the_lyra_story"
+      }
+     },
+     "effects": {
+      "standing.concord": 5,
+      "set": [
+       "lyra_warned"
+      ]
+     }
+    },
+    {
+     "id": "probe",
+     "say": "Pay for a probe of your own in their hold (10,000)",
+     "requires": {
+      "money": 10000
+     },
+     "effects": {
+      "money": -10000,
+      "research_points": 300,
+      "set": [
+       "lyra_probe_sent"
+      ]
+     }
+    },
+    {
+     "id": "listen",
+     "say": "Read the news and go back to work"
+    }
+   ]
+  }
+ }
+}

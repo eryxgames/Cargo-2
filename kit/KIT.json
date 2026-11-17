@@ -1,0 +1,26 @@
+{
+ "clio_commit": "b68fc12",
+ "clio_version": "2.1.0",
+ "files": {
+  "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "NOTICE": "c2441583ad70b1ea5eb2a03781da75bf4e8833e9c4e4111d04fa1a063f520a0b",
+  "__init__.py": "40e0a02d45d55c1a5f37b1d952a334dc13a49d3aa9b04e2112c37760354e892d",
+  "art.py": "7a5fc26fed6a7feee4e015883c764d4d56084017efbf88f6b01c29f9f1db5fa4",
+  "audio/__init__.py": "4b5d8278ecc1a821f47881f3efc4c631e10cc65b6840255df2162c145c2f3140",
+  "audio/backends.py": "bd0d338daa8db80f108d6637f4c75bfff8b9b919eacef23f2bebab1764d99b67",
+  "audio/compose.py": "ef760e5150e7e72d2b45a24c74ba24dc60c980c6235ad92ba3c1c516f37a1220",
+  "audio/sfx.py": "3fe19811962d112d1ec5434f3647b2f11768afbe8cdbad4b8cda10d2f7701c17",
+  "audio/synth.py": "e05bccf2761bc37a52eab92bc2f9e08967550e12c1a8a5cf941b1bc733fbf1da",
+  "sprite.py": "de9cbf14a1096e812949c40c997660504440823d5070d77189fe2b668156c920",
+  "style/configs/console.json": "861d91a242d0b4f3a8a6d6c38cf5becb39bd3c6a2801f81f5c052112f0600d35",
+  "style/configs/default.json": "9dbcc44c6b505d537502e3a6830a378d6f04c0329355fcb21c83075d1122aa61",
+  "style/configs/elegant.json": "a6150af061f93181a6dbffe9cfdf2efdd447e7cfe553f26ae9279c72c25f597c",
+  "style/configs/minimal.json": "a48cd8b286e2dfd525d321e106bc7d08c7a7199455fd2c09281cfe90706949f5",
+  "style/configs/modern.json": "bcd0ece327123af82af39bb6c92cb225e5a71cc3618130dd9eb2b48e3b33cb7c",
+  "style/configs/retro.json": "bb614fc1dd3cb7dcdf6b088392a3ace74df816717d4392b775e12a282e49a3bf",
+  "style/configs/techno.json": "a666c1cd5315ed731b4afe619081a1da3e331f2a3bc3ad96fadff1a08ca3e753",
+  "term.py": "17a91631cb71807407bb11de3af0f1711d7fdfe003229491bc192bdacbc997ec",
+  "theme.py": "d8b19696d38fc9956f38814527daf81676072a51c3bed28e77eb41ae8de9c547",
+  "ui.py": "57ac490c85c4baa2d89e6854adf4cd51ef571959320f5624050cc3216caa0eb1"
+ }
+}

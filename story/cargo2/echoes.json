@@ -1,0 +1,671 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "Echoes of Cargo 1 in 2460: every flag Cargo 1 carries to Cargo 2 is read here or elsewhere (rumours, and three old acquaintances).",
+ "arcs": {
+  "echoes": {
+   "title": "Echoes of Cargo 1",
+   "order": 8
+  }
+ },
+ "characters": {
+  "meza_voce": {
+   "kind": "android",
+   "about": "head of the Rootstock family, forty years on"
+  },
+  "pirate_captain": {
+   "kind": "human",
+   "about": "founder of the Void Angels, if she was spared; old, still flies point"
+  }
+ },
+ "nodes": {
+  "echo.aela_leased": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "aela_leased"
+    }
+   },
+   "text": "At the Rockwarden claim the old mining agrobot is still leased equipment, forty years on. It asks every visiting captain whether leases ever expire."
+  },
+  "echo.aela_member": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "aela_member"
+    }
+   },
+   "text": "The Rockwarden cooperative's first machine shareholder, an old mining agrobot, has not missed a meeting in forty years. It votes against overtime, every time."
+  },
+  "echo.asked_the_garrison": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "asked_the_garrison"
+    }
+   },
+   "text": "The garrison at Scholz's Star still guards something under the ice. A captain once asked what, the rumour goes, and the Mandate has kept a file on that captain ever since."
+  },
+  "echo.bought_the_vote": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "bought_the_vote"
+    }
+   },
+   "text": "The old haulers say the vote that made the Mark law was bought. They say it fondly, the way people talk about a grandparent who smuggled."
+  },
+  "echo.carried_concertina": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "carried_concertina"
+    }
+   },
+   "text": "Concertina still tours. She tells every audience about the hauler who flew her to her first gala at Epsilon in a cargo hold, in a ballgown."
+  },
+  "echo.carried_the_pilgrims": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "carried_the_pilgrims"
+    }
+   },
+   "text": "The Cult of the Broken Machine keeps a list of the ships that carried its pilgrims. One of them is near the top, in gold leaf."
+  },
+  "echo.carried_the_samples": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "carried_the_samples"
+    }
+   },
+   "text": "The builders' metal sits in a case in the Stellar Institute's lobby, labelled with the ship that hauled it. The label says the builders were unknown. It has not been changed."
+  },
+  "echo.defied_serac": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "defied_serac"
+    }
+   },
+   "text": "{serac} keeps two lists, they say. One of the captains who owe him, and a shorter one."
+  },
+  "echo.delivered_the_hovertank": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "delivered_the_hovertank"
+    }
+   },
+   "text": "The legion's hovertank still stands guard at Delta c, forty years after a hauler delivered it. The colonists put flowers on it."
+  },
+  "echo.fed_gamma": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "fed_gamma"
+    }
+   },
+   "text": "Gamma's miners still tell how a hauler brought food down the shafts when the company would not."
+  },
+  "echo.fluencer_exposed": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "fluencer_exposed"
+    }
+   },
+   "text": "Brisa still streams, and still claims a Neon family. Her viewers know better; a hauler told her so, live, forty years ago, and the clip still circulates."
+  },
+  "echo.fluencer_streamed": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "fluencer_streamed"
+    }
+   },
+   "text": "A forty-year-old stream of a hauler's cockpit still has nine million views. Haulers' children watch it for the dials."
+  },
+  "echo.found_the_chair": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "found_the_chair"
+    }
+   },
+   "text": "Whoever set the Institute fire forty years ago never stood trial. A captain knows whose security firm it was, the rumour says, and has never said."
+  },
+  "echo.grey_hats_client": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "grey_hats_client"
+    }
+   },
+   "text": "The Grey Hats still clean records, and keep a ledger of every record they cleaned. Somebody's name is in it from forty years back."
+  },
+  "echo.heard_the_warning": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "heard_the_warning"
+    }
+   },
+   "text": "'Make sure it starts from home,' an older captain said at a portal forty years ago. The Concord's archivists are still arguing about what it meant."
+  },
+  "echo.knows_the_quartermaster": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "knows_the_quartermaster"
+    }
+   },
+   "text": "The quartermaster who sold the convoys forty years ago retired rich and died rich. One captain knew who; the Hansa never asked."
+  },
+  "echo.krog_aboard": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "krog_aboard"
+    }
+   },
+   "text": "A KRO-series loader named Krogg still rides with one hauler, watching where the crates go. It has opinions about stowage, and about that hauler."
+  },
+  "echo.legion_freelance": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "legion_freelance"
+    }
+   },
+   "text": "The Mandate's recruiters keep a list of captains who turned down every legion's commission. They still send a letter every year."
+  },
+  "echo.legion_omnicorp": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "legion_omnicorp"
+    }
+   },
+   "text": "OmniCorp's old legion is a Mandate wing now. Its veterans still salute each other in the corporate colours, quietly."
+  },
+  "echo.legion_stellar": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "legion_stellar"
+    }
+   },
+   "text": "Stellar Dynamics' old legion is a Mandate wing now. Its veterans still meet once a year and argue about who had the better guns."
+  },
+  "echo.legion_xylo": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "legion_xylo"
+    }
+   },
+   "text": "The Xylo Consortium's old legion is a Mandate wing now. Its veterans still wear the green, under the grey."
+  },
+  "echo.lot77_bought": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "lot77_bought"
+    }
+   },
+   "text": "The Unsorted, the robots who belong to nothing, still repair one hauler's ship at cost, and nobody else's."
+  },
+  "echo.manifest_completed": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "manifest_completed"
+    }
+   },
+   "text": "The Broken Machine's holy manifest was delivered at last, forty years late. The cult keeps the day with a reading of the cargo list."
+  },
+  "echo.rockwarden_books": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "rockwarden_books"
+    }
+   },
+   "text": "The Rockwarden cooperative still keeps its books in the hand of the hauler who kept them while Stonewright flew sublight."
+  },
+  "echo.rockwarden_share": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "rockwarden_share"
+    }
+   },
+   "text": "The Rockwarden cooperative still pays a dividend on one share held by a hauler. It has grown into a small fortune nobody collects."
+  },
+  "echo.rostrom_declined": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "rostrom_declined"
+    }
+   },
+   "text": "House Rostrom was nearly never founded: a hauler refused its first loan, and it had to find another. It has not forgotten which hauler."
+  },
+  "echo.rostrom_paper": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "rostrom_paper"
+    }
+   },
+   "text": "House Rostrom's first paper about the ring hangs framed in its hall. The names on it are the house's, and one is a hauler's."
+  },
+  "echo.saved_level_nine": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "saved_level_nine"
+    }
+   },
+   "text": "Twelve miners got out of level nine at Gamma forty years ago. Their grandchildren know the name of the ship that helped."
+  },
+  "echo.solarian_friend": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "solarian_friend"
+    }
+   },
+   "text": "The Solarian reading-house still reads out its donors' names at the solstice. One of them is a hauler's."
+  },
+  "echo.sold_the_hovertank": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "sold_the_hovertank"
+    }
+   },
+   "text": "{serac}'s old depot still has the legion's prototype hovertank. It has been repainted four times and has never moved."
+  },
+  "echo.tadeo_took_blame": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "tadeo_took_blame"
+    }
+   },
+   "text": "A gunner took the blame for a sold convoy forty years ago and never said who sold it. He runs a bar at Alpha now."
+  },
+  "echo.virtual_friend": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "virtual_friend"
+    }
+   },
+   "text": "A Neon heir in a holographic body still flies with one hauler only: the one who charged for the passenger, not the projector."
+  },
+  "echo.worshipped": {
+   "kind": "rumour",
+   "arc": "echoes",
+   "act": 1,
+   "requires": {
+    "player_origin": {
+     "flag": "worshipped"
+    }
+   },
+   "text": "The Order of the Lost Gear still keeps a hauler's ship as a minor relic. Its pilgrims touch the hull at every dock."
+  },
+  "rootstock.voce": {
+   "kind": "event",
+   "arc": "echoes",
+   "act": 2,
+   "title": "A customs officer who is not",
+   "requires": {
+    "any": [
+     {
+      "player_origin": {
+       "flag": "met_rootstock"
+      }
+     },
+     {
+      "player_origin": {
+       "flag": "rootstock_family"
+      }
+     },
+     {
+      "player_origin": {
+       "flag": "sold_the_exoparts"
+      }
+     }
+    ],
+    "act_min": 2,
+    "at_type": [
+     "Planet",
+     "AsteroidBase"
+    ]
+   },
+   "chance": 0.25,
+   "who": [
+    "meza_voce"
+   ],
+   "text": [
+    "A customs officer at the gate stops your manifest, reads it twice, and asks whether a certain captain still flies. She is an android in a good suit, and she is not a customs officer.",
+    "{meza_voce} has run the Rootstock for forty years. The family is bigger now, and it feeds three systems the Hansa forgot."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "rootstock_family"
+      }
+     },
+     "text": [
+      "A customs officer at the gate stops your manifest, reads it twice, and asks whether a certain captain still flies. She is an android in a good suit, and she is not a customs officer.",
+      "It is {meza_voce.short}. 'Family,' she says, and stamps the manifest without reading it. 'We kept your place at the table.'"
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "sold_the_exoparts"
+      }
+     },
+     "text": [
+      "A customs officer at the gate stops your manifest, reads it twice, and asks whether a certain captain still flies. She is an android in a good suit, and she is not a customs officer.",
+      "It is {meza_voce.short}. 'The garrison's exoskeletons,' she says. 'Our loaders still wear them. They fit well. Thank you.'"
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "fed_gamma"
+      }
+     },
+     "text": [
+      "A customs officer at the gate stops your manifest, reads it twice, and asks whether a certain captain still flies. She is an android in a good suit, and she is not a customs officer.",
+      "It is {meza_voce.short}. 'You fed Gamma when the company would not,' she says. 'So did we. That makes us colleagues.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "run",
+     "say": "Take one of the family's runs (12,000)",
+     "effects": {
+      "money": 12000,
+      "standing.mandate": -5,
+      "dawn_trust": 5
+     }
+    },
+    {
+     "id": "table",
+     "say": "Take your place at the table",
+     "requires": {
+      "player_origin": {
+       "flag": "rootstock_family"
+      }
+     },
+     "effects": {
+      "money": 20000,
+      "dawn_trust": 10
+     }
+    },
+    {
+     "id": "pass",
+     "say": "Let her stamp the manifest and go"
+    }
+   ]
+  },
+  "mraz.angels": {
+   "kind": "event",
+   "arc": "echoes",
+   "act": 1,
+   "title": "The Void Angels",
+   "requires": {
+    "any": [
+     {
+      "player_origin": {
+       "flag": "mraz_spared"
+      }
+     },
+     {
+      "player_origin": {
+       "flag": "mraz_hired"
+      }
+     },
+     {
+      "player_origin": {
+       "flag": "mraz_handed"
+      }
+     }
+    ],
+    "turn_min": 15
+   },
+   "chance": 0.2,
+   "who": [
+    "pirate_captain"
+   ],
+   "text": [
+    "A ship with no transponder and very good paint falls in beside your needle: the Void Angels, the free captains of the outer lanes.",
+    "{pirate_captain} is old now and still flies point. She escaped the legion's prison in her second year. She remembers who put her there."
+   ],
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "mraz_spared"
+      }
+     },
+     "text": [
+      "A ship with no transponder and very good paint falls in beside your needle: the Void Angels, the free captains of the outer lanes.",
+      "{pirate_captain} founded them, after a hauler let her go forty years ago. 'Same hauler,' she says on the channel. 'Fly with us a while.'"
+     ]
+    },
+    {
+     "requires": {
+      "player_origin": {
+       "flag": "mraz_hired"
+      }
+     },
+     "text": [
+      "A ship with no transponder and very good paint falls in beside your needle: the Void Angels, the free captains of the outer lanes.",
+      "{pirate_captain} flew your escort forty years ago, for pay. 'The rate has gone up,' she says. 'For you, not much.'"
+     ]
+    }
+   ],
+   "choices": [
+    {
+     "id": "escort",
+     "say": "Let them fly escort to the next dock",
+     "requires": {
+      "any": [
+       {
+        "player_origin": {
+         "flag": "mraz_spared"
+        }
+       },
+       {
+        "player_origin": {
+         "flag": "mraz_hired"
+        }
+       }
+      ]
+     },
+     "effects": {
+      "standing.mandate": -5,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "hire",
+     "say": "Hire them for the next run (8,000)",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "mraz_hired"
+        }
+       },
+       {
+        "money": 8000
+       }
+      ]
+     },
+     "effects": {
+      "money": -8000,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "fight",
+     "say": "Take what she has come to settle",
+     "requires": {
+      "player_origin": {
+       "flag": "mraz_handed"
+      }
+     },
+     "effects": {
+      "code": "fight corsair edge 1",
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "pay",
+     "say": "Pay her for the prison years (15,000)",
+     "requires": {
+      "all": [
+       {
+        "player_origin": {
+         "flag": "mraz_handed"
+        }
+       },
+       {
+        "money": 15000
+       }
+      ]
+     },
+     "effects": {
+      "money": -15000,
+      "plot_points": 3
+     }
+    },
+    {
+     "id": "leave",
+     "say": "Wave and keep your place in the file"
+    }
+   ]
+  },
+  "cargolytes.sect": {
+   "kind": "event",
+   "arc": "echoes",
+   "act": 1,
+   "title": "Apparent good order",
+   "requires": {
+    "all": [
+     {
+      "player_origin": {
+       "flag": "met_cargolytes"
+      }
+     }
+    ],
+    "turn_min": 10
+   },
+   "chance": 0.2,
+   "text": [
+    "In the tail of the needle a Cargolyte stevedore comes over on a line, singing, with a copy of your manifest: 'In apparent good order and condition.'",
+    "The Cargolytes are a full sect now, with the Broken Machine as a branch. The Sixpack, their council, sends greetings to a captain from the old days, and a bill."
+   ],
+   "choices": [
+    {
+     "id": "tithe",
+     "say": "Pay the tithe before they ask: a tenth of your fullest hold",
+     "effects": {
+      "code": "lose money 0.02 min 500",
+      "plot_points": 2
+     }
+    },
+    {
+     "id": "refuse",
+     "say": "Refuse, politely",
+     "effects": {
+      "code": "fight cargolytes"
+     }
+    },
+    {
+     "id": "sing",
+     "say": "Sing the receipt back to them",
+     "effects": {
+      "plot_points": 2
+     }
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,202 @@
+{
+ "format": "storykit",
+ "version": 1,
+ "about": "How Cargo 2 begins, by the captain record that comes in (the first intro whose condition holds).",
+ "arcs": {
+  "saga": {
+   "title": "The captain, across the saga",
+   "order": 0.5
+  }
+ },
+ "nodes": {
+  "intro.from_cargo3": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "Seventy years early",
+   "requires": {
+    "player_origin": {
+     "game": "cargo3"
+    }
+   },
+   "text": [
+    "The Gyrotron turned once under {origin.name}'s ship, and the dock clock says 2460. The Hansa is forty years old. You knew it at a hundred and ten.",
+    "You know how the Mandate ends. Said aloud, that gets you a cell, or a job with {serac}. You keep it to yourself, and you keep your old navigation computer."
+   ],
+   "effects": {
+    "give": {
+     "items": [
+      "old_navcomp"
+     ]
+    }
+   },
+   "sound": "displaced"
+  },
+  "intro.again": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "Again",
+   "requires": {
+    "player_origin": {
+     "game": "cargo2"
+    }
+   },
+   "text": [
+    "{origin.name} has flown these years once already, as {origin.rank}, and walked away before the end.",
+    "The needle office has your face on file with another name under it. You let the clerk keep the mistake and buy a hauler with a loan, like the first time."
+   ],
+   "sound": "intro"
+  },
+  "intro.colonel": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "Colonel, retired",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1",
+     "ending": "combat",
+     "flag": "took_the_commission"
+    }
+   },
+   "text": [
+    "{origin.name} took {serac}'s commission forty years ago and wore the Mandate's grey until the pension came. {serac} signed the pension himself. He has not aged a day.",
+    "The long sublight legs kept you younger than the calendar. The Mandate keeps your file open: a colonel with a hauler is either retired or working, and it has not decided which."
+   ],
+   "effects": {
+    "standing.mandate": 45,
+    "standing.hansa": -10
+   },
+   "sound": "intro"
+  },
+  "intro.veteran": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "The First Legion",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1",
+     "ending": "combat"
+    }
+   },
+   "text": [
+    "The First Legion that {origin.name} helped make was folded into the Terran Mandate with all the others. Your medal is a Mandate medal now. Nobody asked you.",
+    "The Mandate has a file on you, and {serac} has read it. You buy a hauler without guns and book a place in a needle, like anybody."
+   ],
+   "effects": {
+    "standing.mandate": 30
+   },
+   "sound": "intro"
+  },
+  "intro.founder": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "Founder, on a pension",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1",
+     "ending": "trade"
+    }
+   },
+   "text": [
+    "{origin.name} is one of the captains the Hansa was founded by, and the league pays a pension to prove it. Every year its accountants try to cut it.",
+    "Forty years on the calendar, fifteen on you: the long sublight legs saw to that. You want the needles more than the pension, so you buy a hauler and go to book a place."
+   ],
+   "effects": {
+    "standing.hansa": 20
+   },
+   "sound": "intro"
+  },
+  "intro.heading": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "The file",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1",
+     "ending": "discovery"
+    }
+   },
+   "text": [
+    "{origin.name} filed the course home from Scholz's Star forty years ago. The Institute stamped it received and put it on a shelf.",
+    "This month somebody took it off the shelf. The Concord's clerks will not say who. You buy a hauler with a loan and go to find out."
+   ],
+   "effects": {
+    "standing.concord": 20
+   },
+   "sound": "intro"
+  },
+  "intro.tycoon": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "One more run",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1",
+     "ending": "tycoon"
+    }
+   },
+   "text": [
+    "{origin.name} was the richest hauler of the decade, and then of the next. Retirement lasted until the money got boring.",
+    "You buy a ship far below your means and book the middle of a needle, where nobody will recognise you. Somebody always does."
+   ],
+   "effects": {
+    "standing.hansa": 10,
+    "standing.concord": 10
+   },
+   "sound": "intro",
+   "variants": [
+    {
+     "requires": {
+      "player_origin": {
+       "game": "cargo1",
+       "ending": "tycoon",
+       "flag": "stellar_portal"
+      }
+     },
+     "text": [
+      "{origin.name} paid for the portal at the Stellar Institute. Forty years later it is still the most expensive thing ever built that nobody can use.",
+      "You buy a ship far below your means and book the middle of a needle, where nobody will recognise you. Somebody always does."
+     ]
+    }
+   ]
+  },
+  "intro.unfinished": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "Forty years on",
+   "requires": {
+    "player_origin": {
+     "game": "cargo1"
+    }
+   },
+   "text": [
+    "{origin.name}, {origin.rank}, walked away from a career forty years ago, before it was finished. The long sublight legs kept you younger than the calendar.",
+    "The routes are forty years older than you remember. Ships cross between the stars in needles now, and the needle office wants a booking."
+   ],
+   "sound": "intro"
+  },
+  "intro.fresh": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "A place near the tail",
+   "requires": {
+    "not": {
+     "player_origin": {}
+    }
+   },
+   "text": [
+    "Every hauler starts the same way: a loan, a ship older than the loan officer, and a place booked in the next needle out of {place}.",
+    "The Hansa turned forty last month. Its founders' names are on the wall of the needle office. Yours is on a slot near the tail."
+   ],
+   "sound": "intro"
+  }
+ }
+}

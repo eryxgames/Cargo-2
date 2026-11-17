@@ -1,0 +1,12 @@
+{
+ "about": "Findings accepted for now; validate.py --baseline fails only on new ones.",
+ "accepted": [
+  "flag-never-read|cargo1:flag alien_discovery|set (by the game) but no node reads it",
+  "flag-never-read|cargo1:flag ancient_mystery|set (by the game) but no node reads it",
+  "flag-never-read|cargo1:flag pirate_threat|set (by the game) but no node reads it",
+  "flag-never-read|cargo1:flag tech_breakthrough|set (by the game) but no node reads it",
+  "flag-never-read|cargo1:flag trade_empire|set (by the game) but no node reads it",
+  "flag-unused|cargo1:flag galactic_crisis|declared, never set, never read",
+  "flag-unused|cargo1:flag resource_empire|declared, never set, never read"
+ ]
+}
