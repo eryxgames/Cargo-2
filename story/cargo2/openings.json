@@ -9,6 +9,32 @@
   }
  },
  "nodes": {
+  "intro.errand": {
+   "kind": "intro",
+   "arc": "saga",
+   "act": 1,
+   "title": "An errand, early",
+   "requires": {
+    "player_origin": {
+     "game": "cargo3"
+    },
+    "errand": {
+     "vault_word": "open"
+    }
+   },
+   "text": [
+    "The Gyrotron turned once under {origin.name}'s ship, and the dock clock says 2460. You came back seventy-three years with a question nobody here can answer yet.",
+    "In 2533, {neon_sleeper} will wake from stasis without the word that opens her family's vault. Here she is still asleep at Delta, and wakes on her own schedule. Be there when she does. You keep your old navigation computer, and your mouth shut about the Mandate."
+   ],
+   "effects": {
+    "give": {
+     "items": [
+      "old_navcomp"
+     ]
+    }
+   },
+   "sound": "displaced"
+  },
   "intro.from_cargo3": {
    "kind": "intro",
    "arc": "saga",

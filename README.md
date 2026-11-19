@@ -8,7 +8,7 @@ of the Cargo trilogy, set in the [Eryxian universe](https://github.com/eryxgames
         ╔═══════ C Δ R G Ω ][ ══════╗
         ║     Space Trading Saga    ║
         ╚═══════════════════════════╝
-                Version 2.2.0
+                Version 2.3.0
 ```
 
 ## Status
@@ -57,6 +57,12 @@ own world and story. What works now:
   closes its twin for good;
 - fourteen achievements, announced when earned, listed in the journal and written into the
   captain's record with the standings, for Cargo 3 (Cargo 1 still reads the record);
+- one captain across the trilogy (2.3): a game begun as a recorded captain keeps the captain's id
+  and log, and the record carries the captain's history (`game/record.py`, copied from the Cargo
+  repository): what they left in each part (read with `{"past": {"era", "flag"}}`), their own
+  time, the line of the timeline each game is, errands from later parts, and keys from newer
+  games, kept and written out again. Cargo 3 sends one errand here: the word for the Kraal vault.
+  A record that went through an older game is offered a join with the captain's newer record;
 - the places of 2460 describe themselves on a first visit;
 - look and think (2.1): `look` at a dock shows what is going on, the people there and things to
   examine; some people travel routes of their own (Pell flies Alpha, Beta and Gamma; Grab Targa
@@ -84,10 +90,10 @@ document.
 
 ## Playing
 
-- **Windows:** download `cargo2-2.2.0-windows.zip` from the releases (or itch.io), unpack, run
+- **Windows:** download `cargo2-2.3.0-windows.zip` from the releases (or itch.io), unpack, run
   `cargo2.exe`. No Python needed.
 - **Linux, macOS, Termux, or Windows with Python:** Python 3.8 or newer, nothing else to install.
-  Download `cargo2-2.2.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
+  Download `cargo2-2.3.0-python.zip`, unpack, and run `python3 cargo2.py`; or:
 
 ```bash
 git clone https://github.com/eryxgames/Cargo-2.git

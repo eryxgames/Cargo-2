@@ -96,6 +96,30 @@
    "carries_to": [
     "cargo3"
    ]
+  },
+  "vault_word_known": {
+   "about": "the captain heard the word {neon_sleeper.short} chose for the Kraal vault at Delta",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "vault_word_patience": {
+   "about": "the Kraal vault's word is 'patience', which {neon_sleeper.short} chose herself",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "vault_word_coffee": {
+   "about": "the Kraal vault's word is 'coffee', the captain's idea",
+   "carries_to": [
+    "cargo3"
+   ]
+  },
+  "vault_word_tuesday": {
+   "about": "the Kraal vault's word is 'Tuesday', the day she always wakes",
+   "carries_to": [
+    "cargo3"
+   ]
   }
  },
  "nodes": {
@@ -231,6 +255,113 @@
      "say": "Leave the Kraal family to their bills"
     }
    ]
+  },
+  "sleeper.vault": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "title": "A word for the vault",
+   "who": [
+    "neon_sleeper",
+    "astin"
+   ],
+   "requires": {
+    "at": "Delta",
+    "since": {
+     "sleeper.wakes": 2
+    },
+    "errand": {
+     "vault_word": "open"
+    }
+   },
+   "text": [
+    "{astin} is fitting a vault under the Kraal counting room: steel doors, no network, and a lock that opens to one spoken word. {neon_sleeper} has not chosen the word yet.",
+    "You know what she cannot. In 2533 she will wake from a longer sleep with the word gone; the chambers take the newest memories first. You were sent back for it. You ask her to choose it now, while you are in the room."
+   ],
+   "choices": [
+    {
+     "id": "hers",
+     "say": "Let her choose",
+     "effects": {
+      "set": [
+       "vault_word_known",
+       "vault_word_patience"
+      ],
+      "errand_done": "vault_word",
+      "plot_points": 2
+     },
+     "next": [
+      "sleeper.vault.patience"
+     ]
+    },
+    {
+     "id": "coffee",
+     "say": "Suggest 'coffee'",
+     "effects": {
+      "set": [
+       "vault_word_known",
+       "vault_word_coffee"
+      ],
+      "errand_done": "vault_word",
+      "plot_points": 2
+     },
+     "next": [
+      "sleeper.vault.coffee"
+     ]
+    },
+    {
+     "id": "tuesday",
+     "say": "Suggest 'Tuesday'",
+     "effects": {
+      "set": [
+       "vault_word_known",
+       "vault_word_tuesday"
+      ],
+      "errand_done": "vault_word",
+      "plot_points": 2
+     },
+     "next": [
+      "sleeper.vault.tuesday"
+     ]
+    }
+   ]
+  },
+  "sleeper.vault.patience": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "who": [
+    "neon_sleeper"
+   ],
+   "requires": {
+    "flag": "vault_word_patience"
+   },
+   "text": "'Patience,' {neon_sleeper.short} says. 'It is all a Kraal has ever needed.' She says it to the lock, and the lock agrees. 'Remember it for me, captain. I have a feeling I will ask.'"
+  },
+  "sleeper.vault.coffee": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "who": [
+    "neon_sleeper",
+    "astin"
+   ],
+   "requires": {
+    "flag": "vault_word_coffee"
+   },
+   "text": "{neon_sleeper.short} laughs for the first time in thirty years. 'Coffee. The first thing I ask for, every time. Nobody will ever guess it.' {astin.short} writes it down, then burns the paper."
+  },
+  "sleeper.vault.tuesday": {
+   "kind": "event",
+   "arc": "debts",
+   "act": 2,
+   "who": [
+    "neon_sleeper"
+   ],
+   "requires": {
+    "flag": "vault_word_tuesday"
+   },
+   "text": "'Tuesday,' {neon_sleeper.short} says. 'I always wake on a Tuesday. I will know it in my bones, even if I lose it in my head.' The lock takes it with a small click."
   },
   "clone.name_twice": {
    "kind": "event",

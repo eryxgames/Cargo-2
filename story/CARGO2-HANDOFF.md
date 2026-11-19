@@ -2,7 +2,7 @@
 
 Written by `tools/handoff.py` from the built story; do not edit by hand.
 
-Cargo 2 has 173 story nodes, 16 characters and 50 flags; 30 flags are meant for Cargo 3. A captain record carries every flag that is set (up to 160, the carried ones first), the endings below, the achievements and the standings with the Hansa, the Mandate and the Concord.
+Cargo 2 has 179 story nodes, 16 characters and 54 flags; 34 flags are meant for Cargo 3. A captain record carries every flag that is set (up to 160, the carried ones first), the endings below, the achievements and the standings with the Hansa, the Mandate and the Concord.
 
 ## Endings and the segments
 
@@ -45,6 +45,10 @@ Each road's climax decides who holds the ring's segments when Cargo 3 begins (a 
 | `santor_hidden` | the captain hid Dharr Santor from the Mandate |
 | `santor_with_hansa` | Dharr Santor went to the Hansa after he came back |
 | `santor_with_rostrom` | Dharr Santor went to House Rostrom after he came back |
+| `vault_word_coffee` | the Kraal vault's word is 'coffee', the captain's idea |
+| `vault_word_known` | the captain heard the word Conte Ottavine chose for the Kraal vault at Delta |
+| `vault_word_patience` | the Kraal vault's word is 'patience', which Conte Ottavine chose herself |
+| `vault_word_tuesday` | the Kraal vault's word is 'Tuesday', the day she always wakes |
 
 ### docks
 

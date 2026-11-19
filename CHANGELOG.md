@@ -2,6 +2,23 @@
 
 Cargo 2, the second part of the Cargo trilogy. Versions follow the game (`game/__init__.py`).
 
+## 2.3.0
+
+- **One captain, every part.** A game started as a recorded captain keeps the captain's id and
+  log. The record now carries the captain's history: what they left in each part of the trilogy,
+  their own time (the turns lived, whatever year the dock clock says), and the line of the
+  timeline each game is. Nothing done in another part ever rewrites a save.
+- **An errand from 2533.** In Cargo 3, Conte Ottavine wakes from a long stasis without the word
+  that opens her family's vault: the chambers take the newest memories first. A Cargo 3 captain
+  thrown back to 2460 can be at Delta when she first wakes, and be in the room when she
+  chooses it (or suggest one). The word travels back in the record.
+- Keys a newer game writes into a captain's record are kept and written out again.
+- A record that went through an older game (Cargo 2 2.2.0, Cargo 1 1.2.1) is offered a join
+  with the captain's newer record. An errand meant for a newer version is named when you start
+  and when you export, and stays in the record until you update.
+- The captain menu shows your own time, your line and your errands. New captains get a Cargo 2
+  id (`C2-`); they used to get Cargo 1's prefix.
+
 ## 2.2.0
 
 - **A side quest in every act.** Adit, an old loader agrobot on the cargo rings of Beta, Alpha

@@ -23,6 +23,7 @@ grep -E "(promise-pending|carried-pending).*cargo2" /tmp/cargo2-validate.txt && 
 $PY $T/scenes.py $G > /tmp/cargo2-scenes.txt || fail=1
 grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2-scenes.txt
 $PY $T/openings.py || fail=1
+$PY $T/history.py || fail=1
 $PY $T/acts.py || fail=1
 $PY $T/look.py || fail=1
 $PY $T/handoff.py --check || fail=1
@@ -49,7 +50,7 @@ echo "== the game starts and exits as a program (UTF-8 and cp1252 output)"
 $PY $T/smoke.py $PY cargo2.py || fail=1
 
 echo "== damaged and hostile save / captain files"
-$PY $T/test_files.py $G | tail -1 || fail=1
+$PY $T/test_files.py $G > /tmp/cargo2-files.txt || fail=1; tail -1 /tmp/cargo2-files.txt
 
 echo "== save / load round trips"
 for s in $SEEDS; do $PY $T/roundtrip.py $G $s 1200 800 | $PY -c "

@@ -725,6 +725,17 @@
    },
    "text": "The locker in Alpha's customs hall takes a founders' pass. Somebody who was there at the founding might still keep one."
   },
+  "thought.vault_word": {
+   "kind": "thought",
+   "arc": "docks",
+   "requires": {
+    "errand": {
+     "vault_word": "open"
+    },
+    "not_done": "sleeper.vault"
+   },
+   "text": "{neon_sleeper.short} wakes at Delta, on her own schedule. In 2533 she will have lost the word for her vault. I should be at Delta when she wakes, and ask."
+  },
   "thought.targa": {
    "kind": "thought",
    "arc": "docks",
