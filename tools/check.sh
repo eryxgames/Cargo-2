@@ -25,6 +25,7 @@ grep -E "CRASH|unfilled|FAIL" /tmp/cargo2-scenes.txt | head; tail -1 /tmp/cargo2
 $PY $T/openings.py || fail=1
 $PY $T/history.py || fail=1
 $PY $T/acts.py || fail=1
+$PY $T/placeholders.py || fail=1     # no {name} on screen, in the story or the code
 $PY $T/look.py || fail=1
 $PY $T/handoff.py --check || fail=1
 
